@@ -613,7 +613,7 @@
                 </div>
                 <div class="input-field">
                   <label>Long to short clear span ratio, β</label>
-                  <input type="number" id="slab-beta-val" value="1.11" min="0.1" max="5.0" step="0.01">
+                  <input type="number" id="slab-beta-val" value="1.11" min="0.1" max="5.0" step="0.01" readonly style="opacity: 0.7; cursor: not-allowed; background-color: rgba(255,255,255,0.05);">
                 </div>
               </div>
             </div>
@@ -640,6 +640,7 @@
                   <div class="mb-1">Value Substitution: <span id="slab-out-thickness-sub" class="text-white" style="word-break: break-all;"></span></div>
                   <div class="mb-1">Calculated thickness (h): <span id="slab-out-thickness-calc" class="text-white font-bold"></span></div>
                   <div class="mb-1">Minimum thickness check: <span id="slab-out-thickness-min" class="text-white"></span></div>
+                  <div class="mb-1">Stiffness check (αfm): <span id="slab-out-stiffness-details" class="text-white"></span></div>
                   <div class="mt-2" style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
                     <span style="font-weight: bold; color: #fff;">FINAL DESIGN THICKNESS (h):</span>
                     <span id="slab-out-thickness-final" class="bg-green-900 border border-green-600 text-green-200 font-bold px-2 py-1 rounded" style="font-size: 0.9rem; background-color: rgba(30, 86, 49, 0.4); border: 1px solid #2e7d32; color: #81c784; padding: 0.25rem 0.5rem; border-radius: 4px;"></span>
@@ -667,6 +668,14 @@
                 </div>
               </div>
 
+              <!-- Section 3b: DDM Applicability Check -->
+              <div class="mb-4" style="text-align: left;">
+                <h4 class="text-gold border-b border-gray-800 pb-1 mb-2 font-bold" style="font-size: 0.95rem; color: var(--color-gold); border-bottom: 1px solid rgba(255,255,255,0.1);">Section 3b: DDM Applicability Verification (ACI 318-19 Section 8.10.2)</h4>
+                <div class="text-mono" style="font-size: 0.75rem; line-height: 1.4; color: #ccc;">
+                  <div id="slab-out-ddm-check-list" style="background-color: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 0.5rem; border-radius: 4px;"></div>
+                </div>
+              </div>
+
               <!-- Section 4: Moment Distribution Table -->
               <div class="mb-4" style="text-align: left;">
                 <h4 class="text-gold border-b border-gray-800 pb-1 mb-2 font-bold" style="font-size: 0.95rem; color: var(--color-gold); border-bottom: 1px solid rgba(255,255,255,0.1);">Section 4: Moment Distribution Table</h4>
@@ -684,6 +693,7 @@
                     </tbody>
                   </table>
                 </div>
+                <div id="slab-out-beam-allotment-details" class="text-mono mt-2" style="display: none; font-size: 0.75rem; line-height: 1.4; color: #aaa; text-align: left; background-color: rgba(255,255,255,0.01); padding: 0.5rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05);"></div>
               </div>
 
               <!-- Section 5: Reinforcement Table -->
