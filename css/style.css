@@ -1709,3 +1709,70 @@ input, select, textarea, button {
     font-size: 2.2rem;
   }
 }
+
+/* --- ADDITIONAL MOBILE RESPONSIVENESS AND VIEW OPTIMIZATIONS --- */
+
+@media (max-width: 992px) {
+  body .page-banner {
+    padding: 8rem 0 3.5rem 0;
+  }
+  body .page-banner h1 {
+    font-size: 2.6rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .section-padding {
+    padding: 5rem 0;
+  }
+  body .page-banner {
+    padding: 7rem 0 3rem 0;
+  }
+  body .page-banner h1 {
+    font-size: 2.2rem;
+  }
+  body .bim-grid {
+    height: auto;
+  }
+  body .bim-viewport-container {
+    height: 350px;
+  }
+}
+
+@media (max-width: 600px) {
+  .input-grid {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+  }
+  body .metrics-row {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+    margin: 2rem 0;
+  }
+}
+
+@media (max-width: 480px) {
+  body .about-stats {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  body .stat-item {
+    text-align: center;
+  }
+  .console-line {
+    flex-direction: column;
+    gap: 0.2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    padding-bottom: 0.5rem;
+    align-items: flex-start;
+  }
+  .console-line:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .modal-overlay .modal-card {
+    padding: 1.5rem;
+    margin: 0 1rem;
+    max-width: 100%;
+  }
+}
