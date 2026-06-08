@@ -3865,16 +3865,6 @@ function downloadColumnPDF() {
     }
   }
 
-  let governingSpacingText = "";
-  if (type === 'TIED') {
-    const s_detail_val = Math.min(16 * mainBarDia, 48 * d_tie, Dim);
-    if (s_detail_val === 16 * mainBarDia) governingSpacingText = "Governed by 16x Main Bar Dia";
-    else if (s_detail_val === 48 * d_tie) governingSpacingText = "Governed by 48x Tie Bar Dia";
-    else governingSpacingText = "Governed by Column Dimension";
-  } else {
-    governingSpacingText = "Governed by Spiral Ratio";
-  }
-
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -3895,7 +3885,7 @@ function downloadColumnPDF() {
   doc.text('1. INPUT PARAMETERS (ACI 318-19 Chapters 19 & 20)', lx, ly);
   doc.setDrawColor(201, 168, 76);
   doc.setLineWidth(0.01);
-  doc.line(lx, ly + 0.05, 4.1, ly + 0.05);
+  doc.line(lx, ly + 0.08, 4.1, ly + 0.08);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
@@ -3928,7 +3918,7 @@ function downloadColumnPDF() {
   doc.setFontSize(12);
   doc.setTextColor(201, 168, 76);
   doc.text('2. DESIGN OUTPUT & SIZING (ACI 318-19 Chapter 10)', lx, ly);
-  doc.line(lx, ly + 0.05, 4.1, ly + 0.05);
+  doc.line(lx, ly + 0.08, 4.1, ly + 0.08);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
@@ -3941,8 +3931,8 @@ function downloadColumnPDF() {
     ['Actual Concrete Area (Ag)', `${Ag.toFixed(1)} in²`],
     ['Longitudinal Reinforcement', `${N_bars} - ${mainBarSize} bars`],
     ['Actual Steel Area (Ast)', `${Ast_actual.toFixed(2)} in² (Ratio = ${(p_actual * 100).toFixed(2)}%)`],
-    ['Transverse Spacing / Pitch', `${s_final.toFixed(2)} in (${governingSpacingText})`],
-    ['Material Takeoffs', `Concrete = ${parseFloat(concreteVolStr).toFixed(2)} m³, Steel = ${parseFloat(steelWeightStr).toFixed(1)} kg`]
+    ['Transverse Spacing / Pitch', `${s_final.toFixed(2)} in`],
+    ['Material Takeoffs', 'See Page 2 Sec 5']
   ];
 
   ly += 0.22;
@@ -3962,7 +3952,7 @@ function downloadColumnPDF() {
   doc.setFontSize(12);
   doc.setTextColor(201, 168, 76);
   doc.text('3. ACI CODE COMPLIANCE AUDIT', rx, ry);
-  doc.line(rx, ry + 0.05, 8.0, ry + 0.05);
+  doc.line(rx, ry + 0.08, 8.0, ry + 0.08);
 
   const checklist = [
     { desc: "Min Steel Ratio", ref: "ACI 10.6.1.1", limit: ">= 1.0%", calc: `${(p_actual*100).toFixed(2)}%`, ok: p_actual >= 0.01 },
@@ -3987,20 +3977,22 @@ function downloadColumnPDF() {
   doc.text('Limit', rx + 1.8, ry);
   doc.text('Actual', rx + 2.7, ry);
   doc.text('Status', rx + 3.3, ry);
-  doc.line(rx, ry + 0.04, rx + 3.6, ry + 0.04);
+  doc.line(rx, ry + 0.08, rx + 3.6, ry + 0.08);
   
   ry += 0.16;
-  doc.setFont('helvetica', 'normal');
   checklist.forEach((item) => {
     doc.setTextColor(60, 60, 60);
     doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    const descWidth = doc.getTextWidth(item.desc);
     doc.text(item.desc, rx, ry);
+    
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.setTextColor(110, 110, 110);
-    doc.text(` (${item.ref})`, rx + doc.getTextWidth(item.desc), ry);
-    doc.setFontSize(8);
+    doc.text(` (${item.ref})`, rx + descWidth + 0.04, ry);
     
+    doc.setFontSize(8);
     doc.setTextColor(60, 60, 60);
     doc.text(item.limit, rx + 1.8, ry);
     doc.text(item.calc, rx + 2.7, ry);
@@ -4036,7 +4028,7 @@ function downloadColumnPDF() {
   doc.setFontSize(12);
   doc.setTextColor(201, 168, 76);
   doc.text('4. VISUAL ENGINEERING BLUEPRINT', lx, ly);
-  doc.line(lx, ly + 0.05, 4.1, ly + 0.05);
+  doc.line(lx, ly + 0.08, 4.1, ly + 0.08);
 
   ly += 0.25;
   const blueprintW = 3.6;
@@ -4156,13 +4148,14 @@ function downloadColumnPDF() {
   }
 
   // 5. DETAILED REINFORCEMENT TAKEOFF SCHEDULE
+  rx = 4.3;
   ry = 1.8;
 
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   doc.setTextColor(201, 168, 76);
   doc.text('5. MATERIAL TAKEOFF SCHEDULE', rx, ry);
-  doc.line(rx, ry + 0.05, 8.0, ry + 0.05);
+  doc.line(rx, ry + 0.08, 8.0, ry + 0.08);
 
   ry += 0.25;
   // Compute individual bar lengths and weights
@@ -4197,7 +4190,7 @@ function downloadColumnPDF() {
     ['Longitudinal Rebar', mainBarSize, `${N_bars} bars`, `${singleBarLen.toFixed(2)} ft/bar`, `${totLongWeight.toFixed(1)} lbs`],
     ['Transverse Ties/Spirals', tieBarSize, transQtyText, transLenText, `${totTransWeight.toFixed(1)} lbs`],
     ['Total Steel Weight', '-', '-', '-', `${(totLongWeight + totTransWeight).toFixed(1)} lbs (${((totLongWeight+totTransWeight)*0.45359237).toFixed(1)} kg)`],
-    ['Concrete Volume', '-', '-', `Height = ${colHeight.toFixed(1)} ft`, `${(concreteVol).toFixed(2)} m³ (${(concreteVol*35.3147).toFixed(1)} cu. ft.)`]
+    ['Concrete Volume', '-', '-', `H = ${colHeight.toFixed(1)} ft`, `${(concreteVol).toFixed(2)} m³ (${(concreteVol*35.3147).toFixed(1)} cu. ft.)`]
   ];
 
   doc.setFont('helvetica', 'bold');
@@ -4206,9 +4199,9 @@ function downloadColumnPDF() {
   doc.text('Material Component', rx, ry);
   doc.text('Size', rx + 1.3, ry);
   doc.text('Qty', rx + 1.7, ry);
-  doc.text('Details', rx + 2.2, ry);
-  doc.text('Takeoff Weight/Vol', rx + 2.9, ry);
-  doc.line(rx, ry + 0.04, rx + 3.6, ry + 0.04);
+  doc.text('Details', rx + 2.1, ry);
+  doc.text('Weight/Vol', rx + 2.85, ry);
+  doc.line(rx, ry + 0.08, rx + 3.7, ry + 0.08);
 
   ry += 0.20;
   doc.setFont('helvetica', 'normal');
@@ -4218,13 +4211,13 @@ function downloadColumnPDF() {
     if (idx === 2 || idx === 3) {
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(30, 30, 30);
-      doc.line(rx, ry - 0.04, rx + 3.6, ry - 0.04);
+      doc.line(rx, ry - 0.06, rx + 3.7, ry - 0.06);
     }
     doc.text(comp, rx, ry);
     doc.text(size, rx + 1.3, ry);
     doc.text(qty, rx + 1.7, ry);
-    doc.text(details, rx + 2.2, ry);
-    doc.text(weight, rx + 2.9, ry);
+    doc.text(details, rx + 2.1, ry);
+    doc.text(weight, rx + 2.85, ry);
     
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(60, 60, 60);
@@ -4237,7 +4230,7 @@ function downloadColumnPDF() {
   doc.setFontSize(12);
   doc.setTextColor(201, 168, 76);
   doc.text('6. DETAILING SPECIFICATIONS (ACI 318-19 Chapter 25)', lx, ry);
-  doc.line(lx, ry + 0.05, 8.0, ry + 0.05);
+  doc.line(lx, ry + 0.08, 8.0, ry + 0.08);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
