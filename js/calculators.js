@@ -343,7 +343,7 @@ function handleAuthSubmit(event) {
     method: 'POST',
     mode: 'no-cors', // standard way to post to Apps Script redirect URLs
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'text/plain'
     },
     body: JSON.stringify(payload)
   })
