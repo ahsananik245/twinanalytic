@@ -1248,7 +1248,7 @@ function calculateSlab() {
   let intNegCoeff = 0.70;
 
   if (panel === 'interior') {
-    extNegCoeff = 0.65;
+    extNegCoeff = 0.00; // No exterior negative moment
     posCoeff = 0.35;
     intNegCoeff = 0.65;
   } else {
@@ -1609,7 +1609,7 @@ function downloadSlabPDF() {
   let intNegCoeff = 0.70;
 
   if (panel === 'interior') {
-    extNegCoeff = 0.65;
+    extNegCoeff = 0.00; // No exterior negative moment
     posCoeff = 0.35;
     intNegCoeff = 0.65;
   } else {
@@ -2740,26 +2740,43 @@ function downloadSlabPDF() {
   doc.text('cover = 0.75 in', startX_sec + 0.1, startY_sec + H_sec - covH / 2 + 0.02);
 
   // 4. Draw TOP reinforcement bars (negative moment — RED)
-  let y_top = startY_sec + covH + 0.028;
+  // Draw parallel long direction bars as horizontal red lines at the top support zones
+  let y_top_line = startY_sec + covH + 0.028;
+  doc.setDrawColor(200, 0, 0);
+  doc.setLineWidth(0.008);
+  doc.line(startX_sec, y_top_line, startX_sec + 0.22 * W_sec, y_top_line); // Left support
+  doc.line(startX_sec + W_sec - 0.15 * W_sec, y_top_line, startX_sec + W_sec); // Right support
+
+  // Draw perpendicular short direction bars as small red circles placed below long direction bars
+  let y_top_circle = y_top_line + 0.05;
   doc.setFillColor(200, 0, 0);
-  let x_bars = [startX_sec + 0.5, startX_sec + 2.0, startX_sec + 3.2, startX_sec + 4.7];
-  x_bars.forEach(xb => doc.circle(xb, y_top, 0.028, 'F'));
+  let x_circles = [startX_sec + 0.5, startX_sec + 1.4, startX_sec + 2.3, startX_sec + 3.2, startX_sec + 4.1, startX_sec + 5.0];
+  x_circles.forEach(xc => doc.circle(xc, y_top_circle, 0.028, 'F'));
+
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7.5);
   doc.setTextColor(200, 0, 0);
   doc.text('TOP BARS (Column Strip) — #' + dLColNeg.size.replace('#','') + ' @ ' + dLColNeg.spacing.toFixed(1) + '" c/c', startX_sec + 1.2, startY_sec + H_sec/2 - 0.07);
 
   // 5. Draw BOTTOM reinforcement bars (positive — GREEN)
-  let y_bot = startY_sec + H_sec - covH - 0.028;
+  // Draw parallel long direction bars as continuous horizontal green line along bottom
+  let y_bot_line = startY_sec + H_sec - covH - 0.028;
+  doc.setDrawColor(0, 150, 0);
+  doc.setLineWidth(0.008);
+  doc.line(startX_sec, y_bot_line, startX_sec + W_sec, y_bot_line);
+
+  // Draw perpendicular short direction bars as green circles placed above long direction bars
+  let y_bot_circle = y_bot_line - 0.05;
   doc.setFillColor(0, 150, 0);
-  x_bars.forEach(xb => doc.circle(xb, y_bot, 0.028, 'F'));
+  x_circles.forEach(xc => doc.circle(xc, y_bot_circle, 0.028, 'F'));
+
   doc.setTextColor(0, 150, 0);
   doc.text('BOT BARS (Column Strip) — #' + dLColPos.size.replace('#','') + ' @ ' + dLColPos.spacing.toFixed(1) + '" c/c', startX_sec + 1.2, startY_sec + H_sec/2 + 0.13);
 
   // 6. Draw dimension lines on right side
   let rightX = startX_sec + W_sec + 0.2;
   drawDimArrowV(rightX, startY_sec, startY_sec + H_sec, 'h = ' + hFinal.toFixed(1) + ' in');
-  drawDimArrowV(rightX + 0.45, startY_sec, y_bot, 'd1 = ' + dLong.toFixed(2) + ' in');
+  drawDimArrowV(rightX + 0.45, startY_sec, y_bot_line, 'd1 = ' + dLong.toFixed(2) + ' in');
 
   // 7. Draw bar extension indicators ABOVE the section
   doc.setDrawColor(200, 0, 0);
@@ -2808,27 +2825,42 @@ function downloadSlabPDF() {
   doc.rect(startX_sec3 + 0.01, startY_sec3 + 0.01, W_sec3 - 0.02, covH, 'F');
   doc.rect(startX_sec3 + 0.01, startY_sec3 + H_sec - covH - 0.01, W_sec3 - 0.02, covH, 'F');
 
-  // Top bars shifted lower (Red)
-  let y_top3 = startY_sec3 + covH + 0.028 + 0.05;
+  // Top bars parallel short direction (horizontal red lines, shifted lower)
+  let y_top_line3 = startY_sec3 + covH + 0.028 + 0.05;
+  doc.setDrawColor(200, 0, 0);
+  doc.setLineWidth(0.008);
+  doc.line(startX_sec3, y_top_line3, startX_sec3 + 0.22 * W_sec3, y_top_line3); // Left support
+  doc.line(startX_sec3 + W_sec3 - 0.15 * W_sec3, y_top_line3, startX_sec3 + W_sec3, y_top_line3); // Right support
+
+  // Perpendicular long direction top bars (red circles, closer to top face)
+  let y_top_circle3 = startY_sec3 + covH + 0.028;
   doc.setFillColor(200, 0, 0);
-  let x_bars3 = [startX_sec3 + 0.5, startX_sec3 + 1.4, startX_sec3 + 2.3, startX_sec3 + 3.2];
-  x_bars3.forEach(xb => doc.circle(xb, y_top3, 0.028, 'F'));
+  let x_circles3 = [startX_sec3 + 0.5, startX_sec3 + 1.2, startX_sec3 + 1.9, startX_sec3 + 2.6, startX_sec3 + 3.3];
+  x_circles3.forEach(xc => doc.circle(xc, y_top_circle3, 0.028, 'F'));
+
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7.0);
   doc.setTextColor(200, 0, 0);
   doc.text('TOP: #' + dSColNeg.size.replace('#','') + ' @ ' + dSColNeg.spacing.toFixed(1) + '"', startX_sec3 + 0.6, startY_sec3 + H_sec/2 - 0.07);
 
-  // Bottom bars shifted higher (Green)
-  let y_bot3 = startY_sec3 + H_sec - covH - 0.028 - 0.05;
+  // Bottom bars parallel short direction (horizontal green line, shifted higher)
+  let y_bot_line3 = startY_sec3 + H_sec - covH - 0.028 - 0.05;
+  doc.setDrawColor(0, 150, 0);
+  doc.setLineWidth(0.008);
+  doc.line(startX_sec3, y_bot_line3, startX_sec3 + W_sec3, y_bot_line3);
+
+  // Perpendicular long direction bottom bars (green circles, closer to bottom face)
+  let y_bot_circle3 = startY_sec3 + H_sec - covH - 0.028;
   doc.setFillColor(0, 150, 0);
-  x_bars3.forEach(xb => doc.circle(xb, y_bot3, 0.028, 'F'));
+  x_circles3.forEach(xc => doc.circle(xc, y_bot_circle3, 0.028, 'F'));
+
   doc.setTextColor(0, 150, 0);
   doc.text('BOT: #' + dSColPos.size.replace('#','') + ' @ ' + dSColPos.spacing.toFixed(1) + '"', startX_sec3 + 0.6, startY_sec3 + H_sec/2 + 0.12);
 
   // Dimensions
   let rightX3 = startX_sec3 + W_sec3 + 0.15;
   drawDimArrowV(rightX3, startY_sec3, startY_sec3 + H_sec, 'h=' + hFinal.toFixed(1) + '"');
-  drawDimArrowV(rightX3 + 0.35, startY_sec3, y_bot3, 'd2=' + dShort.toFixed(2) + '"');
+  drawDimArrowV(rightX3 + 0.35, startY_sec3, y_bot_line3, 'd2=' + dShort.toFixed(2) + '"');
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(6.5);
