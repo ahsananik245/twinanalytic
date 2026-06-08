@@ -273,9 +273,10 @@ function handleAuthSubmit(event) {
     return;
   }
 
-  const cleanPhone = phone.replace(/\D/g, '');
-  if (cleanPhone.length !== 10) {
-    alert("Please enter a valid 10-digit contact number (digits only, e.g. 555-123-4567).");
+  // Validate Phone (accepting international E.164 formats, checking for 7 to 15 digits)
+  const digitCount = phone.replace(/\D/g, '').length;
+  if (digitCount < 7 || digitCount > 15) {
+    alert("Please enter a valid contact number (7 to 15 digits, e.g., +1 (555) 123-4567).");
     return;
   }
 
@@ -291,7 +292,7 @@ function handleAuthSubmit(event) {
   const payload = {
     name: name,
     email: email,
-    phone: cleanPhone,
+    phone: phone, // preserve original formatting (including '+', spaces, and dashes)
     timestamp: timestamp,
     calcType: pendingType,
     geometry: calculatedMetrics.geometry,
