@@ -64,6 +64,7 @@ function initCalculators() {
   }
   if (btnCol) {
     btnCol.addEventListener('click', () => checkAuthAndRun(calculateColumn, 'Column Design'));
+    initColumnLiveUpdates();
     calculateColumn();
   }
   const btnPDF = document.getElementById('btn-download-pdf');
@@ -655,15 +656,43 @@ function drawBeamCanvas(w, h, cov, numBars) {
 }
 
 
+function initColumnLiveUpdates() {
+  const typeEl = document.getElementById('column-type');
+  if (typeEl) {
+    const handleTypeChange = () => {
+      const phiEl = document.getElementById('column-phi');
+      if (phiEl) {
+        phiEl.value = typeEl.value === 'TIED' ? '0.65' : '0.75';
+      }
+      // Toggle tie/spiral label
+      const grid = typeEl.closest('.input-grid');
+      if (grid) {
+        const tieSelect = grid.querySelector('#column-tie-bar');
+        if (tieSelect && tieSelect.previousElementSibling) {
+          tieSelect.previousElementSibling.textContent = typeEl.value === 'TIED' ? 'Tie Size' : 'Spiral Size';
+        }
+      }
+    };
+    typeEl.addEventListener('change', handleTypeChange);
+    handleTypeChange();
+  }
+}
+
+
 // ==========================================
 function calculateColumn() {
+  const type = document.getElementById('column-type').value; // 'TIED' or 'SPIRAL'
   const pdl = parseFloat(document.getElementById('column-pdl').value);
   const pll = parseFloat(document.getElementById('column-pll').value);
+  const mux = parseFloat(document.getElementById('column-mux').value) || 0;
+  const muy = parseFloat(document.getElementById('column-muy').value) || 0;
+  const vu = parseFloat(document.getElementById('column-vu').value) || 0;
   const fc = parseFloat(document.getElementById('column-fc').value);
   const fy = parseFloat(document.getElementById('column-fy').value);
-  const phi = parseFloat(document.getElementById('column-phi').value);
+  const fyt = parseFloat(document.getElementById('column-fyt').value) || 60;
   const p = parseFloat(document.getElementById('column-p').value);
   const colHeight = parseFloat(document.getElementById('column-height').value);
+  const cover = parseFloat(document.getElementById('column-cover').value) || 1.5;
 
   const outPu = document.getElementById('column-out-pu');
   const outAg = document.getElementById('column-out-ag');
@@ -681,7 +710,7 @@ function calculateColumn() {
   const errDiv = document.getElementById('column-validation-error');
 
   // Input Validation
-  if (isNaN(pdl) || pdl <= 0 || isNaN(pll) || pll <= 0 || isNaN(fc) || fc <= 0 || isNaN(fy) || fy <= 0 || isNaN(phi) || phi <= 0 || phi > 1.0 || isNaN(p) || p < 0.01 || p > 0.08 || isNaN(colHeight) || colHeight <= 0) {
+  if (isNaN(pdl) || pdl <= 0 || isNaN(pll) || pll <= 0 || isNaN(fc) || fc <= 0 || isNaN(fy) || fy <= 0 || isNaN(p) || p < 0.01 || p > 0.08 || isNaN(colHeight) || colHeight <= 0 || isNaN(cover) || cover <= 0) {
     if (errDiv) errDiv.classList.remove('hidden');
     badge.className = 'tool-status-badge fail';
     badge.textContent = 'FAIL';
@@ -708,71 +737,376 @@ function calculateColumn() {
 
   if (errDiv) errDiv.classList.add('hidden');
 
-  // Calculations
-  // 1. Pu = (1.2 * PDL) + (1.6 * PLL)
+  // 1. Factored Load
   const Pu = (1.2 * pdl) + (1.6 * pll);
 
-  // 2. Ag = Pu / (Phi * 0.80 * (0.85 * f'c * (1 - p) + fy * p))
-  const denominator = phi * 0.80 * (0.85 * fc * (1 - p) + fy * p);
-  const Ag = Pu / denominator;
+  // 2. Concrete Area Sizing
+  const phi_axial = type === 'TIED' ? 0.65 : 0.75;
+  const alpha = type === 'TIED' ? 0.80 : 0.85;
+  const denom = phi_axial * alpha * (0.85 * fc * (1 - p) + fy * p);
+  const Ag_req = Pu / denom;
 
-  // 3. Dim = Math.ceil(Math.sqrt(Ag))
-  const Dim = Math.ceil(Math.sqrt(Ag));
+  let Dim = 0;
+  let Ag = 0;
+  if (type === 'TIED') {
+    Dim = Math.max(10, Math.ceil(Math.sqrt(Ag_req)));
+    Ag = Dim * Dim;
+  } else {
+    Dim = Math.max(10, Math.ceil(Math.sqrt(4 * Ag_req / Math.PI)));
+    Ag = Math.PI * Dim * Dim / 4;
+  }
 
-  // 4. ColumnArea = Dim * Dim
-  const ColumnArea = Dim * Dim;
+  // 3. Required Steel Area (Ast)
+  const Ast_axial_req = (Pu / (phi_axial * alpha) - 0.85 * fc * Ag) / (fy - 0.85 * fc);
+  const Ast_req = Math.max(p * Ag, Ast_axial_req);
 
-  // 5. Ast = ((Pu / (Phi * 0.80)) - (0.85 * f'c * ColumnArea)) / (fy - (0.85 * f'c))
-  const Ast = ((Pu / (phi * 0.80)) - (0.85 * fc * ColumnArea)) / (fy - (0.85 * fc));
-
-  // Reinforcement Detaining Spacing Logic
+  // 4. Longitudinal & Transverse Reinforcement Properties
   const mainBarSize = document.getElementById('column-main-bar').value;
   const tieBarSize = document.getElementById('column-tie-bar').value;
 
-  let mainBarDia = 1.0; // #8
-  if (mainBarSize === '#7') mainBarDia = 0.875;
-  else if (mainBarSize === '#8') mainBarDia = 1.000;
-  else if (mainBarSize === '#9') mainBarDia = 1.128;
+  const barData = {
+    '#5': { dia: 0.625, area: 0.31 },
+    '#6': { dia: 0.750, area: 0.44 },
+    '#7': { dia: 0.875, area: 0.60 },
+    '#8': { dia: 1.000, area: 0.79 },
+    '#9': { dia: 1.128, area: 1.00 },
+    '#10': { dia: 1.270, area: 1.27 },
+    '#11': { dia: 1.410, area: 1.56 },
+    '#14': { dia: 1.693, area: 2.25 },
+    '#18': { dia: 2.257, area: 4.00 }
+  };
 
-  let tieBarDia = 0.375; // #3
-  if (tieBarSize === '#3') tieBarDia = 0.375;
-  else if (tieBarSize === '#4') tieBarDia = 0.500;
+  const tieData = {
+    '#3': { dia: 0.375, area: 0.11 },
+    '#4': { dia: 0.500, area: 0.20 },
+    '#5': { dia: 0.625, area: 0.31 }
+  };
 
-  const clearCover = 1.5;
+  const mainBarDia = barData[mainBarSize].dia;
+  const Ab = barData[mainBarSize].area;
+  const d_tie = tieData[tieBarSize].dia;
+  const A_tie = tieData[tieBarSize].area;
 
-  const maxTieSpacing = Math.min(16 * mainBarDia, 48 * tieBarDia, Dim);
-  const clearSpacing = (Dim - (2 * clearCover) - (2 * tieBarDia) - (3 * mainBarDia)) / 2;
-  const hookExtension = Math.max(3.0, 6 * tieBarDia);
+  // 5. Select number of bars
+  let N_bars = Math.ceil(Ast_req / Ab);
+  if (N_bars % 2 !== 0) N_bars += 1; // even number
+  const minBars = type === 'TIED' ? 4 : 6;
+  if (N_bars < minBars) N_bars = minBars;
 
-  // Strength Capacity Calculations
-  // Pn_max = 0.80 * [0.85 * f'c * (Ag - Ast) + fy * Ast]
-  const PnMax = 0.80 * (0.85 * fc * (ColumnArea - Ast) + fy * Ast);
-  const PhiPn = 0.65 * PnMax;
-  const dcRatio = Pu / PhiPn;
+  const Ast_actual = N_bars * Ab;
+  const p_actual = Ast_actual / Ag;
 
-  // Materials Takeoff Estimates
-  const concreteVol = ((ColumnArea / 144) * colHeight) * 0.02831685; // cubic feet to cubic meters
-  const steelWeight = ((Ast * 3.4) * colHeight) * 0.45359237; // lbs to kg
-
-  // Clear spacing checks: strictly greater than minAllowedSpacing
-  const minAllowedSpacing = Math.max(1.5, 1.5 * mainBarDia);
-  const isSpacingOk = clearSpacing > minAllowedSpacing;
-  
-  const warningRow = document.getElementById('column-row-warning');
-  const warningText = document.getElementById('column-out-warning-text');
-
-  if (dcRatio > 1.0) {
-    if (warningRow && warningText) {
-      warningRow.style.display = 'flex';
-      warningText.textContent = `FAIL: Column is overstressed! (D/C Ratio of ${dcRatio.toFixed(2)} > 1.00)`;
-    }
-  } else if (!isSpacingOk) {
-    if (warningRow && warningText) {
-      warningRow.style.display = 'flex';
-      warningText.textContent = "WARNING: Clear spacing too narrow for aggregate flow.";
+  // 6. Bar Coordinates
+  const d_prime = cover + d_tie + mainBarDia / 2;
+  const bars = [];
+  if (type === 'TIED') {
+    const bs = Dim - 2 * d_prime;
+    const hs = Dim - 2 * d_prime;
+    const L = 2 * (bs + hs);
+    for (let i = 0; i < N_bars; i++) {
+      const t = i * (L / N_bars);
+      let x, y;
+      if (t < bs) {
+        x = -bs/2 + t;
+        y = -hs/2;
+      } else if (t < bs + hs) {
+        x = bs/2;
+        y = -hs/2 + (t - bs);
+      } else if (t < 2*bs + hs) {
+        x = bs/2 - (t - bs - hs);
+        y = hs/2;
+      } else {
+        x = -bs/2;
+        y = hs/2 - (t - 2*bs - hs);
+      }
+      bars.push({ x, y });
     }
   } else {
-    if (warningRow) {
+    const Ds = Dim - 2 * d_prime;
+    for (let i = 0; i < N_bars; i++) {
+      const theta = i * (2 * Math.PI / N_bars);
+      const x = (Ds / 2) * Math.cos(theta);
+      const y = (Ds / 2) * Math.sin(theta);
+      bars.push({ x, y });
+    }
+  }
+
+  // 7. Clear Spacing Check
+  let s_clear = 0;
+  if (type === 'TIED') {
+    const n_face_max = Math.ceil(N_bars / 4) + 1;
+    const n_spaces = n_face_max - 1;
+    const s_cc = (Dim - 2 * d_prime) / n_spaces;
+    s_clear = s_cc - mainBarDia;
+  } else {
+    const Ds = Dim - 2 * d_prime;
+    const s_cc = (Math.PI * Ds) / N_bars;
+    s_clear = s_cc - mainBarDia;
+  }
+  const minAllowedSpacing = Math.max(1.5, 1.5 * mainBarDia);
+  const isSpacingOk = s_clear >= minAllowedSpacing;
+
+  // 8. Bending Strength Compatibility Solver
+  function getPhi(epsilon_t) {
+    const epsilon_ty = fy / 29000;
+    const phi_comp = type === 'TIED' ? 0.65 : 0.75;
+    if (epsilon_t <= epsilon_ty) return phi_comp;
+    if (epsilon_t >= 0.005) return 0.90;
+    return phi_comp + (0.90 - phi_comp) * (epsilon_t - epsilon_ty) / (0.005 - epsilon_ty);
+  }
+
+  function calcPnMnForC(c, bendingDirection) {
+    const H_bend = Dim;
+    const B_bend = Dim;
+    let beta1 = 0.85;
+    if (fc > 4.0) beta1 = Math.max(0.65, 0.85 - 0.05 * (fc - 4.0));
+    let a = beta1 * c;
+    if (a > H_bend) a = H_bend;
+
+    let Cc = 0, Mc = 0;
+    if (type === 'TIED') {
+      Cc = 0.85 * fc * B_bend * a;
+      Mc = Cc * (H_bend / 2 - a / 2);
+    } else {
+      const R = H_bend / 2;
+      const u = (R - a) / R;
+      let A_seg = 0, y_bar = 0;
+      if (u <= -1) {
+        A_seg = Math.PI * R * R;
+        y_bar = 0;
+      } else if (u >= 1) {
+        A_seg = 0;
+        y_bar = 0;
+      } else {
+        const theta = Math.acos(u);
+        A_seg = R * R * (theta - u * Math.sin(theta));
+        y_bar = (2 / 3) * R * Math.pow(Math.sin(theta), 3) / (theta - u * Math.sin(theta));
+      }
+      Cc = 0.85 * fc * A_seg;
+      Mc = Cc * y_bar;
+    }
+
+    let Fs_total = 0, Ms_total = 0, epsilon_t = 0;
+    let max_d = 0;
+    bars.forEach(bar => {
+      const coord = bendingDirection === 'x' ? bar.y : bar.x;
+      const d_i = H_bend / 2 - coord;
+      if (d_i > max_d) max_d = d_i;
+    });
+
+    bars.forEach(bar => {
+      const coord = bendingDirection === 'x' ? bar.y : bar.x;
+      const d_i = H_bend / 2 - coord;
+      const epsilon_i = 0.003 * (c - d_i) / c;
+      let stress_i = 29000 * epsilon_i;
+      if (stress_i > fy) stress_i = fy;
+      if (stress_i < -fy) stress_i = -fy;
+
+      let force_i = Ab * stress_i;
+      if (d_i < a) force_i -= 0.85 * fc * Ab;
+
+      Fs_total += force_i;
+      Ms_total += force_i * coord;
+
+      if (d_i === max_d) {
+        epsilon_t = -epsilon_i;
+      }
+    });
+
+    return { Pn: Cc + Fs_total, Mn: Mc + Ms_total, epsilon_t };
+  }
+
+  function solveUniaxial(e_target, bendingDirection) {
+    if (e_target <= 0.0001) {
+      const Pno = 0.85 * fc * (Ag - Ast_actual) + fy * Ast_actual;
+      const Pn_max = alpha * Pno;
+      return { Pn: Pn_max, Mn: 0, phi: phi_axial, epsilon_t: 0 };
+    }
+
+    let c_low = 0.01;
+    let c_high = 5.0 * Dim;
+    let Pn = 0, Mn = 0, epsilon_t = 0;
+
+    for (let iter = 0; iter < 150; iter++) {
+      const c = (c_low + c_high) / 2;
+      const res = calcPnMnForC(c, bendingDirection);
+      Pn = res.Pn;
+      Mn = res.Mn;
+      epsilon_t = res.epsilon_t;
+
+      const e_calc = Pn > 0.01 ? (Mn / Pn) : 999999;
+      if (Math.abs(e_calc - e_target) < 0.001) break;
+      if (e_calc > e_target) c_low = c;
+      else c_high = c;
+    }
+
+    const Pno = 0.85 * fc * (Ag - Ast_actual) + fy * Ast_actual;
+    Pn = Math.min(Pn, alpha * Pno);
+
+    const phi = getPhi(epsilon_t);
+    return { Pn, Mn, phi, epsilon_t };
+  }
+
+  const e_x = muy * 12 / Pu; // eccentricity along x due to Muy
+  const e_y = mux * 12 / Pu; // eccentricity along y due to Mux
+
+  let Pn = 0, phi = phi_axial, PhiPn = 0, dcRatio = 0;
+
+  if (mux > 0 && muy > 0) {
+    const res_x = solveUniaxial(e_x, 'y');
+    const res_y = solveUniaxial(e_y, 'x');
+    const Pno = 0.85 * fc * (Ag - Ast_actual) + fy * Ast_actual;
+    const invPni = 1 / res_x.Pn + 1 / res_y.Pn - 1 / Pno;
+    const Pni = invPni > 0 ? 1 / invPni : 0.001;
+    phi = Math.min(res_x.phi, res_y.phi);
+    Pn = Pni;
+    PhiPn = phi * Pni;
+    dcRatio = Pu / PhiPn;
+  } else if (mux > 0) {
+    const res = solveUniaxial(e_y, 'x');
+    Pn = res.Pn;
+    phi = res.phi;
+    PhiPn = phi * Pn;
+    dcRatio = Pu / PhiPn;
+  } else if (muy > 0) {
+    const res = solveUniaxial(e_x, 'y');
+    Pn = res.Pn;
+    phi = res.phi;
+    PhiPn = phi * Pn;
+    dcRatio = Pu / PhiPn;
+  } else {
+    const res = solveUniaxial(0, 'x');
+    Pn = res.Pn;
+    phi = res.phi;
+    PhiPn = phi * Pn;
+    dcRatio = Pu / PhiPn;
+  }
+
+  // 9. Shear Design
+  const d = Math.max(0.8 * Dim, Dim - cover - d_tie - mainBarDia / 2);
+  const Vc = 2 * (1 + Pu / (2 * Ag)) * Math.sqrt(fc * 1000) * Dim * d / 1000;
+  const phi_v = 0.75;
+  const PhiVc = phi_v * Vc;
+  const Vs_max = 8 * Math.sqrt(fc * 1000) * Dim * d / 1000;
+
+  let shearCase = 'A';
+  let Vs_req = 0;
+  if (vu > phi_v * (Vc + Vs_max)) {
+    shearCase = 'D';
+    Vs_req = Vs_max;
+  } else if (vu > phi_v * Vc) {
+    shearCase = 'C';
+    Vs_req = (vu / phi_v) - Vc;
+  } else if (vu > 0.5 * phi_v * Vc) {
+    shearCase = 'B';
+  } else {
+    shearCase = 'A';
+  }
+
+  const Av = 2 * A_tie;
+  let s_shear = 999;
+  if (shearCase === 'C') {
+    s_shear = (Av * fyt * d) / Vs_req;
+  }
+  
+  // Spacing governed by minimum shear steel
+  const av_s_min = Math.max(0.75 * Math.sqrt(fc * 1000) * Dim / (fyt * 1000), 50 * Dim / (fyt * 1000));
+  const s_min_shear = Av / av_s_min;
+  if (shearCase === 'B' || shearCase === 'C') {
+    s_shear = Math.min(s_shear, s_min_shear);
+  }
+
+  // 10. Detailing Spacing & Pitch
+  let s_final = 0;
+  let governingSpacingText = "";
+  const hookExtension = Math.max(3.0, 6 * d_tie);
+
+  if (type === 'TIED') {
+    const s_detail = Math.min(16 * mainBarDia, 48 * d_tie, Dim);
+    if (s_detail === 16 * mainBarDia) governingSpacingText = "Spacing governed by 16x Main Bar Dia";
+    else if (s_detail === 48 * d_tie) governingSpacingText = "Spacing governed by 48x Tie Bar Dia";
+    else governingSpacingText = "Spacing governed by Least Column Dimension";
+
+    s_final = Math.min(s_shear, s_detail);
+    if (s_shear < s_detail && (shearCase === 'B' || shearCase === 'C')) {
+      governingSpacingText = "Spacing governed by Shear Demand";
+    }
+    if (shearCase === 'D') s_final = 0;
+  } else {
+    const Ach = Math.PI * Math.pow(Dim - 2 * cover, 2) / 4;
+    const rho_s_min = 0.45 * (Ag / Ach - 1) * fc / fyt;
+    const Dc = Dim - 2 * cover;
+    const s_spiral_req = (4 * A_tie) / (Dc * rho_s_min);
+    
+    // Limits: clear spacing 1.0 to 3.0 in, meaning pitch is clear + d_tie
+    const s_min_limit = 1.0 + d_tie;
+    const s_max_limit = 3.0 + d_tie;
+    const s_spiral = Math.max(s_min_limit, Math.min(s_max_limit, s_spiral_req));
+    governingSpacingText = "Spacing governed by Spiral Ratio (ACI 25.7.3.3)";
+
+    s_final = Math.min(s_shear, s_spiral);
+    if (s_shear < s_spiral && (shearCase === 'B' || shearCase === 'C')) {
+      governingSpacingText = "Spacing governed by Shear Demand";
+    }
+    if (s_final < s_min_limit) {
+      governingSpacingText += " (WARNING: Pitch too tight)";
+    }
+    if (shearCase === 'D') s_final = 0;
+  }
+
+  // Update readonly phi element in GUI
+  const phiEl = document.getElementById('column-phi');
+  if (phiEl) phiEl.value = phi.toFixed(2);
+
+  // 11. Materials Takeoff
+  const ld_comp = Math.max((20 * fy * mainBarDia) / Math.sqrt(fc * 1000), 0.3 * fy * mainBarDia, 8.0);
+  const l_splice = Math.max(12.0, 1.3 * ld_comp); // 1.3 * ld compression splice
+  const L_long = N_bars * (colHeight + l_splice / 12);
+  const W_long = L_long * Ab * 3.4;
+
+  let W_transverse = 0;
+  if (type === 'TIED') {
+    const n_ties = Math.floor(colHeight * 12 / s_final) + 1;
+    const L_tie = 4 * (Dim - 2 * cover) + 2 * hookExtension;
+    const L_ties_total = n_ties * L_tie / 12;
+    W_transverse = L_ties_total * A_tie * 3.4;
+  } else {
+    // spiral turns
+    const Dc = Dim - 2 * cover;
+    const Ds = Dc - d_tie;
+    const L_turn = Math.sqrt(Math.PI * Math.PI * Ds * Ds + s_final * s_final);
+    const n_turns = (colHeight * 12 / s_final) + 3.0; // 1.5 extra turns at each end for anchorage
+    const L_spiral_total = n_turns * L_turn / 12;
+    W_transverse = L_spiral_total * A_tie * 3.4;
+  }
+
+  const concreteVol = ((Ag / 144) * colHeight) * 0.02831685; // m³
+  const steelWeight = (W_long + W_transverse) * 0.45359237; // kg
+
+  // 12. Warnings and Compliance Alerts
+  const warningRow = document.getElementById('column-row-warning');
+  const warningText = document.getElementById('column-out-warning-text');
+  
+  let hasFailures = false;
+  let warningMessage = "";
+
+  if (dcRatio > 1.0) {
+    hasFailures = true;
+    warningMessage += `FAIL: Column is overstressed! (D/C Ratio of ${dcRatio.toFixed(2)} > 1.00). `;
+  }
+  if (!isSpacingOk) {
+    warningMessage += "WARNING: Clear spacing too narrow for aggregate flow. ";
+  }
+  if (shearCase === 'D') {
+    hasFailures = true;
+    warningMessage += "FAIL: Shear demand exceeds maximum limits. Increase column size! ";
+  }
+
+  if (warningRow && warningText) {
+    if (warningMessage) {
+      warningRow.style.display = 'flex';
+      warningText.textContent = warningMessage;
+    } else {
       warningRow.style.display = 'none';
     }
   }
@@ -781,17 +1115,17 @@ function calculateColumn() {
   outPu.textContent = `${Pu.toFixed(1)} k`;
   outAg.textContent = `${Ag.toFixed(2)} in²`;
   outDim.textContent = `${Dim} in`;
-  outFinalArea.textContent = `${ColumnArea} in²`;
-  outAst.textContent = `${Ast.toFixed(2)} in²`;
-  if (outTieSpacing) outTieSpacing.textContent = `${maxTieSpacing.toFixed(2)} in`;
+  outFinalArea.textContent = `${Ag.toFixed(1)} in²`;
+  outAst.textContent = `${Ast_actual.toFixed(2)} in²`;
+  if (outTieSpacing) outTieSpacing.textContent = `${s_final.toFixed(2)} in`;
   if (outHookExt) outHookExt.textContent = `${hookExtension.toFixed(2)} in`;
-  if (outPnMax) outPnMax.textContent = `${PnMax.toFixed(1)} k`;
+  if (outPnMax) outPnMax.textContent = `${(Pn / alpha).toFixed(1)} k`;
   if (outPhiPn) outPhiPn.textContent = `${PhiPn.toFixed(1)} k`;
   if (outDcRatio) outDcRatio.textContent = `${dcRatio.toFixed(2)}`;
   if (outConcreteVol) outConcreteVol.textContent = `${concreteVol.toFixed(2)} m³`;
   if (outSteelWeight) outSteelWeight.textContent = `${steelWeight.toFixed(1)} kg`;
 
-  if (dcRatio <= 1.0) {
+  if (!hasFailures) {
     badge.className = 'tool-status-badge pass';
     badge.textContent = 'PASS';
   } else {
@@ -799,7 +1133,7 @@ function calculateColumn() {
     badge.textContent = 'FAIL';
   }
 
-  // Draw the Column Cross Section Schematic on the Canvas
+  // Redraw canvas
   drawColumnCanvas(Dim, Dim, p);
 }
 
@@ -818,6 +1152,7 @@ function drawColumnCanvas(w, h, p) {
     return;
   }
 
+  const type = document.getElementById('column-type') ? document.getElementById('column-type').value : 'TIED';
   const padding = 25;
   const scale = Math.min((canvas.width - padding * 2) / w, (canvas.height - padding * 2) / h);
   
@@ -829,68 +1164,123 @@ function drawColumnCanvas(w, h, p) {
   ctx.fillStyle = '#0D1117';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Outer Column Concrete Boundary (Steel blue)
-  ctx.strokeStyle = '#2a6496';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(startX, startY, drawW, drawH);
+  const mainBarSize = document.getElementById('column-main-bar') ? document.getElementById('column-main-bar').value : '#8';
+  const mainBarDia = mainBarSize === '#7' ? 0.875 : mainBarSize === '#8' ? 1.0 : 1.128;
+  const tieBarSize = document.getElementById('column-tie-bar') ? document.getElementById('column-tie-bar').value : '#3';
+  const tieBarDia = tieBarSize === '#3' ? 0.375 : 0.5;
+  const cover = parseFloat(document.getElementById('column-cover').value) || 1.5;
 
-  // Stirrup Link (1.5 inches clear cover standard)
-  const cover = 1.5;
-  const covScale = cover * scale;
-  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(startX + covScale, startY + covScale, drawW - covScale * 2, drawH - covScale * 2);
+  const d_prime = cover + tieBarDia + mainBarDia / 2;
 
-  // Longitudinal Rebars (Gold circles)
-  ctx.fillStyle = '#C9A84C';
+  const fc = parseFloat(document.getElementById('column-fc').value) || 4;
+  const fy = parseFloat(document.getElementById('column-fy').value) || 60;
+  const pdl = parseFloat(document.getElementById('column-pdl').value) || 0;
+  const pll = parseFloat(document.getElementById('column-pll').value) || 0;
+  const Pu = 1.2 * pdl + 1.6 * pll;
   
-  // Decide number of bars based on steel ratio p
-  let numBars = 4;
-  if (p > 0.05) {
-    numBars = 12;
-  } else if (p > 0.02) {
-    numBars = 8;
+  const phi_axial = type === 'TIED' ? 0.65 : 0.75;
+  const alpha = type === 'TIED' ? 0.80 : 0.85;
+  
+  const denom = phi_axial * alpha * (0.85 * fc * (1 - p) + fy * p);
+  const Ag_req = Pu / (denom || 1);
+  
+  let Dim = w;
+  let Ag = type === 'TIED' ? Dim * Dim : Math.PI * Dim * Dim / 4;
+  const Ast_axial_req = (Pu / ((phi_axial * alpha) || 1) - 0.85 * fc * Ag) / (fy - 0.85 * fc);
+  const Ast_req = Math.max(p * Ag, Ast_axial_req);
+  
+  const barData = {
+    '#5': 0.31, '#6': 0.44, '#7': 0.60, '#8': 0.79, '#9': 1.00, '#10': 1.27, '#11': 1.56, '#14': 2.25, '#18': 4.00
+  };
+  const Ab = barData[mainBarSize] || 0.79;
+  let N_bars = Math.ceil(Ast_req / Ab);
+  if (N_bars % 2 !== 0) N_bars += 1;
+  const minBars = type === 'TIED' ? 4 : 6;
+  if (N_bars < minBars) N_bars = minBars;
+
+  if (type === 'TIED') {
+    ctx.strokeStyle = '#2a6496';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(startX, startY, drawW, drawH);
+
+    const covScale = cover * scale;
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(startX + covScale, startY + covScale, drawW - covScale * 2, drawH - covScale * 2);
+
+    ctx.beginPath();
+    ctx.moveTo(startX + covScale, startY + covScale);
+    ctx.lineTo(startX + covScale + 12 * scale * tieBarDia, startY + covScale + 12 * scale * tieBarDia);
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.stroke();
+
+    ctx.fillStyle = '#C9A84C';
+    const barR = Math.max(3, (mainBarDia / 2) * scale);
+    
+    const bs = w - 2 * d_prime;
+    const hs = h - 2 * d_prime;
+    const L = 2 * (bs + hs);
+    for (let i = 0; i < N_bars; i++) {
+      const t = i * (L / N_bars);
+      let x, y;
+      if (t < bs) {
+        x = -bs/2 + t;
+        y = -hs/2;
+      } else if (t < bs + hs) {
+        x = bs/2;
+        y = -hs/2 + (t - bs);
+      } else if (t < 2*bs + hs) {
+        x = bs/2 - (t - bs - hs);
+        y = hs/2;
+      } else {
+        x = -bs/2;
+        y = hs/2 - (t - 2*bs - hs);
+      }
+      
+      const drawX = startX + drawW/2 + x * scale;
+      const drawY = startY + drawH/2 + y * scale;
+      ctx.beginPath();
+      ctx.arc(drawX, drawY, barR, 0, Math.PI*2);
+      ctx.fill();
+    }
+  } else {
+    ctx.strokeStyle = '#2a6496';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(canvas.width/2, canvas.height/2, drawW/2, 0, Math.PI*2);
+    ctx.stroke();
+
+    const covScale = cover * scale;
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(canvas.width/2, canvas.height/2, drawW/2 - covScale, 0, Math.PI*2);
+    ctx.stroke();
+
+    ctx.fillStyle = '#C9A84C';
+    const barR = Math.max(3, (mainBarDia / 2) * scale);
+    
+    const Ds = w - 2 * d_prime;
+    for (let i = 0; i < N_bars; i++) {
+      const theta = i * (2 * Math.PI / N_bars);
+      const x = (Ds / 2) * Math.cos(theta);
+      const y = (Ds / 2) * Math.sin(theta);
+      
+      const drawX = canvas.width/2 + x * scale;
+      const drawY = canvas.height/2 + y * scale;
+      ctx.beginPath();
+      ctx.arc(drawX, drawY, barR, 0, Math.PI*2);
+      ctx.fill();
+    }
   }
 
-  const barR = Math.max(4, 5 * scale);
-  const linkL = startX + covScale + barR;
-  const linkR = startX + drawW - covScale - barR;
-  const linkT = startY + covScale + barR;
-  const linkB = startY + drawH - covScale - barR;
-
-  // Corner Bars
-  ctx.beginPath(); ctx.arc(linkL, linkT, barR, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(linkR, linkT, barR, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(linkL, linkB, barR, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(linkR, linkB, barR, 0, Math.PI*2); ctx.fill();
-
-  if (numBars >= 8) {
-    // Add middle bars on left & right
-    const midY = (linkT + linkB) / 2;
-    ctx.beginPath(); ctx.arc(linkL, midY, barR, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(linkR, midY, barR, 0, Math.PI*2); ctx.fill();
-
-    // Add middle bars on top & bottom
-    const midX = (linkL + linkR) / 2;
-    ctx.beginPath(); ctx.arc(midX, linkT, barR, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(midX, linkB, barR, 0, Math.PI*2); ctx.fill();
-  }
-
-  if (numBars >= 12) {
-    // Add two more intermediate bars on each face
-    const stepY = (linkB - linkT) / 3;
-    const stepX = (linkR - linkL) / 3;
-
-    ctx.beginPath(); ctx.arc(linkL, linkT + stepY, barR, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(linkL, linkT + 2 * stepY, barR, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(linkR, linkT + stepY, barR, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(linkR, linkT + 2 * stepY, barR, 0, Math.PI*2); ctx.fill();
-  }
-
-  // Label Texts
   ctx.fillStyle = '#9AA0A6';
   ctx.font = '10px JetBrains Mono';
-  ctx.fillText(`${w}" x ${h}"`, startX + drawW/2 - 25, startY - 8);
+  if (type === 'TIED') {
+    ctx.fillText(`${w}" x ${h}"`, startX + drawW/2 - 25, startY - 8);
+  } else {
+    ctx.fillText(`D = ${w}"`, canvas.width/2 - 20, startY - 8);
+  }
 }
 
 
@@ -3303,19 +3693,26 @@ function drawFootingCanvas() {
 // 8. PDF REPORT GENERATION
 // ==========================================
 function downloadColumnPDF() {
-  const pdl = parseFloat(document.getElementById('column-pdl').value);
-  const pll = parseFloat(document.getElementById('column-pll').value);
-  const fc = parseFloat(document.getElementById('column-fc').value);
-  const fy = parseFloat(document.getElementById('column-fy').value);
-  const phi = parseFloat(document.getElementById('column-phi').value);
-  const p = parseFloat(document.getElementById('column-p').value);
+  const type = document.getElementById('column-type').value; // 'TIED' or 'SPIRAL'
+  const pdl = parseFloat(document.getElementById('column-pdl').value) || 0;
+  const pll = parseFloat(document.getElementById('column-pll').value) || 0;
+  const fc = parseFloat(document.getElementById('column-fc').value) || 4.0;
+  const fy = parseFloat(document.getElementById('column-fy').value) || 60.0;
+  const phi = parseFloat(document.getElementById('column-phi').value) || 0.65;
+  const p = parseFloat(document.getElementById('column-p').value) || 0.02;
+  const mux = parseFloat(document.getElementById('column-mux').value) || 0;
+  const muy = parseFloat(document.getElementById('column-muy').value) || 0;
+  const vu = parseFloat(document.getElementById('column-vu').value) || 0;
+  const fyt = parseFloat(document.getElementById('column-fyt').value) || 60;
+  const colHeight = parseFloat(document.getElementById('column-height').value) || 10.0;
+  const cover = parseFloat(document.getElementById('column-cover').value) || 1.5;
+
   const projName = document.getElementById('column-proj-name').value || "TwinAnalytic Tower";
   const projNum = document.getElementById('column-proj-num').value || "2026-001";
   const designerInitials = document.getElementById('column-designer').value || "AH";
   const reviewerInitials = document.getElementById('column-reviewer').value || "MB";
-  const colHeight = parseFloat(document.getElementById('column-height').value) || 10.0;
 
-  if (isNaN(pdl) || pdl <= 0 || isNaN(pll) || pll <= 0 || isNaN(fc) || fc <= 0 || isNaN(fy) || fy <= 0 || isNaN(phi) || phi <= 0 || phi > 1.0 || isNaN(p) || p < 0.01 || p > 0.08 || isNaN(colHeight) || colHeight <= 0) {
+  if (isNaN(pdl) || pdl <= 0 || isNaN(pll) || pll <= 0 || isNaN(fc) || fc <= 0 || isNaN(fy) || fy <= 0 || isNaN(p) || p < 0.01 || p > 0.08 || isNaN(colHeight) || colHeight <= 0) {
     alert('Please enter valid input parameters before downloading the PDF report.');
     return;
   }
@@ -3326,7 +3723,157 @@ function downloadColumnPDF() {
     return;
   }
 
+  // Ensure calculations are run to synchronize variables
   calculateColumn();
+
+  // Retrieve calculated text values from UI (guaranteed to be synchronized by calculateColumn())
+  const puStr = document.getElementById('column-out-pu').textContent;
+  const agStr = document.getElementById('column-out-ag').textContent;
+  const dimStr = document.getElementById('column-out-dim').textContent;
+  const finalAreaStr = document.getElementById('column-out-final-area').textContent;
+  const astStr = document.getElementById('column-out-ast').textContent;
+  const tieSpacingStr = document.getElementById('column-out-tie-spacing').textContent;
+  const hookExtStr = document.getElementById('column-out-hook-extension').textContent;
+  const pnMaxStr = document.getElementById('column-out-pn-max').textContent;
+  const phiPnStr = document.getElementById('column-out-phi-pn').textContent;
+  const dcRatioStr = document.getElementById('column-out-dc-ratio').textContent;
+  const concreteVolStr = document.getElementById('column-out-concrete-vol').textContent;
+  const steelWeightStr = document.getElementById('column-out-steel-weight').textContent;
+
+  const mainBarSize = document.getElementById('column-main-bar').value;
+  const tieBarSize = document.getElementById('column-tie-bar').value;
+
+  const Pu = parseFloat(puStr);
+  const Dim = parseFloat(dimStr);
+  const Ag = parseFloat(agStr);
+  const Ast_actual = parseFloat(astStr);
+  const s_final = parseFloat(tieSpacingStr);
+  const hookExtension = parseFloat(hookExtStr);
+  const Pn = parseFloat(pnMaxStr);
+  const PhiPn = parseFloat(phiPnStr);
+  const dcRatio = parseFloat(dcRatioStr);
+
+  const barData = {
+    '#5': { dia: 0.625, area: 0.31 },
+    '#6': { dia: 0.750, area: 0.44 },
+    '#7': { dia: 0.875, area: 0.60 },
+    '#8': { dia: 1.000, area: 0.79 },
+    '#9': { dia: 1.128, area: 1.00 },
+    '#10': { dia: 1.270, area: 1.27 },
+    '#11': { dia: 1.410, area: 1.56 },
+    '#14': { dia: 1.693, area: 2.25 },
+    '#18': { dia: 2.257, area: 4.00 }
+  };
+
+  const tieData = {
+    '#3': { dia: 0.375, area: 0.11 },
+    '#4': { dia: 0.500, area: 0.20 },
+    '#5': { dia: 0.625, area: 0.31 }
+  };
+
+  const mainBarDia = barData[mainBarSize].dia;
+  const Ab = barData[mainBarSize].area;
+  const d_tie = tieData[tieBarSize].dia;
+  const A_tie = tieData[tieBarSize].area;
+
+  const phi_axial = type === 'TIED' ? 0.65 : 0.75;
+  const alpha = type === 'TIED' ? 0.80 : 0.85;
+  const denom = phi_axial * alpha * (0.85 * fc * (1 - p) + fy * p);
+  const Ag_req = Pu / denom;
+
+  // Recalculate detailing spacings and parameters for PDF checklist
+  let N_bars = Math.ceil(Ast_actual / Ab);
+  const p_actual = Ast_actual / Ag;
+
+  const d_prime = cover + d_tie + mainBarDia / 2;
+  let s_clear = 0;
+  if (type === 'TIED') {
+    const n_face_max = Math.ceil(N_bars / 4) + 1;
+    const n_spaces = n_face_max - 1;
+    s_clear = ((Dim - 2 * d_prime) / n_spaces) - mainBarDia;
+  } else {
+    const Ds = Dim - 2 * d_prime;
+    s_clear = ((Math.PI * Ds) / N_bars) - mainBarDia;
+  }
+  const minAllowedSpacing = Math.max(1.5, 1.5 * mainBarDia);
+  const isSpacingOk = s_clear >= minAllowedSpacing;
+
+  let s_detail = 0;
+  let s_spiral_req = 0;
+  let rho_s = 0;
+  let rho_s_min = 0;
+  if (type === 'TIED') {
+    s_detail = Math.min(16 * mainBarDia, 48 * d_tie, Dim);
+  } else {
+    const Ach = Math.PI * Math.pow(Dim - 2 * cover, 2) / 4;
+    rho_s_min = 0.45 * (Ag / Ach - 1) * fc / fyt;
+    const Dc = Dim - 2 * cover;
+    s_spiral_req = (4 * A_tie) / (Dc * rho_s_min);
+    rho_s = (4 * A_tie) / (Dc * s_final);
+  }
+
+  // Shear parameters
+  const d_eff = Math.max(0.8 * Dim, Dim - cover - d_tie - mainBarDia / 2);
+  const Vc = 2 * (1 + Pu / (2 * Ag)) * Math.sqrt(fc * 1000) * Dim * d_eff / 1000;
+  const phi_v = 0.75;
+  const Vs_max = 8 * Math.sqrt(fc * 1000) * Dim * d_eff / 1000;
+  let shearCase = 'A';
+  let Vs_req = 0;
+  if (vu > phi_v * (Vc + Vs_max)) {
+    shearCase = 'D';
+    Vs_req = Vs_max;
+  } else if (vu > phi_v * Vc) {
+    shearCase = 'C';
+    Vs_req = (vu / phi_v) - Vc;
+  } else if (vu > 0.5 * phi_v * Vc) {
+    shearCase = 'B';
+  } else {
+    shearCase = 'A';
+  }
+
+  // Generate bar coordinates for the blueprint drawing
+  const bars = [];
+  if (type === 'TIED') {
+    const bs = Dim - 2 * d_prime;
+    const hs = Dim - 2 * d_prime;
+    const L = 2 * (bs + hs);
+    for (let i = 0; i < N_bars; i++) {
+      const t = i * (L / N_bars);
+      let x, y;
+      if (t < bs) {
+        x = -bs/2 + t;
+        y = -hs/2;
+      } else if (t < bs + hs) {
+        x = bs/2;
+        y = -hs/2 + (t - bs);
+      } else if (t < 2*bs + hs) {
+        x = bs/2 - (t - bs - hs);
+        y = hs/2;
+      } else {
+        x = -bs/2;
+        y = hs/2 - (t - 2*bs - hs);
+      }
+      bars.push({ x, y });
+    }
+  } else {
+    const Ds = Dim - 2 * d_prime;
+    for (let i = 0; i < N_bars; i++) {
+      const theta = i * (2 * Math.PI / N_bars);
+      const x = (Ds / 2) * Math.cos(theta);
+      const y = (Ds / 2) * Math.sin(theta);
+      bars.push({ x, y });
+    }
+  }
+
+  let governingSpacingText = "";
+  if (type === 'TIED') {
+    const s_detail_val = Math.min(16 * mainBarDia, 48 * d_tie, Dim);
+    if (s_detail_val === 16 * mainBarDia) governingSpacingText = "Governed by 16x Main Bar Dia";
+    else if (s_detail_val === 48 * d_tie) governingSpacingText = "Governed by 48x Tie Bar Dia";
+    else governingSpacingText = "Governed by Column Dimension";
+  } else {
+    governingSpacingText = "Governed by Spiral Ratio";
+  }
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({
@@ -3335,50 +3882,395 @@ function downloadColumnPDF() {
     format: 'letter'
   });
 
-  const mainBarSize = document.getElementById('column-main-bar').value;
-  const tieBarSize = document.getElementById('column-tie-bar').value;
+  // PAGE 1: HEADER & DESIGN INFORMATION & COMPLIANCE CHECKLIST
+  drawPDFHeader(doc, projName, projNum, designerInitials, reviewerInitials, Dim, type);
 
-  const pu = document.getElementById('column-out-pu').textContent;
-  const ag = document.getElementById('column-out-ag').textContent;
-  const dim = document.getElementById('column-out-dim').textContent;
-  const finalArea = document.getElementById('column-out-final-area').textContent;
-  const ast = document.getElementById('column-out-ast').textContent;
-  const tieSpacing = document.getElementById('column-out-tie-spacing').textContent;
+  let lx = 0.5;
+  let ly = 1.8;
 
-  const dimVal = parseFloat(dim);
-  const pVal = parseFloat(p);
+  // 1. Input Parameters
+  doc.setFont('times', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(201, 168, 76);
+  doc.text('1. INPUT PARAMETERS (ACI 318-19 Chapters 19 & 20)', lx, ly);
+  doc.setDrawColor(201, 168, 76);
+  doc.setLineWidth(0.01);
+  doc.line(lx, ly + 0.05, 4.1, ly + 0.05);
 
-  const mainBarDia = mainBarSize === '#7' ? 0.875 : mainBarSize === '#8' ? 1.0 : 1.128;
-  const tieBarDia = tieBarSize === '#3' ? 0.375 : 0.5;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(60, 60, 60);
 
-  const clearSpacingVal = (dimVal - (2 * 1.5) - (2 * tieBarDia) - (3 * mainBarDia)) / 2;
+  const inputs = [
+    ['Column Type', type === 'TIED' ? 'TIED (Rectangular/Square)' : 'SPIRAL (Circular)'],
+    ['Factored Axial Loads', `Dead Load = ${pdl} k, Live Load = ${pll} k`],
+    ['Factored Moments', `Mux = ${mux} k-ft, Muy = ${muy} k-ft`],
+    ['Factored Shear Force (Vu)', `${vu} kips`],
+    ['Concrete Strength (f\'c)', `${fc} ksi`],
+    ['Steel Strengths', `Longitudinal fy = ${fy} ksi, Transverse fyt = ${fyt} ksi`],
+    ['Clear Cover to Ties/Spiral', `${cover} in`],
+    ['Target Longitudinal Steel Ratio', `${p}`]
+  ];
 
-  const minAllowedSpacing = Math.max(1.5, 1.5 * mainBarDia);
-  const hookExtension = Math.max(3.0, 6 * tieBarDia);
+  ly += 0.22;
+  inputs.forEach(([label, val]) => {
+    doc.setFont('helvetica', 'bold');
+    doc.text(label, lx, ly);
+    doc.setFont('helvetica', 'normal');
+    doc.text(val, lx + 2.3, ly);
+    ly += 0.20;
+  });
 
-  const isCompliancePassed = clearSpacingVal > minAllowedSpacing;
-  const complianceNotice = isCompliancePassed 
-    ? `PASS: Clear spacing of ${clearSpacingVal.toFixed(2)}" meets ACI 318 min requirement of ${minAllowedSpacing.toFixed(2)}"`
-    : `WARNING: Clear spacing too narrow for aggregate flow.`;
+  ly += 0.15;
 
-  const puVal = parseFloat(pu);
-  const astVal = parseFloat(ast);
-  const PnMax = 0.80 * (0.85 * fc * (dimVal * dimVal - astVal) + fy * astVal);
-  const PhiPn = 0.65 * PnMax;
-  const dcRatio = puVal / PhiPn;
-  const concreteVol = (((dimVal * dimVal) / 144) * colHeight) * 0.02831685; // cubic feet to cubic meters
-  const steelWeight = ((astVal * 3.4) * colHeight) * 0.45359237; // lbs to kg
+  // 2. Design Output & Sizing
+  doc.setFont('times', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(201, 168, 76);
+  doc.text('2. DESIGN OUTPUT & SIZING (ACI 318-19 Chapter 10)', lx, ly);
+  doc.line(lx, ly + 0.05, 4.1, ly + 0.05);
 
-  const maxTieSpacingCalculated = Math.min(16 * mainBarDia, 48 * tieBarDia, dimVal);
-  let governingSpacingText = "";
-  if (maxTieSpacingCalculated === 16 * mainBarDia) {
-    governingSpacingText = "Spacing governed by 16x Main Bar Dia";
-  } else if (maxTieSpacingCalculated === 48 * tieBarDia) {
-    governingSpacingText = "Spacing governed by 48x Tie Bar Dia";
-  } else {
-    governingSpacingText = "Spacing governed by Least Column Dimension";
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(60, 60, 60);
+
+  const outputs = [
+    ['Factored Axial Load (Pu)', `${Pu.toFixed(1)} kips`],
+    ['Minimum Gross Area Required', `${Ag_req.toFixed(2)} in²`],
+    ['Selected Member Sizing', type === 'TIED' ? `${Dim}" x ${Dim}" Square` : `D = ${Dim}" Circular`],
+    ['Actual Concrete Area (Ag)', `${Ag.toFixed(1)} in²`],
+    ['Longitudinal Reinforcement', `${N_bars} - ${mainBarSize} bars`],
+    ['Actual Steel Area (Ast)', `${Ast_actual.toFixed(2)} in² (Ratio = ${(p_actual * 100).toFixed(2)}%)`],
+    ['Transverse Spacing / Pitch', `${s_final.toFixed(2)} in (${governingSpacingText})`],
+    ['Material Takeoffs', `Concrete = ${parseFloat(concreteVolStr).toFixed(2)} m³, Steel = ${parseFloat(steelWeightStr).toFixed(1)} kg`]
+  ];
+
+  ly += 0.22;
+  outputs.forEach(([label, val]) => {
+    doc.setFont('helvetica', 'bold');
+    doc.text(label, lx, ly);
+    doc.setFont('helvetica', 'normal');
+    doc.text(val, lx + 2.3, ly);
+    ly += 0.20;
+  });
+
+  // 3. ACI Code Compliance Checklist (11 checks)
+  let rx = 4.4;
+  let ry = 1.8;
+
+  doc.setFont('times', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(201, 168, 76);
+  doc.text('3. ACI CODE COMPLIANCE AUDIT', rx, ry);
+  doc.line(rx, ry + 0.05, 8.0, ry + 0.05);
+
+  const checklist = [
+    { desc: "Min Steel Ratio", ref: "ACI 10.6.1.1", limit: ">= 1.0%", calc: `${(p_actual*100).toFixed(2)}%`, ok: p_actual >= 0.01 },
+    { desc: "Max Steel Ratio", ref: "ACI 10.6.1.1", limit: "<= 8.0%", calc: `${(p_actual*100).toFixed(2)}%`, ok: p_actual <= 0.08 },
+    { desc: "Min Bar Count", ref: "ACI 10.7.3.1", limit: type === 'TIED' ? ">= 4" : ">= 6", calc: `${N_bars}`, ok: N_bars >= (type === 'TIED' ? 4 : 6) },
+    { desc: "Concrete Cover", ref: "ACI 20.6.1.3", limit: ">= 1.5 in", calc: `${cover.toFixed(2)} in`, ok: cover >= 1.5 },
+    { desc: "Min Bar Spacing", ref: "ACI 25.2.1", limit: `>= ${minAllowedSpacing.toFixed(2)} in`, calc: `${s_clear.toFixed(2)} in`, ok: isSpacingOk },
+    { desc: "Max Tie Spacing", ref: "ACI 25.7.2.1", limit: type === 'TIED' ? `<= ${s_detail.toFixed(2)} in` : "N/A", calc: type === 'TIED' ? `${s_final.toFixed(2)} in` : "N/A", ok: type === 'TIED' ? (s_final <= s_detail) : true },
+    { desc: "Min Spiral Pitch", ref: "ACI 25.7.3.1", limit: type === 'SPIRAL' ? ">= 1.0 in clr" : "N/A", calc: type === 'SPIRAL' ? `${(s_final - d_tie).toFixed(2)} in clr` : "N/A", ok: type === 'SPIRAL' ? ((s_final - d_tie) >= 1.0) : true },
+    { desc: "Max Spiral Pitch", ref: "ACI 25.7.3.1", limit: type === 'SPIRAL' ? "<= 3.0 in clr" : "N/A", calc: type === 'SPIRAL' ? `${(s_final - d_tie).toFixed(2)} in clr` : "N/A", ok: type === 'SPIRAL' ? ((s_final - d_tie) <= 3.0) : true },
+    { desc: "Spiral Ratio", ref: "ACI 25.7.3.3", limit: type === 'SPIRAL' ? `>= ${rho_s_min.toFixed(4)}` : "N/A", calc: type === 'SPIRAL' ? `${rho_s.toFixed(4)}` : "N/A", ok: type === 'SPIRAL' ? (rho_s >= rho_s_min) : true },
+    { desc: "Axial+Bending D/C", ref: "ACI Ch.10 & 22", limit: "<= 1.00", calc: `${dcRatio.toFixed(2)}`, ok: dcRatio <= 1.00 },
+    { desc: "Shear Capacity", ref: "ACI 22.5", limit: `Vs <= Vs_max`, calc: shearCase === 'D' ? "Vs Exceeded" : `${Vs_req.toFixed(1)} k`, ok: shearCase !== 'D' }
+  ];
+
+  ry += 0.22;
+  // Draw Checklist Table Header
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(30, 30, 30);
+  doc.text('Check/ACI Ref', rx, ry);
+  doc.text('Limit', rx + 1.8, ry);
+  doc.text('Actual', rx + 2.7, ry);
+  doc.text('Status', rx + 3.3, ry);
+  doc.line(rx, ry + 0.04, rx + 3.6, ry + 0.04);
+  
+  ry += 0.16;
+  doc.setFont('helvetica', 'normal');
+  checklist.forEach((item) => {
+    doc.setTextColor(60, 60, 60);
+    doc.setFont('helvetica', 'bold');
+    doc.text(item.desc, rx, ry);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(110, 110, 110);
+    doc.text(` (${item.ref})`, rx + doc.getTextWidth(item.desc), ry);
+    doc.setFontSize(8);
+    
+    doc.setTextColor(60, 60, 60);
+    doc.text(item.limit, rx + 1.8, ry);
+    doc.text(item.calc, rx + 2.7, ry);
+    
+    if (item.ok) {
+      doc.setTextColor(30, 150, 30);
+      doc.text('PASS', rx + 3.3, ry);
+    } else {
+      doc.setTextColor(220, 50, 50);
+      doc.text('FAIL', rx + 3.3, ry);
+    }
+    
+    ry += 0.21;
+  });
+
+  // Footer on page 1
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(8);
+  doc.setTextColor(150, 150, 150);
+  doc.text('TwinAnalytic Engineering Group — Calculations Sheet S-101', 0.5, 10.5);
+  doc.text('Page 1 of 2', 7.2, 10.5);
+
+
+  // PAGE 2: VISUAL BLUEPRINT & TAKEOFF SCHEDULE & SPECIFICATIONS
+  doc.addPage();
+  drawPDFHeader(doc, projName, projNum, designerInitials, reviewerInitials, Dim, type);
+
+  lx = 0.5;
+  ly = 1.8;
+
+  // 4. Visual Engineering Blueprint
+  doc.setFont('times', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(201, 168, 76);
+  doc.text('4. VISUAL ENGINEERING BLUEPRINT', lx, ly);
+  doc.line(lx, ly + 0.05, 4.1, ly + 0.05);
+
+  ly += 0.25;
+  const blueprintW = 3.6;
+  const blueprintH = 3.6;
+  const drawX = lx;
+  const drawY = ly;
+
+  // Grid background
+  doc.setDrawColor(235, 235, 235);
+  doc.setLineWidth(0.005);
+  for (let gx = drawX + 0.4; gx < drawX + blueprintW; gx += 0.4) {
+    doc.line(gx, drawY, gx, drawY + blueprintH);
+  }
+  for (let gy = drawY + 0.4; gy < drawY + blueprintH; gy += 0.4) {
+    doc.line(drawX, gy, drawX + blueprintW, gy);
   }
 
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.01);
+  doc.rect(drawX, drawY, blueprintW, blueprintH);
+
+  // Scaling logic
+  const drawBoxSize = 2.6;
+  const offsetX = drawX + (blueprintW - drawBoxSize)/2;
+  const offsetY = drawY + (blueprintH - drawBoxSize)/2;
+
+  doc.setFillColor(245, 247, 250);
+  doc.setDrawColor(30, 30, 30);
+  doc.setLineWidth(0.03);
+
+  if (type === 'TIED') {
+    doc.rect(offsetX, offsetY, drawBoxSize, drawBoxSize, 'FD');
+
+    const drawScale = drawBoxSize / Dim;
+    const coverPaper = cover * drawScale;
+    const tieSizePaper = drawBoxSize - 2 * coverPaper;
+
+    doc.setDrawColor(220, 50, 50); // red ties
+    doc.setLineWidth(0.02);
+    doc.rect(offsetX + coverPaper, offsetY + coverPaper, tieSizePaper, tieSizePaper, 'S');
+
+    // hooks
+    const hookX = offsetX + coverPaper;
+    const hookY = offsetY + coverPaper;
+    doc.line(hookX, hookY, hookX + 0.15, hookY + 0.15);
+    doc.line(hookX, hookY, hookX + 0.05, hookY + 0.18);
+
+    // bars
+    const barRPaper = Math.max(0.04, (mainBarDia / 2) * drawScale);
+    doc.setFillColor(201, 168, 76);
+    doc.setDrawColor(30, 30, 30);
+    doc.setLineWidth(0.008);
+
+    bars.forEach(bar => {
+      const bx = offsetX + drawBoxSize/2 + bar.x * drawScale;
+      const by = offsetY + drawBoxSize/2 + bar.y * drawScale;
+      doc.circle(bx, by, barRPaper, 'FD');
+    });
+
+    // Dimension lines
+    doc.setDrawColor(80, 80, 80);
+    doc.setLineWidth(0.008);
+    // horizontal dim
+    doc.line(offsetX, offsetY - 0.15, offsetX + drawBoxSize, offsetY - 0.15);
+    doc.line(offsetX, offsetY - 0.20, offsetX, offsetY - 0.10);
+    doc.line(offsetX + drawBoxSize, offsetY - 0.20, offsetX + drawBoxSize, offsetY - 0.10);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(30, 30, 30);
+    doc.text(`${Dim.toFixed(0)}"`, offsetX + drawBoxSize/2 - 0.08, offsetY - 0.20);
+
+    // vertical dim
+    doc.line(offsetX - 0.15, offsetY, offsetX - 0.15, offsetY + drawBoxSize);
+    doc.line(offsetX - 0.20, offsetY, offsetX - 0.10, offsetY);
+    doc.line(offsetX - 0.20, offsetY + drawBoxSize, offsetX - 0.10, offsetY + drawBoxSize);
+    doc.text(`${Dim.toFixed(0)}"`, offsetX - 0.35, offsetY + drawBoxSize/2 + 0.05);
+
+  } else {
+    // spiral circle boundary
+    const radiusPaper = drawBoxSize / 2;
+    const cx = offsetX + radiusPaper;
+    const cy = offsetY + radiusPaper;
+    
+    doc.circle(cx, cy, radiusPaper, 'FD');
+
+    const drawScale = drawBoxSize / Dim;
+    const coverPaper = cover * drawScale;
+    const spiralRadiusPaper = radiusPaper - coverPaper;
+
+    doc.setDrawColor(220, 50, 50); // red spirals
+    doc.setLineWidth(0.02);
+    doc.circle(cx, cy, spiralRadiusPaper, 'S');
+
+    // bars
+    const barRPaper = Math.max(0.04, (mainBarDia / 2) * drawScale);
+    doc.setFillColor(201, 168, 76);
+    doc.setDrawColor(30, 30, 30);
+    doc.setLineWidth(0.008);
+
+    bars.forEach(bar => {
+      const bx = cx + bar.x * drawScale;
+      const by = cy + bar.y * drawScale;
+      doc.circle(bx, by, barRPaper, 'FD');
+    });
+
+    // Dimension lines
+    doc.setDrawColor(80, 80, 80);
+    doc.setLineWidth(0.008);
+    // Diameter dim
+    doc.line(cx - radiusPaper, cy, cx + radiusPaper, cy);
+    doc.line(cx - radiusPaper, cy - 0.08, cx - radiusPaper, cy + 0.08);
+    doc.line(cx + radiusPaper, cy - 0.08, cx + radiusPaper, cy + 0.08);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(30, 30, 30);
+    doc.text(`D = ${Dim.toFixed(0)}"`, cx - 0.2, cy - 0.1);
+  }
+
+  // 5. DETAILED REINFORCEMENT TAKEOFF SCHEDULE
+  ry = 1.8;
+
+  doc.setFont('times', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(201, 168, 76);
+  doc.text('5. MATERIAL TAKEOFF SCHEDULE', rx, ry);
+  doc.line(rx, ry + 0.05, 8.0, ry + 0.05);
+
+  ry += 0.25;
+  // Compute individual bar lengths and weights
+  const barWeightPerFt = Ab * 3.4;
+  const ld_comp = Math.max((20 * fy * mainBarDia) / Math.sqrt(fc * 1000), 0.3 * fy * mainBarDia, 8.0);
+  const l_splice = Math.max(12.0, 1.3 * ld_comp);
+  const singleBarLen = colHeight + l_splice / 12;
+  const totLongWeight = N_bars * singleBarLen * barWeightPerFt;
+
+  let totTransWeight = 0;
+  let transQtyText = "";
+  let transLenText = "";
+  if (type === 'TIED') {
+    const n_ties = Math.floor(colHeight * 12 / s_final) + 1;
+    const L_tie = 4 * (Dim - 2 * cover) + 2 * hookExtension;
+    transQtyText = `${n_ties} ties`;
+    transLenText = `${(L_tie/12).toFixed(2)} ft/tie`;
+    totTransWeight = (n_ties * L_tie / 12) * A_tie * 3.4;
+  } else {
+    const Dc = Dim - 2 * cover;
+    const Ds = Dc - d_tie;
+    const L_turn = Math.sqrt(Math.PI * Math.PI * Ds * Ds + s_final * s_final);
+    const n_turns = (colHeight * 12 / s_final) + 3.0;
+    transQtyText = `${n_turns.toFixed(1)} turns`;
+    transLenText = `${(L_turn/12).toFixed(2)} ft/turn`;
+    totTransWeight = (n_turns * L_turn / 12) * A_tie * 3.4;
+  }
+
+  const concreteVol = ((Ag / 144) * colHeight) * 0.02831685; // m³
+
+  const takeoff = [
+    ['Longitudinal Rebar', mainBarSize, `${N_bars} bars`, `${singleBarLen.toFixed(2)} ft/bar`, `${totLongWeight.toFixed(1)} lbs`],
+    ['Transverse Ties/Spirals', tieBarSize, transQtyText, transLenText, `${totTransWeight.toFixed(1)} lbs`],
+    ['Total Steel Weight', '-', '-', '-', `${(totLongWeight + totTransWeight).toFixed(1)} lbs (${((totLongWeight+totTransWeight)*0.45359237).toFixed(1)} kg)`],
+    ['Concrete Volume', '-', '-', `Height = ${colHeight.toFixed(1)} ft`, `${(concreteVol).toFixed(2)} m³ (${(concreteVol*35.3147).toFixed(1)} cu. ft.)`]
+  ];
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(30, 30, 30);
+  doc.text('Material Component', rx, ry);
+  doc.text('Size', rx + 1.3, ry);
+  doc.text('Qty', rx + 1.7, ry);
+  doc.text('Details', rx + 2.2, ry);
+  doc.text('Takeoff Weight/Vol', rx + 2.9, ry);
+  doc.line(rx, ry + 0.04, rx + 3.6, ry + 0.04);
+
+  ry += 0.20;
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(60, 60, 60);
+
+  takeoff.forEach(([comp, size, qty, details, weight], idx) => {
+    if (idx === 2 || idx === 3) {
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(30, 30, 30);
+      doc.line(rx, ry - 0.04, rx + 3.6, ry - 0.04);
+    }
+    doc.text(comp, rx, ry);
+    doc.text(size, rx + 1.3, ry);
+    doc.text(qty, rx + 1.7, ry);
+    doc.text(details, rx + 2.2, ry);
+    doc.text(weight, rx + 2.9, ry);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    ry += 0.22;
+  });
+
+  // 6. Detailing Specifications (ACI 318-19 Chapters 25)
+  ry = drawY + blueprintH + 0.25;
+  doc.setFont('times', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(201, 168, 76);
+  doc.text('6. DETAILING SPECIFICATIONS (ACI 318-19 Chapter 25)', lx, ry);
+  doc.line(lx, ry + 0.05, 8.0, ry + 0.05);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(80, 80, 80);
+
+  ry += 0.22;
+  const specNotes = [
+    `* Concrete clear cover requirement: ${cover.toFixed(2)}" to tie/spiral cage (ACI Table 20.6.1.3.1).`,
+    `* Minimum longitudinal bar clear spacing: ${s_clear.toFixed(2)}" vs limit of ${minAllowedSpacing.toFixed(2)}" (ACI 25.2.1).`,
+    `* Transverse reinforcement sizing: ${tieBarSize} size satisfies minimum longitudinal bar containment.`,
+    `* Standard hook extension: Tie hook bend angle = 135 deg with a standard hook extension = ${hookExtension.toFixed(2)}" (ACI 25.3.2).`,
+    `* Development & splice lengths: Longitudinal bars must be spliced with a compression lap splice of at least ${l_splice.toFixed(1)}" (equivalent to 1.3 * ld_compression per ACI 25.5.5.1).`,
+    `* Shear Case class: Case ${shearCase} reinforcement details provided. Transverse spacing capped at ${s_final.toFixed(2)}".`
+  ];
+
+  specNotes.forEach(note => {
+    const splitNote = doc.splitTextToSize(note, 7.0);
+    doc.text(splitNote, lx, ry);
+    ry += splitNote.length * 0.16;
+  });
+
+  // Footer on page 2
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(8);
+  doc.setTextColor(150, 150, 150);
+  doc.text('TwinAnalytic Engineering Group — Calculations Sheet S-101', 0.5, 10.5);
+  doc.text('Page 2 of 2', 7.2, 10.5);
+
+  doc.save(`twinanalytic_column_report_${new Date().toISOString().split('T')[0]}.pdf`);
+}
+
+// Helper to draw clean common header
+function drawPDFHeader(doc, projName, projNum, designerInitials, reviewerInitials, Dim, type) {
   doc.setDrawColor(30, 30, 30);
   doc.setLineWidth(0.015);
   doc.rect(0.25, 0.25, 8.0, 1.3, 'S');
@@ -3414,7 +4306,7 @@ function downloadColumnPDF() {
   doc.setFont('helvetica', 'bold');
   doc.text('MEMBER:', 2.5, 1.35);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Concrete Column (${dimVal}" x ${dimVal}")`, 3.4, 1.35);
+  doc.text(`${type === 'TIED' ? 'Tied Column' : 'Spiral Column'} (${Dim.toFixed(0)}" dia/side)`, 3.4, 1.35);
 
   doc.line(5.6, 0.68, 8.25, 0.68);
   doc.line(5.6, 1.11, 8.25, 1.11);
@@ -3437,306 +4329,4 @@ function downloadColumnPDF() {
   doc.setDrawColor(201, 168, 76);
   doc.setLineWidth(0.015);
   doc.rect(0.25, 0.25, 8.0, 10.5);
-
-  let lx = 0.5;
-  let ly = 1.8;
-
-  doc.setFont('times', 'bold');
-  doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
-  doc.text('1. INPUT PARAMETERS (ACI 318-19 Ch. 19 & 20)', lx, ly);
-  doc.setDrawColor(201, 168, 76);
-  doc.setLineWidth(0.01);
-  doc.line(lx, ly + 0.05, 4.1, ly + 0.05);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9.5);
-  doc.setTextColor(60, 60, 60);
-
-  const inputs = [
-    ['Dead Load (PDL)', `${pdl} k`],
-    ['Live Load (PLL)', `${pll} k`],
-    ['Concrete Strength (f\'c)', `${fc} ksi`],
-    ['Steel Strength (fy)', `${fy} ksi`],
-    ['Phi Factor (Ø)', `${phi}`],
-    ['Steel Ratio (ρ)', `${p}`],
-    ['Main Bar size', `${mainBarSize}`],
-    ['Tie Bar size', `${tieBarSize}`]
-  ];
-
-  ly += 0.25;
-  inputs.forEach(([label, val]) => {
-    doc.setFont('helvetica', 'bold');
-    doc.text(label, lx, ly);
-    doc.setFont('helvetica', 'normal');
-    doc.text(val, lx + 2.3, ly);
-    ly += 0.22;
-  });
-
-  ly += 0.2;
-  doc.setFont('times', 'bold');
-  doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
-  doc.text('2. DESIGN OUTPUT & SIZING (ACI 318-19 Ch. 10)', lx, ly);
-  doc.line(lx, ly + 0.05, 4.1, ly + 0.05);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9.5);
-  doc.setTextColor(60, 60, 60);
-
-  const outputs = [
-    ['Factored Load (Pu)', pu],
-    ['Gross Concrete Area (Ag)', ag],
-    ['Column Dimension (Dim)', dim],
-    ['Final Column Area', finalArea],
-    ['Required Steel Area (Ast)', ast],
-    ['Max Tie Spacing (s_max)', tieSpacing]
-  ];
-
-  ly += 0.25;
-  outputs.forEach(([label, val]) => {
-    doc.setFont('helvetica', 'bold');
-    doc.text(label, lx, ly);
-    doc.setFont('helvetica', 'normal');
-    doc.text(val, lx + 2.3, ly);
-    ly += 0.22;
-  });
-
-  ly += 0.2;
-  doc.setFont('times', 'bold');
-  doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
-  doc.text('3. ACI CODE COMPLIANCE (ACI 318-19 Ch. 22 & 25)', lx, ly);
-  doc.line(lx, ly + 0.05, 4.1, ly + 0.05);
-
-  ly += 0.25;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9.5);
-  doc.setTextColor(60, 60, 60);
-  doc.text('Strength Capacity Check:', lx, ly);
-  
-  if (dcRatio <= 1.0) {
-    doc.setTextColor(30, 150, 30);
-    doc.text(`PASS [D/C = ${dcRatio.toFixed(2)}]`, lx + 2.0, ly);
-  } else {
-    doc.setTextColor(220, 50, 50);
-    doc.text('FAIL - OVERSTRESSED', lx + 2.0, ly);
-  }
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
-  doc.setTextColor(80, 80, 80);
-  ly += 0.18;
-  doc.text(`* Nominal Max Strength Pn,max: ${PnMax.toFixed(1)} k (ACI 22.4.2)`, lx, ly);
-  ly += 0.16;
-  doc.text(`* Design Axial Strength Phi Pn: ${PhiPn.toFixed(1)} k (ACI 22.4.2)`, lx, ly);
-  ly += 0.16;
-  doc.text(`* Factored Axial Load Pu: ${puVal.toFixed(1)} k (ACI Ch. 10)`, lx, ly);
-
-  ly += 0.25;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9.5);
-  doc.setTextColor(60, 60, 60);
-  doc.text('Clear Spacing Check:', lx, ly);
-  doc.setFont('helvetica', 'normal');
-  
-  if (isCompliancePassed) {
-    doc.setTextColor(30, 150, 30);
-    doc.text('PASS', lx + 1.8, ly);
-  } else {
-    doc.setTextColor(220, 50, 50);
-    doc.text('FAIL', lx + 1.8, ly);
-  }
-
-  doc.setTextColor(80, 80, 80);
-  doc.setFontSize(8.5);
-  ly += 0.18;
-  const splitCompliance = doc.splitTextToSize(complianceNotice + " (ACI Table 25.2.1)", 3.6);
-  doc.text(splitCompliance, lx, ly);
-  ly += splitCompliance.length * 0.16;
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9.5);
-  doc.setTextColor(60, 60, 60);
-  ly += 0.1;
-  doc.text('Tie Spacing Limit:', lx, ly);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`${tieSpacing} (ACI Table 25.7.2.1)`, lx + 1.6, ly);
-  ly += 0.16;
-  doc.setFont('helvetica', 'italic');
-  doc.setFontSize(8);
-  doc.setTextColor(100, 100, 100);
-  doc.text(`(${governingSpacingText})`, lx, ly);
-
-  ly += 0.22;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9.5);
-  doc.setTextColor(60, 60, 60);
-  doc.text('Standard Hook Details:', lx, ly);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`${hookExtension.toFixed(2)}" extension (ACI 25.3)`, lx + 1.8, ly);
-
-  let rx = 4.4;
-  let ry = 1.8;
-
-  doc.setFont('times', 'bold');
-  doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
-  doc.text('4. VISUAL ENGINEERING BLUEPRINT', rx, ry);
-  doc.line(rx, ry + 0.05, 8.0, ry + 0.05);
-
-  ry += 0.3;
-  const blueprintW = 3.6;
-  const blueprintH = 3.6;
-  const drawX = rx;
-  const drawY = ry;
-
-  doc.setDrawColor(200, 200, 200);
-  doc.setLineWidth(0.01);
-  doc.rect(drawX, drawY, blueprintW, blueprintH);
-
-  doc.setDrawColor(210, 210, 210);
-  doc.setLineWidth(0.01);
-  for (let gx = drawX + 1.5; gx < drawX + blueprintW; gx += 1.5) {
-    doc.line(gx, drawY, gx, drawY + blueprintH);
-  }
-  for (let gy = drawY + 1.5; gy < drawY + blueprintH; gy += 1.5) {
-    doc.line(drawX, gy, drawX + blueprintW, gy);
-  }
-
-  const scaleBarX = drawX + 0.5;
-  const scaleBarY = drawY + blueprintH - 0.25;
-  doc.setDrawColor(120, 120, 120);
-  doc.setLineWidth(0.015);
-  doc.line(scaleBarX, scaleBarY, scaleBarX + 1.5, scaleBarY);
-  doc.line(scaleBarX, scaleBarY - 0.05, scaleBarX, scaleBarY + 0.05);
-  doc.line(scaleBarX + 1.5, scaleBarY - 0.05, scaleBarX + 1.5, scaleBarY + 0.05);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7.5);
-  doc.setTextColor(100, 100, 100);
-  doc.text('1.5" Scale Baseline', scaleBarX + 0.35, scaleBarY - 0.08);
-
-  const drawBoxSize = 2.6;
-  const offsetX = drawX + (blueprintW - drawBoxSize)/2;
-  const offsetY = drawY + (blueprintH - drawBoxSize)/2;
-  
-  doc.setFillColor(240, 240, 240);
-  doc.setDrawColor(30, 30, 30);
-  doc.setLineWidth(0.04);
-  doc.rect(offsetX, offsetY, drawBoxSize, drawBoxSize, 'FD');
-
-  const drawScale = drawBoxSize / dimVal;
-  const coverPaper = 1.5 * drawScale;
-  const tieSizePaper = drawBoxSize - 2 * coverPaper;
-
-  doc.setDrawColor(220, 50, 50);
-  doc.setLineWidth(0.025);
-  doc.rect(offsetX + coverPaper, offsetY + coverPaper, tieSizePaper, tieSizePaper, 'S');
-
-  const hookX = offsetX + coverPaper;
-  const hookY = offsetY + coverPaper;
-  doc.setLineWidth(0.02);
-  doc.setDrawColor(220, 50, 50);
-  doc.line(hookX, hookY, hookX + 0.18, hookY + 0.18);
-  doc.line(hookX, hookY, hookX + 0.08, hookY + 0.20);
-
-  const barRPaper = Math.max(0.05, (mainBarDia / 2) * drawScale);
-  const linkL = offsetX + coverPaper + barRPaper;
-  const linkR = offsetX + drawBoxSize - coverPaper - barRPaper;
-  const linkT = offsetY + coverPaper + barRPaper;
-  const linkB = offsetY + drawBoxSize - coverPaper - barRPaper;
-
-  doc.setFillColor(30, 30, 30);
-  doc.setDrawColor(10, 10, 10);
-  doc.setLineWidth(0.01);
-
-  doc.circle(linkL, linkT, barRPaper, 'FD');
-  doc.circle(linkR, linkT, barRPaper, 'FD');
-  doc.circle(linkL, linkB, barRPaper, 'FD');
-  doc.circle(linkR, linkB, barRPaper, 'FD');
-
-  const midY = (linkT + linkB) / 2;
-  const midX = (linkL + linkR) / 2;
-  doc.circle(linkL, midY, barRPaper, 'FD');
-  doc.circle(linkR, midY, barRPaper, 'FD');
-  doc.circle(midX, linkT, barRPaper, 'FD');
-  doc.circle(midX, linkB, barRPaper, 'FD');
-
-  doc.setDrawColor(50, 50, 50);
-  doc.setLineWidth(0.008);
-  
-  doc.line(offsetX, offsetY - 0.12, offsetX + drawBoxSize, offsetY - 0.12);
-  doc.line(offsetX, offsetY - 0.18, offsetX, offsetY - 0.06);
-  doc.line(offsetX + drawBoxSize, offsetY - 0.18, offsetX + drawBoxSize, offsetY - 0.06);
-  
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(30, 30, 30);
-  doc.text(`${dimVal}"`, offsetX + drawBoxSize/2 - 0.1, offsetY - 0.18);
-
-  doc.line(offsetX - 0.12, offsetY, offsetX - 0.12, offsetY + drawBoxSize);
-  doc.line(offsetX - 0.18, offsetY, offsetX - 0.06, offsetY);
-  doc.line(offsetX - 0.18, offsetY + drawBoxSize, offsetX - 0.06, offsetY + drawBoxSize);
-  doc.text(`${dimVal}"`, offsetX - 0.42, offsetY + drawBoxSize/2 + 0.05);
-
-  ry += blueprintH + 0.25;
-  doc.setFont('times', 'bold');
-  doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
-  doc.text('5. DETAILING SPECIFICATIONS (ACI 318-19 Ch. 25)', rx, ry);
-  doc.line(rx, ry + 0.05, 8.0, ry + 0.05);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
-  doc.setTextColor(80, 80, 80);
-
-  ry += 0.25;
-  const specNotes = [
-    `* Maximum Tie Spacing Limit: ${tieSpacing} (${governingSpacingText}).`,
-    `* Clear Spacing Check Status: ${isCompliancePassed ? "PASS" : "FAIL - WARNING: Clear spacing too narrow for aggregate flow."}`,
-    `* Standard Hook Details: Tie hook bend angle = 135 deg with a standard hook extension = ${hookExtension.toFixed(2)} in.`,
-    `* Concrete clear cover requirement: 1.5 in clears all tie cages.`
-  ];
-
-  specNotes.forEach(note => {
-    const splitNote = doc.splitTextToSize(note, 3.6);
-    doc.text(splitNote, rx, ry);
-    ry += splitNote.length * 0.16;
-  });
-
-  ry += 0.25;
-  doc.setFont('times', 'bold');
-  doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
-  doc.text('6. MATERIAL TAKEOFF ESTIMATE', rx, ry);
-  doc.line(rx, ry + 0.05, 8.0, ry + 0.05);
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9.5);
-  doc.setTextColor(60, 60, 60);
-
-  ry += 0.25;
-  doc.text('Concrete Volume:', rx, ry);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`${concreteVol.toFixed(2)} cu. m. (m³)`, rx + 1.8, ry);
-
-  ry += 0.22;
-  doc.setFont('helvetica', 'bold');
-  doc.text('Steel Weight:', rx, ry);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`${steelWeight.toFixed(1)} kg`, rx + 1.8, ry);
-
-  ry += 0.22;
-  doc.setFont('helvetica', 'italic');
-  doc.setFontSize(8);
-  doc.setTextColor(120, 120, 120);
-  doc.text(`* Takeoff estimate based on column height of ${colHeight} ft`, rx, ry);
-
-  doc.setFont('helvetica', 'italic');
-  doc.setFontSize(8.5);
-  doc.setTextColor(150, 150, 150);
-  doc.text('TwinAnalytic Engineering Group — Calculations Sheet S-101', 0.5, 10.5);
-  doc.text('Page 1 of 1', 7.2, 10.5);
-
-  doc.save(`twinanalytic_column_report_${new Date().toISOString().split('T')[0]}.pdf`);
 }

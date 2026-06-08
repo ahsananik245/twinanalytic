@@ -258,31 +258,54 @@
                 <input type="text" id="column-reviewer" value="MB">
               </div>
               <div class="input-field">
+                <label>Column Type</label>
+                <select id="column-type">
+                  <option value="TIED" selected>TIED (Rectangular/Square)</option>
+                  <option value="SPIRAL">SPIRAL (Circular)</option>
+                </select>
+              </div>
+              <div class="input-field">
                 <label>Column Height (ft)</label>
                 <input type="number" id="column-height" value="10" min="1" max="100" step="any">
               </div>
               <div class="input-field">
                 <label>Dead Load, PDL (k)</label>
-                <input type="number" id="column-pdl" value="300" min="0.1" step="any">
+                <input type="number" id="column-pdl" value="300" min="0" step="any">
               </div>
               <div class="input-field">
                 <label>Live Load, PLL (k)</label>
-                <input type="number" id="column-pll" value="200" min="0.1" step="any">
+                <input type="number" id="column-pll" value="200" min="0" step="any">
+              </div>
+              <div class="input-field">
+                <label>Factored Moment, Mux (k-ft)</label>
+                <input type="number" id="column-mux" value="0" min="0" step="any">
+              </div>
+              <div class="input-field">
+                <label>Factored Moment, Muy (k-ft)</label>
+                <input type="number" id="column-muy" value="0" min="0" step="any">
+              </div>
+              <div class="input-field">
+                <label>Factored Shear, Vu (k)</label>
+                <input type="number" id="column-vu" value="0" min="0" step="any">
               </div>
               <div class="input-field">
                 <label>Concrete Strength, f'c (ksi)</label>
-                <input type="number" id="column-fc" value="3" min="0.1" step="any">
+                <input type="number" id="column-fc" value="4" min="0.1" step="any">
               </div>
               <div class="input-field">
                 <label>Steel Strength, fy (ksi)</label>
                 <input type="number" id="column-fy" value="60" min="0.1" step="any">
               </div>
               <div class="input-field">
-                <label>Phi Factor, Ø</label>
-                <input type="number" id="column-phi" value="0.65" min="0.01" max="1.0" step="0.01">
+                <label>Transverse Steel, fyt (ksi)</label>
+                <input type="number" id="column-fyt" value="60" min="0.1" step="any">
               </div>
               <div class="input-field">
-                <label>Steel Ratio, ρ</label>
+                <label>Phi Factor, Ø</label>
+                <input type="number" id="column-phi" value="0.65" min="0.01" max="1.0" step="0.01" readonly style="opacity: 0.7; cursor: not-allowed; background-color: rgba(255,255,255,0.05);">
+              </div>
+              <div class="input-field">
+                <label>Target Steel Ratio, ρg</label>
                 <select id="column-p">
                   <option value="0.01">0.01</option>
                   <option value="0.02" selected>0.02</option>
@@ -295,18 +318,29 @@
                 </select>
               </div>
               <div class="input-field">
+                <label>Clear Cover (in)</label>
+                <input type="number" id="column-cover" value="1.5" min="0.5" step="any">
+              </div>
+              <div class="input-field">
                 <label>Main Bar Size</label>
                 <select id="column-main-bar">
-                  <option value="#7">#7 (7/8")</option>
-                  <option value="#8" selected>#8 (1")</option>
-                  <option value="#9">#9 (1-1/8")</option>
+                  <option value="#5">#5 (0.31 in²)</option>
+                  <option value="#6">#6 (0.44 in²)</option>
+                  <option value="#7">#7 (0.60 in²)</option>
+                  <option value="#8" selected>#8 (0.79 in²)</option>
+                  <option value="#9">#9 (1.00 in²)</option>
+                  <option value="#10">#10 (1.27 in²)</option>
+                  <option value="#11">#11 (1.56 in²)</option>
+                  <option value="#14">#14 (2.25 in²)</option>
+                  <option value="#18">#18 (4.00 in²)</option>
                 </select>
               </div>
               <div class="input-field">
-                <label>Tie Bar Size</label>
+                <label>Tie/Spiral Size</label>
                 <select id="column-tie-bar">
                   <option value="#3" selected>#3 (3/8")</option>
                   <option value="#4">#4 (1/2")</option>
+                  <option value="#5">#5 (5/8")</option>
                 </select>
               </div>
             </div>
