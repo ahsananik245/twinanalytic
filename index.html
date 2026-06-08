@@ -510,7 +510,7 @@
                 <input type="text" id="slab-proj-name" value="TwinAnalytic Tower">
               </div>
               <div class="input-field">
-                <label>Slab ID</label>
+                <label>Slab Mark ID</label>
                 <input type="text" id="slab-id" value="S101">
               </div>
               <div class="input-field">
@@ -534,24 +534,31 @@
                 <input type="number" id="slab-c2" value="18" min="6" max="60">
               </div>
               <div class="input-field">
+                <label>Slab System Selection</label>
+                <select id="slab-system">
+                  <option value="flat-plate" selected>Flat Plate Flat Slab (No Interior Beams)</option>
+                  <option value="two-way">Two-Way Slab with Continuous Beams on All Sides</option>
+                </select>
+              </div>
+              <div class="input-field">
                 <label>Slab Thickness, h (in)</label>
                 <input type="number" id="slab-h" value="7.0" min="4.0" max="20.0" step="0.25">
               </div>
               <div class="input-field">
-                <label>Superimposed Dead Load (psf)</label>
-                <input type="number" id="slab-sdl" value="30" min="0" max="200" step="5">
+                <label>Service Dead Load (psf)</label>
+                <input type="number" id="slab-sdl" value="40" min="0" max="300" step="5">
               </div>
               <div class="input-field">
-                <label>Live Load (psf)</label>
+                <label>Service Live Load (psf)</label>
                 <input type="number" id="slab-ll" value="50" min="0" max="300" step="5">
               </div>
               <div class="input-field">
-                <label>Concrete Strength, f'c (ksi)</label>
-                <input type="number" id="slab-fc" value="4.0" min="2.0" max="10.0" step="0.5">
+                <label>Concrete Strength, f'c (psi)</label>
+                <input type="number" id="slab-fc" value="3000" min="2000" max="10000" step="500">
               </div>
               <div class="input-field">
-                <label>Steel Strength, fy (ksi)</label>
-                <input type="number" id="slab-fy" value="60" min="40" max="100" step="5">
+                <label>Steel Strength, fy (psi)</label>
+                <input type="number" id="slab-fy" value="60000" min="40000" max="100000" step="10000">
               </div>
             </div>
             <button class="btn btn-gold btn-calc" id="btn-calc-slab" style="margin-top: 1.5rem;">Calculate Member</button>
@@ -560,8 +567,11 @@
           <div class="tool-outputs-card glass-card">
             <h3>Analysis Output <span class="tool-status-badge pass" id="slab-status-badge">PASS</span></h3>
             <div class="results-console text-mono">
-              <div class="console-line"><span class="console-label">Design Factored Load (wu)</span><span class="console-val" id="slab-out-wu">0.00 ksf</span></div>
-              <div class="console-line"><span class="console-label">Clear Span (ln)</span><span class="console-val" id="slab-out-ln">0.00 ft</span></div>
+              <div class="console-line"><span class="console-label">Design Ultimate Load (qu)</span><span class="console-val" id="slab-out-wu">0.00 ksf</span></div>
+              <div class="console-line"><span class="console-label">Long Clear Span (ln,long)</span><span class="console-val" id="slab-out-ln-long">0.00 ft</span></div>
+              <div class="console-line"><span class="console-label">Short Clear Span (ln,short)</span><span class="console-val" id="slab-out-ln-short">0.00 ft</span></div>
+              <div class="console-line"><span class="console-label">Aspect Ratio (Beta)</span><span class="console-val" id="slab-out-beta">0.00</span></div>
+              <div class="console-line"><span class="console-label">Code Slab Thickness (h_req)</span><span class="console-val" id="slab-out-h-req">0.00 in</span></div>
               <div class="console-line"><span class="console-label">Total Static Moment (Mo)</span><span class="console-val" id="slab-out-mo">0.00 kip-ft</span></div>
               <div class="console-line"><span class="console-label">Col Strip Neg Moment</span><span class="console-val" id="slab-out-col-neg">0.00 kip-ft</span></div>
               <div class="console-line"><span class="console-label">Col Strip Pos Moment</span><span class="console-val" id="slab-out-col-pos">0.00 kip-ft</span></div>
