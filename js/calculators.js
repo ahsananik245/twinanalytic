@@ -1503,25 +1503,41 @@ function downloadSlabPDF() {
 
   doc.setDrawColor(201, 168, 76);
   doc.setLineWidth(0.02);
-  doc.beginPath();
   
+  const step = 0.05; // 0.05 inches step for a smooth curve
+  
+  // Span 1
   const span1W = supportsX[1] - supportsX[0];
-  for (let px = supportsX[0]; px <= supportsX[1]; px++) {
+  let prevX = supportsX[0];
+  let prevY = baselineY - ((4 * 0 * (1 - 0) - 0.65) * 1.0); // start y
+  
+  for (let px = supportsX[0] + step; px <= supportsX[1]; px += step) {
     const x = (px - supportsX[0]) / span1W;
     const val = 4 * x * (1 - x) - 0.65;
     const y = baselineY - (val * 1.0);
-    if (px === supportsX[0]) doc.moveTo(px, y);
-    else doc.lineTo(px, y);
+    doc.line(prevX, prevY, px, y);
+    prevX = px;
+    prevY = y;
   }
+  // Make sure we draw to the exact endpoint of span 1
+  const endY1 = baselineY - ((4 * 1 * (1 - 1) - 0.65) * 1.0);
+  doc.line(prevX, prevY, supportsX[1], endY1);
 
+  // Span 2
   const span2W = supportsX[2] - supportsX[1];
-  for (let px = supportsX[1]; px <= supportsX[2]; px++) {
+  prevX = supportsX[1];
+  prevY = endY1;
+  for (let px = supportsX[1] + step; px <= supportsX[2]; px += step) {
     const x = (px - supportsX[1]) / span2W;
     const val = 4 * x * (1 - x) - 0.65;
     const y = baselineY - (val * 1.0);
-    doc.lineTo(px, y);
+    doc.line(prevX, prevY, px, y);
+    prevX = px;
+    prevY = y;
   }
-  doc.stroke();
+  // Make sure we draw to the exact endpoint of span 2
+  const endY2 = baselineY - ((4 * 1 * (1 - 1) - 0.65) * 1.0);
+  doc.line(prevX, prevY, supportsX[2], endY2);
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
