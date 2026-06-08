@@ -74,6 +74,10 @@ function initCalculators() {
     btnSlab.addEventListener('click', () => checkAuthAndRun(calculateSlab, 'Slab Design'));
     calculateSlab();
   }
+  const btnSlabPDFs = document.querySelectorAll('[id="btn-download-slab-pdf"]');
+  btnSlabPDFs.forEach(btn => {
+    btn.addEventListener('click', downloadSlabPDF);
+  });
   if (btnPile) {
     btnPile.addEventListener('click', () => checkAuthAndRun(calculatePileCap, 'Pile Cap Design'));
     calculatePileCap();
@@ -188,36 +192,28 @@ function calculateMetricsInternally(calcType) {
       metrics.reinforcement = rebarText;
       metrics.status = status;
     } else if (calcType.includes("Slab")) {
-      const L = parseFloat(document.getElementById('slab-span').value) || 0;
-      const t = parseFloat(document.getElementById('slab-t').value) || 0;
-      const liveLoad = parseFloat(document.getElementById('slab-load').value) || 0;
-      const fck = parseFloat(document.getElementById('slab-concrete').value) || 20;
-      const fy = parseFloat(document.getElementById('slab-steel').value) || 500;
+      const l1 = parseFloat(document.getElementById('slab-l1').value) || 0;
+      const l2 = parseFloat(document.getElementById('slab-l2').value) || 0;
+      const c1 = parseFloat(document.getElementById('slab-c1').value) || 0;
+      const h = parseFloat(document.getElementById('slab-h').value) || 0;
+      const sdl = parseFloat(document.getElementById('slab-sdl').value) || 0;
+      const ll = parseFloat(document.getElementById('slab-ll').value) || 0;
 
-      const deadLoad = 25 * (t / 1000);
-      const wu = 1.5 * (deadLoad + liveLoad + 1.0);
-      const Mu = (wu * L * L) / 8;
-      const d = t - 20;
+      const wu = (1.2 * (sdl + (h / 12 * 150))) + (1.6 * ll); // psf
+      const ln = l1 - (c1 / 12); // ft
+      const Mo = (wu * l2 * Math.pow(ln, 2)) / 8 / 1000; // kip-ft
 
-      let ast = (0.5 * fck * 1000 * d / fy) * (1 - Math.sqrt(1 - (4.6 * Mu * 1e6) / (fck * 1000 * d * d)));
-      let status = "PASS";
-      let reinforcement = "";
+      const isSpanOk = ln >= 0.65 * l1;
+      const status = isSpanOk ? "PASS" : "FAIL (Clear Span short)";
 
-      if (isNaN(ast)) {
-        status = "FAIL";
-        reinforcement = "Thin depth";
-      } else {
-        const astMin = 0.0012 * 1000 * t;
-        if (ast < astMin) ast = astMin;
-        let spacing = (1000 * (Math.PI * 10 * 10 / 4)) / ast;
-        spacing = Math.floor(spacing / 10) * 10;
-        spacing = Math.min(spacing, 3 * d, 300);
-        reinforcement = `10mm @ ${spacing}mm c/c`;
-      }
+      const concreteVol = ((h / 12) * l1 * l2) * 0.02831685; // m3
+      const steelWeight = (2 * 0.0018 * 12 * l1 * l2 * h * 3.4) * 0.45359237; // kg
 
-      metrics.geometry = `t = ${t} mm`;
-      metrics.reinforcement = reinforcement;
+      metrics.geometry = `${l1}'x${l2}' (h=${h}")`;
+      metrics.reinforcement = `Mo = ${Mo.toFixed(1)} k-ft`;
       metrics.status = status;
+      metrics.concreteVol = `${concreteVol.toFixed(2)} m³`;
+      metrics.steelWeight = `${steelWeight.toFixed(1)} kg`;
     } else if (calcType.includes("Pile Cap")) {
       const dia = parseFloat(document.getElementById('pile-dia').value) || 0;
       const count = parseInt(document.getElementById('pile-count').value, 10) || 4;
@@ -805,123 +801,610 @@ function drawColumnCanvas(w, h, p) {
 // 5. SLAB DESIGN LOGIC
 // ==========================================
 function calculateSlab() {
-  const L = parseFloat(document.getElementById('slab-span').value);
-  const t = parseFloat(document.getElementById('slab-t').value);
-  const liveLoad = parseFloat(document.getElementById('slab-load').value);
-  const fck = parseFloat(document.getElementById('slab-concrete').value);
-  const fy = parseFloat(document.getElementById('slab-steel').value);
+  const l1 = parseFloat(document.getElementById('slab-l1').value);
+  const l2 = parseFloat(document.getElementById('slab-l2').value);
+  const c1 = parseFloat(document.getElementById('slab-c1').value);
+  const c2 = parseFloat(document.getElementById('slab-c2').value);
+  const h = parseFloat(document.getElementById('slab-h').value);
+  const sdl = parseFloat(document.getElementById('slab-sdl').value);
+  const ll = parseFloat(document.getElementById('slab-ll').value);
+  const fc = parseFloat(document.getElementById('slab-fc').value);
+  const fy = parseFloat(document.getElementById('slab-fy').value);
 
   const outWu = document.getElementById('slab-out-wu');
-  const outMu = document.getElementById('slab-out-mu');
-  const outAst = document.getElementById('slab-out-ast');
-  const outSpacing = document.getElementById('slab-out-spacing');
-  const outDist = document.getElementById('slab-out-dist');
-  const outDeflect = document.getElementById('slab-out-deflect');
+  const outLn = document.getElementById('slab-out-ln');
+  const outMo = document.getElementById('slab-out-mo');
+  const outColNeg = document.getElementById('slab-out-col-neg');
+  const outColPos = document.getElementById('slab-out-col-pos');
+  const outMidNeg = document.getElementById('slab-out-mid-neg');
+  const outMidPos = document.getElementById('slab-out-mid-pos');
+  const outConcreteVol = document.getElementById('slab-out-concrete-vol');
+  const outSteelWeight = document.getElementById('slab-out-steel-weight');
   const badge = document.getElementById('slab-status-badge');
+  const warningRow = document.getElementById('slab-row-warning');
+  const warningText = document.getElementById('slab-out-warning-text');
 
-  // Load calculations
-  const deadLoad = 25 * (t / 1000); // 25 kN/m3 concrete density
-  const wu = 1.5 * (deadLoad + liveLoad + 1.0); // 1.0 finish load assumed
-  outWu.textContent = `${wu.toFixed(2)} kN/m`;
-
-  const Mu = (wu * L * L) / 8; // Simply supported bending moment
-  outMu.textContent = `${Mu.toFixed(2)} kNm`;
-
-  // Effective depth (15mm cover, 10mm bar)
-  const d = t - 20;
-  
-  // Required steel area per meter width (b = 1000mm)
-  let ast = (0.5 * fck * 1000 * d / fy) * (1 - Math.sqrt(1 - (4.6 * Mu * 1e6) / (fck * 1000 * d * d)));
-  const astMin = 0.0012 * 1000 * t; // 0.12% for high-strength steel (Fe500)
-  outDist.textContent = `${Math.round(astMin)} mm²/m`;
-
-  let status = 'PASS';
-  let spacingText = '';
-
-  if (isNaN(ast)) {
-    status = 'FAIL';
-    badge.className = 'tool-status-badge fail';
-    badge.textContent = 'RESIZE';
-    outAst.textContent = 'N/A';
-    outSpacing.textContent = 'Depth too thin for moment';
-    outDeflect.textContent = 'FAIL';
-  } else {
-    if (ast < astMin) ast = astMin;
-    outAst.textContent = `${Math.round(ast)} mm²/m`;
-
-    // 10mm bars spacing calculation
-    const singleBarArea = Math.PI * 10 * 10 / 4; // 78.5 mm2
-    let spacing = (1000 * singleBarArea) / ast;
-    spacing = Math.floor(spacing / 10) * 10; // round down to nearest 10mm
-    spacing = Math.min(spacing, 3 * d, 300); // Code limit
-    spacingText = `10mm @ ${spacing}mm c/c`;
-    outSpacing.textContent = spacingText;
-
-    // Deflection Check ratio (L/d <= 20 * modification factor)
-    const ratioVal = L * 1000 / d;
-    const pt = (ast / (1000 * d)) * 100;
-    const fs = 0.58 * fy;
-    const mf = 1 / (0.225 + 0.0032 * fs - 0.625 * Math.log10(1/pt)); // approximate modification factor
-    const allowableRatio = 20 * (isNaN(mf) || mf < 0.5 ? 1.0 : Math.min(mf, 2.0));
-
-    if (ratioVal <= allowableRatio) {
-      outDeflect.textContent = `${(ratioVal / allowableRatio).toFixed(2)} (Safe)`;
-      badge.className = 'tool-status-badge pass';
-      badge.textContent = 'PASS';
-    } else {
-      outDeflect.textContent = `${(ratioVal / allowableRatio).toFixed(2)} (Deflection Fail)`;
-      badge.className = 'tool-status-badge fail';
-      badge.textContent = 'RESIZE';
-      status = 'FAIL';
+  // Basic validation
+  if (isNaN(l1) || l1 <= 0 || isNaN(l2) || l2 <= 0 || isNaN(c1) || c1 <= 0 || isNaN(c2) || c2 <= 0 || isNaN(h) || h <= 0 || isNaN(sdl) || sdl < 0 || isNaN(ll) || ll < 0 || isNaN(fc) || fc <= 0 || isNaN(fy) || fy <= 0) {
+    if (warningRow && warningText) {
+      warningRow.style.display = 'flex';
+      warningText.textContent = "Please fill in all inputs with valid positive numbers.";
     }
+    badge.className = 'tool-status-badge fail';
+    badge.textContent = 'FAIL';
+    
+    outWu.textContent = 'N/A';
+    outLn.textContent = 'N/A';
+    outMo.textContent = 'N/A';
+    outColNeg.textContent = 'N/A';
+    outColPos.textContent = 'N/A';
+    outMidNeg.textContent = 'N/A';
+    outMidPos.textContent = 'N/A';
+    outConcreteVol.textContent = 'N/A';
+    outSteelWeight.textContent = 'N/A';
+    
+    drawSlabCanvas(0, 0, 0, 0, 0);
+    return;
   }
 
-  drawSlabCanvas(t, status === 'FAIL' ? 0 : 200);
+  // Calculate wu in ksf
+  const wSelf = (h / 12) * 150; // psf
+  const wuPsf = (1.2 * (sdl + wSelf)) + (1.6 * ll); // psf
+  const wu = wuPsf / 1000; // ksf
+  outWu.textContent = `${wu.toFixed(3)} ksf (${wuPsf.toFixed(1)} psf)`;
+
+  // Clear span ln
+  const ln = l1 - (c1 / 12); // ft
+  outLn.textContent = `${ln.toFixed(2)} ft`;
+
+  // Guardrail check
+  const clearSpanLimit = 0.65 * l1;
+  const isSpanOk = ln >= clearSpanLimit;
+
+  if (!isSpanOk) {
+    badge.className = 'tool-status-badge fail';
+    badge.textContent = 'RESIZE';
+    if (warningRow && warningText) {
+      warningRow.style.display = 'flex';
+      warningText.textContent = "DDM geometry exception: clear span too short.";
+    }
+  } else {
+    badge.className = 'tool-status-badge pass';
+    badge.textContent = 'PASS';
+    if (warningRow) warningRow.style.display = 'none';
+  }
+
+  // Mo
+  const Mo = (wu * l2 * Math.pow(ln, 2)) / 8; // kip-ft
+  outMo.textContent = `${Mo.toFixed(2)} kip-ft`;
+
+  // Distribute Mo for an Interior Span
+  const MuNeg = 0.65 * Mo;
+  const MuPos = 0.35 * Mo;
+
+  // Sub-allocate into Column Strip and Middle Strip
+  const colNeg = 0.75 * MuNeg;
+  const midNeg = 0.25 * MuNeg;
+  const colPos = 0.60 * MuPos;
+  const midPos = 0.40 * MuPos;
+
+  outColNeg.textContent = `${colNeg.toFixed(2)} kip-ft`;
+  outColPos.textContent = `${colPos.toFixed(2)} kip-ft`;
+  outMidNeg.textContent = `${midNeg.toFixed(2)} kip-ft`;
+  outMidPos.textContent = `${midPos.toFixed(2)} kip-ft`;
+
+  // Materials takeoff
+  const concreteVol = ((h / 12) * l1 * l2) * 0.02831685; // cubic meters
+  const steelWeight = (2 * 0.0018 * 12 * l1 * l2 * h * 3.4) * 0.45359237; // kg
+
+  outConcreteVol.textContent = `${concreteVol.toFixed(2)} m³`;
+  outSteelWeight.textContent = `${steelWeight.toFixed(1)} kg`;
+
+  // Draw schematic
+  drawSlabCanvas(l1, l2, c1, ln, Mo);
 }
 
-function drawSlabCanvas(thickness, spacingVal) {
+function drawSlabCanvas(l1, l2, c1, ln, Mo) {
   const canvas = document.getElementById('slab-canvas');
+  if (!canvas) return;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   ctx.fillStyle = '#0D1117';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  const drawH = Math.max(30, thickness * 0.5);
-  const startY = (canvas.height - drawH) / 2;
-
-  // Draw slab segment
-  ctx.strokeStyle = '#2a6496';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(10, startY, canvas.width - 20, drawH);
-
-  // Draw bottom longitudinal bars (lines at the bottom with hooks)
-  ctx.strokeStyle = '#C9A84C';
-  ctx.lineWidth = 1.5;
-  const barY = startY + drawH - 12;
-
-  ctx.beginPath();
-  // Left hook
-  ctx.moveTo(20, barY - 10);
-  ctx.lineTo(20, barY);
-  ctx.lineTo(canvas.width - 20, barY);
-  // Right hook
-  ctx.lineTo(canvas.width - 20, barY - 10);
-  ctx.stroke();
-
-  // Draw transverse rebars (dots along slab)
-  ctx.fillStyle = '#4f86c6';
-  const steps = 8;
-  const dist = (canvas.width - 60) / (steps - 1);
-  for (let i = 0; i < steps; i++) {
-    ctx.beginPath();
-    ctx.arc(30 + i * dist, barY - 5, 3.5, 0, Math.PI * 2);
-    ctx.fill();
+  if (l1 <= 0 || ln <= 0) {
+    ctx.fillStyle = '#9AA0A6';
+    ctx.font = '10px JetBrains Mono';
+    ctx.fillText('No geometry available', canvas.width/2 - 60, canvas.height/2);
+    return;
   }
 
+  // Draw support columns on both ends
+  const padding = 40;
+  const w = canvas.width - padding * 2;
+  const scaleX = w / l1; // pixels per foot
+  
+  const colW = (c1 / 12) * scaleX;
+  const clearW = ln * scaleX;
+  
+  const startX = padding;
+  const endX = canvas.width - padding;
+  const midX = canvas.width / 2;
+  
+  const slabY = 50;
+  const slabH = 15;
+
+  // Draw Slab horizontal line
+  ctx.fillStyle = '#1f3d52';
+  ctx.fillRect(startX, slabY, w, slabH);
+  ctx.strokeStyle = '#2a6496';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(startX, slabY, w, slabH);
+
+  // Draw Column supports (Gray blocks)
+  ctx.fillStyle = '#2d3748';
+  ctx.strokeStyle = '#4a5568';
+  ctx.lineWidth = 1;
+  // Left Column
+  ctx.fillRect(startX, slabY + slabH, colW, 40);
+  ctx.strokeRect(startX, slabY + slabH, colW, 40);
+  // Right Column
+  ctx.fillRect(endX - colW, slabY + slabH, colW, 40);
+  ctx.strokeRect(endX - colW, slabY + slabH, colW, 40);
+
+  // Moment baseline
+  const baseLineY = 130;
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(startX, baseLineY);
+  ctx.lineTo(endX, baseLineY);
+  ctx.stroke();
+
+  // Draw Moment Curve: parabolic curve
+  const maxH = 45; // max height for positive moment
+  ctx.strokeStyle = '#C9A84C';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  
+  const centerLeftX = startX + colW/2;
+  const centerRightX = endX - colW/2;
+  const spanW = centerRightX - centerLeftX;
+  
+  for (let px = centerLeftX; px <= centerRightX; px++) {
+    const x = (px - centerLeftX) / spanW; // 0 to 1
+    const val = 4 * x * (1 - x) - 0.65;
+    const y = baseLineY + (val * -maxH);
+    if (px === centerLeftX) {
+      ctx.moveTo(px, y);
+    } else {
+      ctx.lineTo(px, y);
+    }
+  }
+  ctx.stroke();
+
+  // Draw labels
   ctx.fillStyle = '#9AA0A6';
-  ctx.font = '10px JetBrains Mono';
-  ctx.fillText(`Thickness = ${thickness}mm`, canvas.width/2 - 60, startY - 8);
+  ctx.font = '9px JetBrains Mono';
+  
+  // Span dimension line
+  ctx.strokeStyle = '#4a5568';
+  ctx.beginPath();
+  ctx.moveTo(centerLeftX, slabY - 12);
+  ctx.lineTo(centerRightX, slabY - 12);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(centerLeftX, slabY - 16); ctx.lineTo(centerLeftX, slabY - 8);
+  ctx.moveTo(centerRightX, slabY - 16); ctx.lineTo(centerRightX, slabY - 8);
+  ctx.stroke();
+  
+  ctx.fillStyle = '#C9A84C';
+  ctx.fillText(`l1 = ${l1} ft (ln = ${ln.toFixed(1)} ft)`, midX - 60, slabY - 18);
+
+  // Moment values labels
+  ctx.fillStyle = '#E2E8F0';
+  ctx.fillText(`Mu,neg = ${(0.65*Mo).toFixed(1)} k-ft`, centerLeftX - 10, baseLineY - maxH * 0.7 - 8);
+  ctx.fillText(`Mu,pos = ${(0.35*Mo).toFixed(1)} k-ft`, midX - 40, baseLineY + maxH * 0.4 + 12);
+}
+
+function downloadSlabPDF() {
+  const l1 = parseFloat(document.getElementById('slab-l1').value);
+  const l2 = parseFloat(document.getElementById('slab-l2').value);
+  const c1 = parseFloat(document.getElementById('slab-c1').value);
+  const c2 = parseFloat(document.getElementById('slab-c2').value);
+  const h = parseFloat(document.getElementById('slab-h').value);
+  const sdl = parseFloat(document.getElementById('slab-sdl').value);
+  const ll = parseFloat(document.getElementById('slab-ll').value);
+  const fc = parseFloat(document.getElementById('slab-fc').value);
+  const fy = parseFloat(document.getElementById('slab-fy').value);
+
+  const projName = document.getElementById('slab-proj-name').value || "TwinAnalytic Tower";
+  const slabId = document.getElementById('slab-id').value || "S101";
+  const designer = document.getElementById('slab-designer').value || "AH";
+
+  if (isNaN(l1) || l1 <= 0 || isNaN(l2) || l2 <= 0 || isNaN(c1) || c1 <= 0 || isNaN(c2) || c2 <= 0 || isNaN(h) || h <= 0 || isNaN(sdl) || sdl < 0 || isNaN(ll) || ll < 0 || isNaN(fc) || fc <= 0 || isNaN(fy) || fy <= 0) {
+    alert('Please enter valid input parameters before downloading the PDF report.');
+    return;
+  }
+
+  const isUnlocked = localStorage.getItem('tools_user_unlocked');
+  if (isUnlocked !== 'true') {
+    openAuthModal(downloadSlabPDF, 'Slab PDF Export');
+    return;
+  }
+
+  calculateSlab();
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'in',
+    format: 'letter'
+  });
+
+  const wSelf = (h / 12) * 150; // psf
+  const wuPsf = (1.2 * (sdl + wSelf)) + (1.6 * ll);
+  const wu = wuPsf / 1000; // ksf
+  const ln = l1 - (c1 / 12); // ft
+  const Mo = (wu * l2 * Math.pow(ln, 2)) / 8; // kip-ft
+
+  const MuNeg = 0.65 * Mo;
+  const MuPos = 0.35 * Mo;
+
+  const colNeg = 0.75 * MuNeg;
+  const midNeg = 0.25 * MuNeg;
+  const colPos = 0.60 * MuPos;
+  const midPos = 0.40 * MuPos;
+
+  const isSpanOk = ln >= 0.65 * l1;
+  const statusText = isSpanOk ? "PASS" : "FAIL (Clear Span too short)";
+
+  const concreteVol = ((h / 12) * l1 * l2) * 0.02831685;
+  const steelWeight = (2 * 0.0018 * 12 * l1 * l2 * h * 3.4) * 0.45359237;
+
+  // Header Table / Title Block
+  doc.setDrawColor(30, 30, 30);
+  doc.setLineWidth(0.015);
+  doc.rect(0.25, 0.25, 8.0, 1.3, 'S');
+
+  doc.line(2.3, 0.25, 2.3, 1.55);
+  doc.line(5.6, 0.25, 5.6, 1.55);
+
+  doc.setTextColor(201, 168, 76);
+  doc.setFont('times', 'bold');
+  doc.setFontSize(18);
+  doc.text('TwinAnalytic', 0.4, 0.65);
+  
+  doc.setTextColor(80, 80, 80);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.text('STRUCTURAL MEMBER DESIGN SHEET', 0.4, 0.88);
+  doc.text('ACI 318-19 COMPLIANCE AUDIT', 0.4, 1.08);
+  doc.text('Calculations Sheet S-102', 0.4, 1.28);
+
+  doc.setTextColor(60, 60, 60);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.text('PROJECT:', 2.5, 0.5);
+  doc.setFont('helvetica', 'normal');
+  const splitProjName = doc.splitTextToSize(projName, 2.0);
+  doc.text(splitProjName, 3.4, 0.5);
+  
+  doc.setFont('helvetica', 'bold');
+  doc.text('SLAB ID:', 2.5, 0.95);
+  doc.setFont('helvetica', 'normal');
+  doc.text(slabId, 3.4, 0.95);
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('METHOD:', 2.5, 1.35);
+  doc.setFont('helvetica', 'normal');
+  doc.text('ACI Direct Design Method (DDM)', 3.4, 1.35);
+
+  doc.line(5.6, 0.68, 8.25, 0.68);
+  doc.line(5.6, 1.11, 8.25, 1.11);
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('DESIGNED BY:', 5.75, 0.52);
+  doc.setFont('helvetica', 'normal');
+  doc.text(designer, 7.0, 0.52);
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('CHECKED BY:', 5.75, 0.95);
+  doc.setFont('helvetica', 'normal');
+  doc.text('MB', 7.0, 0.95);
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('DATE:', 5.75, 1.38);
+  doc.setFont('helvetica', 'normal');
+  doc.text(new Date().toLocaleDateString(), 6.3, 1.38);
+
+  // Outer gold page border
+  doc.setDrawColor(201, 168, 76);
+  doc.setLineWidth(0.015);
+  doc.rect(0.25, 0.25, 8.0, 10.5);
+
+  let lx = 0.5;
+  let ly = 1.9;
+
+  // Section 1: Inputs Summary
+  doc.setFont('times', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(201, 168, 76);
+  doc.text('1. INPUT DESIGN PARAMETERS', lx, ly);
+  doc.line(lx, ly + 0.05, 4.1, ly + 0.05);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(60, 60, 60);
+
+  const inputs = [
+    ['Long Span (l1)', `${l1} ft`],
+    ['Transverse Span (l2)', `${l2} ft`],
+    ['Column Dimensions (c1 x c2)', `${c1}" x ${c2}"`],
+    ['Slab Thickness (h)', `${h} in`],
+    ['Superimposed Dead Load (SDL)', `${sdl} psf`],
+    ['Live Load (LL)', `${ll} psf`],
+    ['Concrete Strength (f\'c)', `${fc} ksi`],
+    ['Steel Strength (fy)', `${fy} ksi`]
+  ];
+
+  ly += 0.22;
+  inputs.forEach(([label, val]) => {
+    doc.setFont('helvetica', 'bold');
+    doc.text(label, lx, ly);
+    doc.setFont('helvetica', 'normal');
+    doc.text(val, lx + 2.2, ly);
+    ly += 0.18;
+  });
+
+  // Section 2: DDM Calculations
+  ly += 0.15;
+  doc.setFont('times', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(201, 168, 76);
+  doc.text('2. ACI 318 DIRECT DESIGN METHOD LOGIC', lx, ly);
+  doc.line(lx, ly + 0.05, 4.1, ly + 0.05);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(60, 60, 60);
+
+  ly += 0.22;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Factored Load (wu):', lx, ly);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`${wu.toFixed(3)} ksf (${wuPsf.toFixed(1)} psf)`, lx + 1.8, ly);
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(7.5);
+  doc.text(`Formula: wu = 1.2 * (SDL + h/12 * 150) + 1.6 * LL`, lx, ly + 0.12);
+
+  ly += 0.28;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.text('Clear Span (ln):', lx, ly);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`${ln.toFixed(2)} ft`, lx + 1.8, ly);
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(7.5);
+  doc.text(`Formula: ln = l1 - c1/12 (ACI 8.10.3.2)`, lx, ly + 0.12);
+
+  ly += 0.28;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.text('Clear Span Check:', lx, ly);
+  if (isSpanOk) {
+    doc.setTextColor(30, 150, 30);
+    doc.text('PASS', lx + 1.8, ly);
+  } else {
+    doc.setTextColor(220, 50, 50);
+    doc.text('FAIL (Guardrail Violation)', lx + 1.8, ly);
+  }
+  doc.setTextColor(60, 60, 60);
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(7.5);
+  doc.text(`Requirement: ln >= 0.65 * l1`, lx, ly + 0.12);
+
+  ly += 0.28;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.text('Total Static Moment (Mo):', lx, ly);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`${Mo.toFixed(2)} kip-ft`, lx + 1.8, ly);
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(7.5);
+  doc.text(`Formula: Mo = wu * l2 * (ln^2) / 8`, lx, ly + 0.12);
+
+  // Section 3: Moment Distribution Table
+  ly += 0.32;
+  doc.setFont('times', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(201, 168, 76);
+  doc.text('3. INTERIOR SPAN MOMENT DISTRIBUTION', lx, ly);
+  doc.line(lx, ly + 0.05, 4.1, ly + 0.05);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(60, 60, 60);
+
+  const momentsList = [
+    ['Total Negative Moment (Mu_neg)', '0.65 * Mo', `${MuNeg.toFixed(2)} kip-ft`],
+    ['Total Positive Moment (Mu_pos)', '0.35 * Mo', `${MuPos.toFixed(2)} kip-ft`],
+    ['Column Strip Negative', '0.75 * Mu_neg', `${colNeg.toFixed(2)} kip-ft`],
+    ['Middle Strip Negative', '0.25 * Mu_neg', `${midNeg.toFixed(2)} kip-ft`],
+    ['Column Strip Positive', '0.60 * Mu_pos', `${colPos.toFixed(2)} kip-ft`],
+    ['Middle Strip Positive', '0.40 * Mu_pos', `${midPos.toFixed(2)} kip-ft`]
+  ];
+
+  ly += 0.22;
+  momentsList.forEach(([label, coeff, val]) => {
+    doc.setFont('helvetica', 'bold');
+    doc.text(label, lx, ly);
+    doc.setFont('helvetica', 'normal');
+    doc.text(coeff, lx + 2.2, ly);
+    doc.text(val, lx + 3.1, ly);
+    ly += 0.18;
+  });
+
+  // Right column: Visual Moment Diagram + Bending Steel table
+  let rx = 4.4;
+  let ry = 1.9;
+
+  doc.setFont('times', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(201, 168, 76);
+  doc.text('4. DIRECT DESIGN MOMENT SCHEMATIC', rx, ry);
+  doc.line(rx, ry + 0.05, 8.0, ry + 0.05);
+
+  ry += 0.15;
+  const schematicW = 3.6;
+  const schematicH = 1.8;
+  doc.setDrawColor(220, 220, 220);
+  doc.setLineWidth(0.008);
+  doc.rect(rx, ry, schematicW, schematicH);
+
+  const pdfCurveY = ry + 1.1;
+  doc.setDrawColor(180, 180, 180);
+  doc.line(rx + 0.2, pdfCurveY, rx + schematicW - 0.2, pdfCurveY);
+
+  doc.setDrawColor(201, 168, 76);
+  doc.setLineWidth(0.015);
+  doc.beginPath();
+  const pdfLeftX = rx + 0.5;
+  const pdfRightX = rx + schematicW - 0.5;
+  const pdfSpanW = pdfRightX - pdfLeftX;
+  for (let px = pdfLeftX; px <= pdfRightX; px++) {
+    const x = (px - pdfLeftX) / pdfSpanW;
+    const val = 4 * x * (1 - x) - 0.65;
+    const y = pdfCurveY - (val * 0.6);
+    if (px === pdfLeftX) doc.moveTo(px, y);
+    else doc.lineTo(px, y);
+  }
+  doc.stroke();
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(100, 100, 100);
+  doc.text(`Mu,neg = ${MuNeg.toFixed(1)} k-ft`, pdfLeftX - 0.2, pdfCurveY - 0.45);
+  doc.text(`Mu,pos = ${MuPos.toFixed(1)} k-ft`, rx + schematicW/2 - 0.35, pdfCurveY + 0.45);
+  doc.text(`Clear Span ln = ${ln.toFixed(1)} ft`, rx + schematicW/2 - 0.45, ry + 0.2);
+
+  doc.setDrawColor(100, 100, 100);
+  doc.setLineWidth(0.02);
+  doc.line(pdfLeftX, ry + 0.3, pdfLeftX, ry + 0.5);
+  doc.line(pdfRightX, ry + 0.3, pdfRightX, ry + 0.5);
+
+  ry += schematicH + 0.25;
+  doc.setFont('times', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(201, 168, 76);
+  doc.text('5. REINFORCEMENT BENDING STEEL DESIGN', rx, ry);
+  doc.line(rx, ry + 0.05, 8.0, ry + 0.05);
+
+  const bColFt = Math.min(0.5 * l1, 0.5 * l2);
+  const bMidFt = l2 - bColFt;
+  const bColIn = bColFt * 12;
+  const bMidIn = bMidFt * 12;
+
+  const d = h - 1.0;
+  const Ab = 0.20;
+
+  const designStripSteel = (MuVal, bIn) => {
+    if (MuVal <= 0) return { req: 0, min: 0, gov: 0, spacing: 'N/A' };
+    const Rn = (MuVal * 12) / (0.9 * bIn * Math.pow(d, 2));
+    const minSteel = 0.0018 * bIn * h;
+    if (Rn >= 0.85 * fc / 2) {
+      return { req: 999, min: minSteel, gov: 999, spacing: 'RESIZE' };
+    }
+    const rho = (0.85 * fc / fy) * (1 - Math.sqrt(1 - (2 * Rn) / (0.85 * fc)));
+    const reqSteel = rho * bIn * d;
+    const govSteel = Math.max(reqSteel, minSteel);
+    
+    let s = (Ab * bIn) / govSteel;
+    const sMax = Math.min(3 * h, 18);
+    s = Math.floor(s * 2) / 2;
+    s = Math.min(s, sMax);
+    const spacingText = `#4 @ ${s.toFixed(1)}" c/c`;
+    return { req: reqSteel, min: minSteel, gov: govSteel, spacing: spacingText };
+  };
+
+  const colNegSteel = designStripSteel(colNeg, bColIn);
+  const colPosSteel = designStripSteel(colPos, bColIn);
+  const midNegSteel = designStripSteel(midNeg, bMidIn);
+  const midPosSteel = designStripSteel(midPos, bMidIn);
+
+  ry += 0.25;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(30, 30, 30);
+  doc.text('Strip & Moment', rx, ry);
+  doc.text('Width', rx + 1.2, ry);
+  doc.text('As,req', rx + 1.8, ry);
+  doc.text('As,min', rx + 2.3, ry);
+  doc.text('Spacing (#4)', rx + 2.8, ry);
+  doc.line(rx, ry + 0.04, rx + 3.6, ry + 0.04);
+
+  const tableRows = [
+    ['Col Strip Neg', `${bColIn.toFixed(0)}"`, `${colNegSteel.req.toFixed(2)}`, `${colNegSteel.min.toFixed(2)}`, colNegSteel.spacing],
+    ['Col Strip Pos', `${bColIn.toFixed(0)}"`, `${colPosSteel.req.toFixed(2)}`, `${colPosSteel.min.toFixed(2)}`, colPosSteel.spacing],
+    ['Mid Strip Neg', `${bMidIn.toFixed(0)}"`, `${midNegSteel.req.toFixed(2)}`, `${midNegSteel.min.toFixed(2)}`, midNegSteel.spacing],
+    ['Mid Strip Pos', `${bMidIn.toFixed(0)}"`, `${midPosSteel.req.toFixed(2)}`, `${midPosSteel.min.toFixed(2)}`, midPosSteel.spacing]
+  ];
+
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(60, 60, 60);
+  tableRows.forEach(([name, width, req, min, spacing]) => {
+    ry += 0.18;
+    doc.setFont('helvetica', 'bold');
+    doc.text(name, rx, ry);
+    doc.setFont('helvetica', 'normal');
+    doc.text(width, rx + 1.2, ry);
+    doc.text(req, rx + 1.8, ry);
+    doc.text(min, rx + 2.3, ry);
+    doc.setTextColor(201, 168, 76);
+    doc.setFont('helvetica', 'bold');
+    doc.text(spacing, rx + 2.8, ry);
+    doc.setTextColor(60, 60, 60);
+    doc.setFont('helvetica', 'normal');
+  });
+
+  // Section 6: Takeoff Estimates
+  ry += 0.35;
+  doc.setFont('times', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(201, 168, 76);
+  doc.text('6. MATERIAL TAKEOFF ESTIMATE', rx, ry);
+  doc.line(rx, ry + 0.05, 8.0, ry + 0.05);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(60, 60, 60);
+
+  ry += 0.22;
+  doc.text('Concrete Volume:', rx, ry);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`${concreteVol.toFixed(2)} cu. m. (m³)`, rx + 1.6, ry);
+
+  ry += 0.18;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Steel Weight:', rx, ry);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`${steelWeight.toFixed(1)} kg`, rx + 1.6, ry);
+
+  ry += 0.18;
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(7.5);
+  doc.setTextColor(120, 120, 120);
+  doc.text(`* Estimate covers temperature/shrinkage steel in both directions.`, rx, ry);
+
+  let footerY = 10.45;
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(8);
+  doc.setTextColor(150, 150, 150);
+  doc.text('TwinAnalytic Engineering Group — Calculations Sheet S-102', 0.5, footerY);
+  doc.text('Page 1 of 1', 7.2, footerY);
+
+  doc.save(`twinanalytic_slab_report_${new Date().toISOString().split('T')[0]}.pdf`);
 }
 
 

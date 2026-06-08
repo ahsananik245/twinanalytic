@@ -353,31 +353,52 @@
             <h3>Input Parameters</h3>
             <div class="input-grid">
               <div class="input-field">
-                <label>Clear Span, L (m)</label>
-                <input type="number" id="slab-span" value="3.5" min="1.0" max="8.0" step="0.1">
+                <label>Project Name</label>
+                <input type="text" id="slab-proj-name" value="TwinAnalytic Tower">
               </div>
               <div class="input-field">
-                <label>Thickness, t (mm)</label>
-                <input type="number" id="slab-t" value="125" min="90" max="250">
+                <label>Slab ID</label>
+                <input type="text" id="slab-id" value="S101">
               </div>
               <div class="input-field">
-                <label>Superimposed Load (kN/m²)</label>
-                <input type="number" id="slab-load" value="4.0" min="1.0" max="15.0" step="0.5">
+                <label>Designer Initials</label>
+                <input type="text" id="slab-designer" value="AH">
               </div>
               <div class="input-field">
-                <label>Concrete Grade</label>
-                <select id="slab-concrete">
-                  <option value="20" selected>M20 (fck = 20 MPa)</option>
-                  <option value="25">M25 (fck = 25 MPa)</option>
-                  <option value="30">M30 (fck = 30 MPa)</option>
-                </select>
+                <label>Long Span, l1 (ft)</label>
+                <input type="number" id="slab-l1" value="20" min="5" max="50" step="0.5">
               </div>
               <div class="input-field">
-                <label>Steel Rebar Grade</label>
-                <select id="slab-steel">
-                  <option value="415">Fe415 (fy = 415 MPa)</option>
-                  <option value="500" selected>Fe500 (fy = 500 MPa)</option>
-                </select>
+                <label>Transverse Span, l2 (ft)</label>
+                <input type="number" id="slab-l2" value="18" min="5" max="50" step="0.5">
+              </div>
+              <div class="input-field">
+                <label>Column Width, c1 (in)</label>
+                <input type="number" id="slab-c1" value="18" min="6" max="60">
+              </div>
+              <div class="input-field">
+                <label>Column Depth, c2 (in)</label>
+                <input type="number" id="slab-c2" value="18" min="6" max="60">
+              </div>
+              <div class="input-field">
+                <label>Slab Thickness, h (in)</label>
+                <input type="number" id="slab-h" value="7.0" min="4.0" max="20.0" step="0.25">
+              </div>
+              <div class="input-field">
+                <label>Superimposed Dead Load (psf)</label>
+                <input type="number" id="slab-sdl" value="30" min="0" max="200" step="5">
+              </div>
+              <div class="input-field">
+                <label>Live Load (psf)</label>
+                <input type="number" id="slab-ll" value="50" min="0" max="300" step="5">
+              </div>
+              <div class="input-field">
+                <label>Concrete Strength, f'c (ksi)</label>
+                <input type="number" id="slab-fc" value="4.0" min="2.0" max="10.0" step="0.5">
+              </div>
+              <div class="input-field">
+                <label>Steel Strength, fy (ksi)</label>
+                <input type="number" id="slab-fy" value="60" min="40" max="100" step="5">
               </div>
             </div>
             <button class="btn btn-gold btn-calc" id="btn-calc-slab" style="margin-top: 1.5rem;">Calculate Member</button>
@@ -386,17 +407,27 @@
           <div class="tool-outputs-card glass-card">
             <h3>Analysis Output <span class="tool-status-badge pass" id="slab-status-badge">PASS</span></h3>
             <div class="results-console text-mono">
-              <div class="console-line"><span class="console-label">Design Factored Load (wu)</span><span class="console-val" id="slab-out-wu">10.69 kN/m</span></div>
-              <div class="console-line"><span class="console-label">Design Bending Moment (Mu)</span><span class="console-val" id="slab-out-mu">16.37 kNm</span></div>
-              <div class="console-line"><span class="console-label">Required Main Steel (Ast)</span><span class="console-val" id="slab-out-ast">384 mm²/m</span></div>
-              <div class="console-line"><span class="console-label">Main Rebar Spacing</span><span class="console-val" id="slab-out-spacing">10mm @ 200mm c/c</span></div>
-              <div class="console-line"><span class="console-label">Distribution Steel Area</span><span class="console-val" id="slab-out-dist">150 mm²/m</span></div>
-              <div class="console-line"><span class="console-label">Deflection Check Ratio</span><span class="console-val" id="slab-out-deflect">1.08 (Safe)</span></div>
+              <div class="console-line"><span class="console-label">Design Factored Load (wu)</span><span class="console-val" id="slab-out-wu">0.00 ksf</span></div>
+              <div class="console-line"><span class="console-label">Clear Span (ln)</span><span class="console-val" id="slab-out-ln">0.00 ft</span></div>
+              <div class="console-line"><span class="console-label">Total Static Moment (Mo)</span><span class="console-val" id="slab-out-mo">0.00 kip-ft</span></div>
+              <div class="console-line"><span class="console-label">Col Strip Neg Moment</span><span class="console-val" id="slab-out-col-neg">0.00 kip-ft</span></div>
+              <div class="console-line"><span class="console-label">Col Strip Pos Moment</span><span class="console-val" id="slab-out-col-pos">0.00 kip-ft</span></div>
+              <div class="console-line"><span class="console-label">Mid Strip Neg Moment</span><span class="console-val" id="slab-out-mid-neg">0.00 kip-ft</span></div>
+              <div class="console-line"><span class="console-label">Mid Strip Pos Moment</span><span class="console-val" id="slab-out-mid-pos">0.00 kip-ft</span></div>
+              <div class="console-line"><span class="console-label">Concrete Volume</span><span class="console-val" id="slab-out-concrete-vol">0.00 m³</span></div>
+              <div class="console-line"><span class="console-label">Steel Weight</span><span class="console-val" id="slab-out-steel-weight">0.0 kg</span></div>
+              <div class="console-line" id="slab-row-warning" style="display: none; color: #f5222d; border-top: 1px dashed rgba(245, 34, 45, 0.3); padding-top: 0.5rem; margin-top: 0.5rem; flex-direction: column; align-items: flex-start; gap: 0.25rem;">
+                <span class="console-label" style="color: #f5222d; font-weight: bold;">ACI Compliance Alert</span>
+                <span class="console-val" id="slab-out-warning-text" style="color: #f5222d; font-size: 0.75rem; text-align: left; white-space: normal;"></span>
+              </div>
             </div>
             <div class="schematic-box">
-              <h4>Cross-Section Layout</h4>
+              <h4>Direct Design Moment Distribution</h4>
               <canvas id="slab-canvas" class="schematic-canvas"></canvas>
             </div>
+            <button class="btn btn-ghost" id="btn-download-slab-pdf" style="margin-top: 1.5rem; width: 100%;">
+              <i class="fa-solid fa-file-pdf" style="margin-right: 0.5rem;"></i> Download PDF Report
+            </button>
           </div>
         </div>
 
