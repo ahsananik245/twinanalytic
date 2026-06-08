@@ -1718,10 +1718,6 @@ function downloadSlabPDF() {
   });
 
   const drawBorder = (pageNo) => {
-    // Top colored bar
-    doc.setFillColor(0, 70, 130);
-    doc.rect(0, 0, 8.5, 0.11, 'F');
-
     // Project metadata below bar
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7.5);
