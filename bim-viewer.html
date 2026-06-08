@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BIM Portal — TwinAnalytic</title>
+  <meta name="description" content="Access TwinAnalytic's interactive BIM Portal. Explore structural details, loads, and materials on our interactive 3D skeleton digital twin model.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .page-banner {
+      padding: 10rem 0 4rem 0;
+      background: radial-gradient(circle at 10% 20%, rgba(13, 17, 23, 0.95) 0%, rgba(10, 10, 10, 0.98) 90%), 
+                  repeating-linear-gradient(45deg, rgba(201, 168, 76, 0.03) 0px, rgba(201, 168, 76, 0.03) 2px, transparent 2px, transparent 10px);
+      border-bottom: 1px solid var(--border-gold);
+      text-align: center;
+    }
+    .page-banner h1 {
+      font-family: var(--font-serif);
+      font-size: 3.5rem;
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+    .page-banner p {
+      color: var(--color-gold);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+    }
+    .bim-viewer-section {
+      padding: 4rem 0 8rem 0;
+      background-color: var(--bg-primary);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVIGATION BAR -->
+  <nav class="navbar scrolled" id="navbar">
+    <div class="container">
+      <a href="index.html" class="logo">
+        Twin<span>Analytic</span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="bim-viewer.html" class="active">BIM Viewer</a></li>
+        <li><a href="tools.html">Tools</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="contact.html" class="btn btn-gold btn-sm">Get a Quote</a>
+      </div>
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- BANNER -->
+  <header class="page-banner">
+    <div class="container">
+      <p>Digital Twin Environment</p>
+      <h1>Interactive BIM Viewer</h1>
+    </div>
+  </header>
+
+  <!-- BIM VIEWPORT WORKSPACE -->
+  <section class="bim-viewer-section">
+    <div class="container">
+      <div class="bim-grid">
+        <!-- Viewport -->
+        <div class="bim-viewport-container">
+          <div class="bim-instructions-overlay">
+            <i class="fa-solid fa-hand-pointer text-gold"></i> Left Click to Select Element | Drag to Orbit
+          </div>
+          <canvas id="bim-canvas"></canvas>
+          <div class="bim-controls">
+            <button class="bim-control-btn active" id="btn-view-3d">3D View</button>
+            <button class="bim-control-btn" id="btn-view-plan">Floor Plan</button>
+            <button class="bim-control-btn" id="btn-view-section">Section View</button>
+            <button class="bim-control-btn" id="btn-view-data">Reset Model</button>
+          </div>
+        </div>
+
+        <!-- Sidebar Panel -->
+        <div class="bim-sidebar glass-card">
+          <div class="bim-sidebar-header">
+            <h3 id="bim-element-title">Structural Column C-12</h3>
+            <p class="text-mono" id="bim-element-tag">TAG: BIM-COL-00C12</p>
+          </div>
+          <div class="bim-data-panel text-mono">
+            <div class="bim-data-row">
+              <span class="bim-label">Material Grade</span>
+              <span class="bim-val" id="bim-material">Grade 60 Rebar / M25 Concrete</span>
+            </div>
+            <div class="bim-data-row">
+              <span class="bim-label">Dimensions / Span</span>
+              <span class="bim-val" id="bim-dimensions">0.45m x 0.45m x 3.50m</span>
+            </div>
+            <div class="bim-data-row">
+              <span class="bim-label">Design Axial Load</span>
+              <span class="bim-val" id="bim-load">450.00 kN</span>
+            </div>
+            <div class="bim-data-row">
+              <span class="bim-label">Shear Reinforcement</span>
+              <span class="bim-val" id="bim-shear">10mm links @ 150mm c/c</span>
+            </div>
+            <div class="bim-data-row">
+              <span class="bim-label">Execution Status</span>
+              <span class="bim-val status-check" id="bim-status">Completed ✓</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-top-gradient"></div>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col brand">
+          <h3>Twin<span>Analytic</span></h3>
+          <p>Precision building structures, high-fidelity BIM level 3 coordination modeling, and IoT-driven real-time structural performance tracking.</p>
+          <div class="footer-socials">
+            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="#"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#"><i class="fa-brands fa-youtube"></i></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h3>Services</h3>
+          <ul class="footer-links">
+            <li><a href="services.html">BIM Coordination</a></li>
+            <li><a href="services.html">Structural Design</a></li>
+            <li><a href="services.html">Digital Twin Analytics</a></li>
+            <li><a href="services.html">MEP Engineering</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Interactive</h3>
+          <ul class="footer-links">
+            <li><a href="tools.html">Beam Design Calculator</a></li>
+            <li><a href="tools.html">Column Design Calculator</a></li>
+            <li><a href="tools.html">Slab Spans Calculator</a></li>
+            <li><a href="tools.html">Foundation Analysis</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Company</h3>
+          <ul class="footer-links">
+            <li><a href="about.html">About Our Firm</a></li>
+            <li><a href="projects.html">Project Portfolio</a></li>
+            <li><a href="index.html#blog">Research R&amp;D</a></li>
+            <li><a href="contact.html">Contact Offices</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2025 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
+        <div class="footer-bottom-links">
+          <a href="#">Privacy Protocol</a>
+          <a href="#">Security Audits</a>
+          <a href="#">Sitemap</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Three.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Three.js OrbitControls -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <script src="js/main.js"></script>
+  <script src="js/three-scene.js"></script>
+</body>
+</html>

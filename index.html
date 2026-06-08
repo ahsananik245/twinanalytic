@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TwinAnalytic — Engineering the Future. Digitally Twin.</title>
+  <meta name="description" content="TwinAnalytic is a high-tech construction and BIM company fusing luxury architectural design with real-time digital twin intelligence and structural design engineering.">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- jsPDF Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Tailwind CSS CDN Configured to disable preflight styles -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      corePlugins: {
+        preflight: false,
+      }
+    }
+  </script>
+  <style>
+    /* Modal Overlay & Card styling */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 10, 10, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition-smooth);
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 480px;
+      padding: 2.5rem;
+      transform: scale(0.9);
+      transition: var(--transition-smooth);
+      background: var(--bg-secondary);
+      border: 1px solid var(--color-gold);
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-header h3 {
+      font-family: var(--font-serif);
+      font-size: 1.8rem;
+      font-weight: 400;
+      color: var(--color-gold);
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-header p {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+
+    .modal-form .form-group {
+      margin-bottom: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      text-align: left;
+    }
+
+    .modal-form label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .modal-form input {
+      width: 100%;
+      background: rgba(10, 10, 10, 0.5);
+      border: 1px solid var(--border-gold);
+      border-radius: 4px;
+      padding: 0.8rem 1rem;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      transition: var(--transition-quick);
+    }
+
+    .modal-form input:focus {
+      outline: none;
+      border-color: var(--color-gold);
+      box-shadow: 0 0 10px rgba(201, 168, 76, 0.15);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVIGATION BAR -->
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <a href="#" class="logo">
+        Twin<span>Analytic</span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="bim-viewer.html">BIM Viewer</a></li>
+        <li><a href="tools.html">Tools</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="contact.html" class="btn btn-gold btn-sm">Get a Quote</a>
+      </div>
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section class="hero" id="home">
+    <canvas id="hero-canvas"></canvas>
+    <div class="hero-overlay"></div>
+    <div class="container">
+      <div class="hero-content fade-up-init fade-up-in">
+        <span class="hero-tagline">Engineering the Future. Digitally Twin.</span>
+        <h1>Precision BIM &amp; <span>Luxury Architecture</span></h1>
+        <p class="hero-desc">Precision construction powered by Building Information Modeling (BIM) technology and real-time digital twin intelligence. Fusing luxury engineering with digital innovation.</p>
+        <div class="hero-actions">
+          <a href="projects.html" class="btn btn-gold">Explore Projects</a>
+          <a href="bim-viewer.html" class="btn btn-ghost">View BIM Demo</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT / WHO WE ARE -->
+  <section class="section-padding" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-img-container fade-up-init">
+          <img src="assets/about_render.jpg" alt="TwinAnalytic Premium Architectural Design render" id="about-image">
+        </div>
+        <div class="about-text fade-up-init">
+          <div class="section-header" style="text-align: left; margin-bottom: 2rem;">
+            <h2><span>Who We Are</span>Architects of Digital Reality</h2>
+          </div>
+          <p>TwinAnalytic stands at the intersection of luxury craftsmanship and cutting-edge digital twin technology. We don't just build structures; we create intelligent, living digital models that optimize operations, ensure structural stability, and redefine engineering limitations.</p>
+          <p>By pairing high-fidelity Building Information Modeling (BIM) workflows with advanced simulation algorithms, we allow stakeholders to visualize, test, and interact with projects before a single brick is laid.</p>
+          
+          <div class="about-stats">
+            <div class="stat-item">
+              <div class="stat-num" data-target="15">0</div>
+              <div class="stat-label">Years Experience</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-num" data-target="200">0</div>
+              <div class="stat-label">Projects Completed</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-num" data-target="12">0</div>
+              <div class="stat-label">Countries Active</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SERVICES SECTION -->
+  <section class="section-padding" id="services">
+    <div class="container">
+      <div class="section-header fade-up-init">
+        <h2><span>Our Services</span>Comprehensive Tech-Engineering</h2>
+        <p>We deliver an integrated suite of architectural, engineering, and digital twin services designed for modern developers and planners.</p>
+      </div>
+      
+      <div class="services-grid">
+        <!-- Service 1 -->
+        <div class="service-card glass-card fade-up-init">
+          <div class="service-icon"><i class="fa-solid fa-cube"></i></div>
+          <h3>BIM Modeling &amp; Coordination</h3>
+          <p>End-to-end 3D modeling up to LOD 500, enabling precise clash detection, cost estimation, and lifecycle management.</p>
+          <a href="bim-modeling.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-gold); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1.5rem;">Read Details <i class="fa-solid fa-arrow-right-long"></i></a>
+        </div>
+        <!-- Service 2 -->
+        <div class="service-card glass-card fade-up-init">
+          <div class="service-icon"><i class="fa-solid fa-drafting-compass"></i></div>
+          <h3>Structural Design &amp; Analysis</h3>
+          <p>Advanced structural analysis under static, dynamic, wind, and seismic loads using state-of-the-art finite element modeling.</p>
+          <a href="structural-design.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-gold); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1.5rem;">Read Details <i class="fa-solid fa-arrow-right-long"></i></a>
+        </div>
+        <!-- Service 3 -->
+        <div class="service-card glass-card fade-up-init">
+          <div class="service-icon"><i class="fa-solid fa-network-wired"></i></div>
+          <h3>Digital Twin Integration</h3>
+          <p>Connecting real-time IoT sensor telemetry data to high-fidelity 3D structural models for continuous performance monitoring.</p>
+          <a href="digital-twin.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-gold); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1.5rem;">Read Details <i class="fa-solid fa-arrow-right-long"></i></a>
+        </div>
+        <!-- Service 4 -->
+        <div class="service-card glass-card fade-up-init">
+          <div class="service-icon"><i class="fa-solid fa-chart-line"></i></div>
+          <h3>Project Management</h3>
+          <p>Automated scheduling and 4D progress tracking integrated directly with the physical project's digital replica.</p>
+          <a href="project-management.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-gold); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1.5rem;">Read Details <i class="fa-solid fa-arrow-right-long"></i></a>
+        </div>
+        <!-- Service 5 -->
+        <div class="service-card glass-card fade-up-init">
+          <div class="service-icon"><i class="fa-solid fa-hard-hat"></i></div>
+          <h3>Construction Supervision</h3>
+          <p>On-site execution quality audits matched against the blueprint specifications using mixed-reality headsets.</p>
+          <a href="construction-supervision.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-gold); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1.5rem;">Read Details <i class="fa-solid fa-arrow-right-long"></i></a>
+        </div>
+        <!-- Service 6 -->
+        <div class="service-card glass-card fade-up-init">
+          <div class="service-icon"><i class="fa-solid fa-calculator"></i></div>
+          <h3>Feasibility &amp; Cost Estimation</h3>
+          <p>AI-driven estimation matrices that sync in real-time with design modifications, ensuring project budget tracking.</p>
+          <a href="feasibility-cost.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-gold); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1.5rem;">Read Details <i class="fa-solid fa-arrow-right-long"></i></a>
+        </div>
+        <!-- Service 7 -->
+        <div class="service-card glass-card fade-up-init">
+          <div class="service-icon"><i class="fa-solid fa-bolt"></i></div>
+          <h3>MEP Engineering</h3>
+          <p>Integrated mechanical, electrical, and plumbing engineering optimized for thermal efficiency and smart-grid controls.</p>
+          <a href="mep-engineering.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-gold); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1.5rem;">Read Details <i class="fa-solid fa-arrow-right-long"></i></a>
+        </div>
+        <!-- Service 8 -->
+        <div class="service-card glass-card fade-up-init">
+          <div class="service-icon"><i class="fa-solid fa-vr-cardboard"></i></div>
+          <h3>3D Visualization &amp; Rendering</h3>
+          <p>Photorealistic architectural renderings, walk-through experiences, and immersive VR configurations for presentations.</p>
+          <a href="3d-visualization.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-gold); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1.5rem;">Read Details <i class="fa-solid fa-arrow-right-long"></i></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- 3D BIM VIEWER SECTION -->
+  <section class="section-padding bim-section" id="bim-viewer">
+    <div class="container">
+      <div class="section-header fade-up-init">
+        <h2><span>BIM Portal</span>Explore Our Digital Twin</h2>
+        <p>Interact with our interactive structural model skeleton. Hover to highlight and click components to fetch live BIM metadata parameters.</p>
+      </div>
+
+      <div class="bim-grid fade-up-init">
+        <!-- Viewport -->
+        <div class="bim-viewport-container">
+          <div class="bim-instructions-overlay">
+            <i class="fa-solid fa-hand-pointer text-gold"></i> Left Click to Select Element | Drag to Orbit
+          </div>
+          <canvas id="bim-canvas"></canvas>
+          <div class="bim-controls">
+            <button class="bim-control-btn active" id="btn-view-3d">3D View</button>
+            <button class="bim-control-btn" id="btn-view-plan">Floor Plan</button>
+            <button class="bim-control-btn" id="btn-view-section">Section View</button>
+            <button class="bim-control-btn" id="btn-view-data">Reset Model</button>
+          </div>
+        </div>
+
+        <!-- Sidebar Panel -->
+        <div class="bim-sidebar glass-card">
+          <div class="bim-sidebar-header">
+            <h3 id="bim-element-title">Structural Column C-12</h3>
+            <p class="text-mono" id="bim-element-tag">TAG: BIM-COL-00C12</p>
+          </div>
+          <div class="bim-data-panel text-mono">
+            <div class="bim-data-row">
+              <span class="bim-label">Material Grade</span>
+              <span class="bim-val" id="bim-material">Grade 60 Rebar / M25 Concrete</span>
+            </div>
+            <div class="bim-data-row">
+              <span class="bim-label">Dimensions / Span</span>
+              <span class="bim-val" id="bim-dimensions">0.45m x 0.45m x 3.50m</span>
+            </div>
+            <div class="bim-data-row">
+              <span class="bim-label">Design Axial Load</span>
+              <span class="bim-val" id="bim-load">450.00 kN</span>
+            </div>
+            <div class="bim-data-row">
+              <span class="bim-label">Shear Reinforcement</span>
+              <span class="bim-val" id="bim-shear">10mm links @ 150mm c/c</span>
+            </div>
+            <div class="bim-data-row">
+              <span class="bim-label">Execution Status</span>
+              <span class="bim-val status-check" id="bim-status">Completed ✓</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- STRUCTURAL DESIGN TOOLS -->
+  <section class="section-padding tools-section" id="tools">
+    <div class="container">
+      <div class="section-header fade-up-init">
+        <h2><span>Interactive Suite</span>Structural Design Tools</h2>
+        <p>Test standard structural members online. Run analysis calculations and view layout sketches instantly.</p>
+      </div>
+
+      <div class="tools-container fade-up-init">
+        <!-- Tabs -->
+        <div class="tools-tabs">
+          <button class="tool-tab-btn active" data-tab="beam">Beam Design</button>
+          <button class="tool-tab-btn" data-tab="column">Column Design</button>
+          <button class="tool-tab-btn" data-tab="slab">Slab Design</button>
+          <button class="tool-tab-btn" data-tab="pile-cap">Pile Cap</button>
+          <button class="tool-tab-btn" data-tab="footing">Footing</button>
+        </div>
+
+        <!-- Panel 1: BEAM -->
+        <div class="tool-content-panel active" id="panel-beam">
+          <div class="tool-inputs-card glass-card">
+            <h3>Input Parameters</h3>
+            <div class="input-grid">
+              <div class="input-field">
+                <label>Width, b (mm)</label>
+                <input type="number" id="beam-w" value="250" min="150" max="600">
+              </div>
+              <div class="input-field">
+                <label>Depth, D (mm)</label>
+                <input type="number" id="beam-d" value="450" min="200" max="1000">
+              </div>
+              <div class="input-field">
+                <label>Bending Moment, Mu (kNm)</label>
+                <input type="number" id="beam-moment" value="120" min="10" max="1000">
+              </div>
+              <div class="input-field">
+                <label>Clear Cover (mm)</label>
+                <input type="number" id="beam-cover" value="25" min="15" max="75">
+              </div>
+              <div class="input-field">
+                <label>Concrete Grade</label>
+                <select id="beam-concrete">
+                  <option value="20">M20 (fck = 20 MPa)</option>
+                  <option value="25" selected>M25 (fck = 25 MPa)</option>
+                  <option value="30">M30 (fck = 30 MPa)</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Steel Rebar Grade</label>
+                <select id="beam-steel">
+                  <option value="415">Fe415 (fy = 415 MPa)</option>
+                  <option value="500" selected>Fe500 (fy = 500 MPa)</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-gold btn-calc" id="btn-calc-beam" style="margin-top: 1.5rem;">Calculate Member</button>
+          </div>
+          
+          <div class="tool-outputs-card glass-card">
+            <h3>Analysis Output <span class="tool-status-badge pass" id="beam-status-badge">PASS</span></h3>
+            <div class="results-console text-mono">
+              <div class="console-line"><span class="console-label">Effective Depth (d)</span><span class="console-val" id="beam-out-depth">413 mm</span></div>
+              <div class="console-line"><span class="console-label">Limiting Moment Capacity (Mu,lim)</span><span class="console-val" id="beam-out-mulim">140.2 kNm</span></div>
+              <div class="console-line"><span class="console-label">Design Tension Steel Area (Ast)</span><span class="console-val" id="beam-out-ast">764 mm²</span></div>
+              <div class="console-line"><span class="console-label">Required Rebars (Tension)</span><span class="console-val" id="beam-out-bars">4 Nos - 16mm dia</span></div>
+              <div class="console-line"><span class="console-label">Minimum Steel Area (Ast,min)</span><span class="console-val" id="beam-out-astmin">176 mm²</span></div>
+              <div class="console-line"><span class="console-label">Steel Reinforcement Ratio (pt)</span><span class="console-val" id="beam-out-ratio">0.74%</span></div>
+            </div>
+            <div class="schematic-box">
+              <h4>Cross-Section Layout</h4>
+              <canvas id="beam-canvas" class="schematic-canvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 2: COLUMN -->
+        <div class="tool-content-panel" id="panel-column">
+          <div class="tool-inputs-card glass-card">
+            <h3>Input Parameters</h3>
+            <div class="input-grid">
+              <div class="input-field">
+                <label>Project Name</label>
+                <input type="text" id="column-proj-name" value="TwinAnalytic Tower">
+              </div>
+              <div class="input-field">
+                <label>Project Number</label>
+                <input type="text" id="column-proj-num" value="2026-001">
+              </div>
+              <div class="input-field">
+                <label>Designer Initials</label>
+                <input type="text" id="column-designer" value="AH">
+              </div>
+              <div class="input-field">
+                <label>Reviewer Initials</label>
+                <input type="text" id="column-reviewer" value="MB">
+              </div>
+              <div class="input-field">
+                <label>Column Height (ft)</label>
+                <input type="number" id="column-height" value="10" min="1" max="100" step="any">
+              </div>
+              <div class="input-field">
+                <label>Dead Load, PDL (k)</label>
+                <input type="number" id="column-pdl" value="300" min="0.1" step="any">
+              </div>
+              <div class="input-field">
+                <label>Live Load, PLL (k)</label>
+                <input type="number" id="column-pll" value="200" min="0.1" step="any">
+              </div>
+              <div class="input-field">
+                <label>Concrete Strength, f'c (ksi)</label>
+                <input type="number" id="column-fc" value="3" min="0.1" step="any">
+              </div>
+              <div class="input-field">
+                <label>Steel Strength, fy (ksi)</label>
+                <input type="number" id="column-fy" value="60" min="0.1" step="any">
+              </div>
+              <div class="input-field">
+                <label>Phi Factor, Ø</label>
+                <input type="number" id="column-phi" value="0.65" min="0.01" max="1.0" step="0.01">
+              </div>
+              <div class="input-field">
+                <label>Steel Ratio, ρ</label>
+                <select id="column-p">
+                  <option value="0.01">0.01</option>
+                  <option value="0.02" selected>0.02</option>
+                  <option value="0.03">0.03</option>
+                  <option value="0.04">0.04</option>
+                  <option value="0.05">0.05</option>
+                  <option value="0.06">0.06</option>
+                  <option value="0.07">0.07</option>
+                  <option value="0.08">0.08</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Main Bar Size</label>
+                <select id="column-main-bar">
+                  <option value="#7">#7 (7/8")</option>
+                  <option value="#8" selected>#8 (1")</option>
+                  <option value="#9">#9 (1-1/8")</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Tie Bar Size</label>
+                <select id="column-tie-bar">
+                  <option value="#3" selected>#3 (3/8")</option>
+                  <option value="#4">#4 (1/2")</option>
+                </select>
+              </div>
+            </div>
+            <!-- Validation Message -->
+            <div id="column-validation-error" class="hidden" style="color: #f5222d; font-size: 0.8rem; margin-top: 1rem; font-family: var(--font-mono);">
+              Please ensure all values are positive and steel ratio is between 0.01 and 0.08.
+            </div>
+            <button class="btn btn-gold btn-calc" id="btn-calc-column" style="margin-top: 1.5rem;">Calculate Member</button>
+          </div>
+          
+          <div class="tool-outputs-card glass-card">
+            <h3>Analysis Output <span class="tool-status-badge pass" id="column-status-badge">PASS</span></h3>
+            <div class="results-console text-mono">
+              <div class="console-line"><span class="console-label">Factored Load (Pu)</span><span class="console-val" id="column-out-pu">0 k</span></div>
+              <div class="console-line"><span class="console-label">Gross Concrete Area Required (Ag)</span><span class="console-val" id="column-out-ag">0 in²</span></div>
+              <div class="console-line"><span class="console-label">Column Dimension (Dim)</span><span class="console-val" id="column-out-dim">0 in</span></div>
+              <div class="console-line"><span class="console-label">Final Column Area</span><span class="console-val" id="column-out-final-area">0 in²</span></div>
+              <div class="console-line"><span class="console-label">Required Steel Area (Ast)</span><span class="console-val" id="column-out-ast">0 in²</span></div>
+              <div class="console-line"><span class="console-label">Max Tie Spacing</span><span class="console-val" id="column-out-tie-spacing">0 in</span></div>
+              <div class="console-line"><span class="console-label">Std Tie Hook Extension</span><span class="console-val" id="column-out-hook-extension">0 in</span></div>
+              <div class="console-line"><span class="console-label">Nominal Strength (Pn,max)</span><span class="console-val" id="column-out-pn-max">0 k</span></div>
+              <div class="console-line"><span class="console-label">Design Strength (Phi Pn)</span><span class="console-val" id="column-out-phi-pn">0 k</span></div>
+              <div class="console-line"><span class="console-label">D/C Ratio</span><span class="console-val" id="column-out-dc-ratio">0.00</span></div>
+              <div class="console-line"><span class="console-label">Concrete Volume</span><span class="console-val" id="column-out-concrete-vol">0.00 m³</span></div>
+              <div class="console-line"><span class="console-label">Steel Weight</span><span class="console-val" id="column-out-steel-weight">0.00 kg</span></div>
+              <div class="console-line" id="column-row-warning" style="display: none; color: #f5222d; border-top: 1px dashed rgba(245, 34, 45, 0.3); padding-top: 0.5rem; margin-top: 0.5rem; flex-direction: column; align-items: flex-start; gap: 0.25rem;">
+                <span class="console-label" style="color: #f5222d; font-weight: bold;">ACI Compliance Alert</span>
+                <span class="console-val" id="column-out-warning-text" style="color: #f5222d; font-size: 0.75rem; text-align: left; white-space: normal;"></span>
+              </div>
+            </div>
+            <div class="schematic-box">
+              <h4>Cross-Section Layout</h4>
+              <canvas id="column-canvas" class="schematic-canvas"></canvas>
+            </div>
+            <button class="btn btn-ghost" id="btn-download-pdf" style="margin-top: 1.5rem; width: 100%;">
+              <i class="fa-solid fa-file-pdf" style="margin-right: 0.5rem;"></i> Download PDF Report
+            </button>
+          </div>
+        </div>
+
+        <!-- Panel 3: SLAB -->
+        <div class="tool-content-panel" id="panel-slab">
+          <div class="tool-inputs-card glass-card">
+            <h3>Input Parameters</h3>
+            <div class="input-grid">
+              <div class="input-field">
+                <label>Clear Span, L (m)</label>
+                <input type="number" id="slab-span" value="3.5" min="1.0" max="8.0" step="0.1">
+              </div>
+              <div class="input-field">
+                <label>Thickness, t (mm)</label>
+                <input type="number" id="slab-t" value="125" min="90" max="250">
+              </div>
+              <div class="input-field">
+                <label>Superimposed Load (kN/m²)</label>
+                <input type="number" id="slab-load" value="4.0" min="1.0" max="15.0" step="0.5">
+              </div>
+              <div class="input-field">
+                <label>Concrete Grade</label>
+                <select id="slab-concrete">
+                  <option value="20" selected>M20 (fck = 20 MPa)</option>
+                  <option value="25">M25 (fck = 25 MPa)</option>
+                  <option value="30">M30 (fck = 30 MPa)</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Steel Rebar Grade</label>
+                <select id="slab-steel">
+                  <option value="415">Fe415 (fy = 415 MPa)</option>
+                  <option value="500" selected>Fe500 (fy = 500 MPa)</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-gold btn-calc" id="btn-calc-slab" style="margin-top: 1.5rem;">Calculate Member</button>
+          </div>
+          
+          <div class="tool-outputs-card glass-card">
+            <h3>Analysis Output <span class="tool-status-badge pass" id="slab-status-badge">PASS</span></h3>
+            <div class="results-console text-mono">
+              <div class="console-line"><span class="console-label">Design Factored Load (wu)</span><span class="console-val" id="slab-out-wu">10.69 kN/m</span></div>
+              <div class="console-line"><span class="console-label">Design Bending Moment (Mu)</span><span class="console-val" id="slab-out-mu">16.37 kNm</span></div>
+              <div class="console-line"><span class="console-label">Required Main Steel (Ast)</span><span class="console-val" id="slab-out-ast">384 mm²/m</span></div>
+              <div class="console-line"><span class="console-label">Main Rebar Spacing</span><span class="console-val" id="slab-out-spacing">10mm @ 200mm c/c</span></div>
+              <div class="console-line"><span class="console-label">Distribution Steel Area</span><span class="console-val" id="slab-out-dist">150 mm²/m</span></div>
+              <div class="console-line"><span class="console-label">Deflection Check Ratio</span><span class="console-val" id="slab-out-deflect">1.08 (Safe)</span></div>
+            </div>
+            <div class="schematic-box">
+              <h4>Cross-Section Layout</h4>
+              <canvas id="slab-canvas" class="schematic-canvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 4: PILE CAP -->
+        <div class="tool-content-panel" id="panel-pile-cap">
+          <div class="tool-inputs-card glass-card">
+            <h3>Input Parameters</h3>
+            <div class="input-grid">
+              <div class="input-field">
+                <label>Pile Diameter (mm)</label>
+                <input type="number" id="pile-dia" value="600" min="400" max="1500">
+              </div>
+              <div class="input-field">
+                <label>Number of Piles</label>
+                <select id="pile-count">
+                  <option value="2">2 Piles (Linear Layout)</option>
+                  <option value="3">3 Piles (Triangular Layout)</option>
+                  <option value="4" selected>4 Piles (Square Layout)</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Axial Column Load (kN)</label>
+                <input type="number" id="pile-load" value="2500" min="500" max="10000">
+              </div>
+              <div class="input-field">
+                <label>Cap Depth, H (mm)</label>
+                <input type="number" id="pile-depth" value="900" min="600" max="2000">
+              </div>
+              <div class="input-field">
+                <label>Concrete Grade</label>
+                <select id="pile-concrete">
+                  <option value="25" selected>M25 (fck = 25 MPa)</option>
+                  <option value="30">M30 (fck = 30 MPa)</option>
+                  <option value="35">M35 (fck = 35 MPa)</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-gold btn-calc" id="btn-calc-pile-cap" style="margin-top: 1.5rem;">Calculate Member</button>
+          </div>
+          
+          <div class="tool-outputs-card glass-card">
+            <h3>Analysis Output <span class="tool-status-badge pass" id="pile-cap-status-badge">PASS</span></h3>
+            <div class="results-console text-mono">
+              <div class="console-line"><span class="console-label">Truss Model Tension (T)</span><span class="console-val" id="pile-out-tension">781.3 kN</span></div>
+              <div class="console-line"><span class="console-label">Required Main Steel Area (Ast)</span><span class="console-val" id="pile-out-ast">1797 mm²</span></div>
+              <div class="console-line"><span class="console-label">Main Rebars Arrangement</span><span class="console-val" id="pile-out-bars">6 Nos - 20mm dia (each direction)</span></div>
+              <div class="console-line"><span class="console-label">Load Per Pile (Fpile)</span><span class="console-val" id="pile-out-pileload">625.0 kN</span></div>
+              <div class="console-line"><span class="console-label">Punching Shear Stress</span><span class="console-val" id="pile-out-shear">1.12 MPa</span></div>
+              <div class="console-line"><span class="console-label">Punching Shear Check</span><span class="console-val" id="pile-out-shearcheck">0.82 (Safe)</span></div>
+            </div>
+            <div class="schematic-box">
+              <h4>Top Plan Layout</h4>
+              <canvas id="pile-cap-canvas" class="schematic-canvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 5: FOOTING -->
+        <div class="tool-content-panel" id="panel-footing">
+          <div class="tool-inputs-card glass-card">
+            <h3>Input Parameters</h3>
+            <div class="input-grid">
+              <div class="input-field">
+                <label>Axial Column Load (kN)</label>
+                <input type="number" id="footing-load" value="800" min="200" max="5000">
+              </div>
+              <div class="input-field">
+                <label>Soil Bearing Capacity (kN/m²)</label>
+                <input type="number" id="footing-sbc" value="150" min="50" max="400">
+              </div>
+              <div class="input-field">
+                <label>Column Size (mm)</label>
+                <input type="number" id="footing-col" value="300" min="150" max="600">
+              </div>
+              <div class="input-field">
+                <label>Concrete Grade</label>
+                <select id="footing-concrete">
+                  <option value="20" selected>M20 (fck = 20 MPa)</option>
+                  <option value="25">M25 (fck = 25 MPa)</option>
+                  <option value="30">M30 (fck = 30 MPa)</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Steel Rebar Grade</label>
+                <select id="footing-steel">
+                  <option value="415">Fe415 (fy = 415 MPa)</option>
+                  <option value="500" selected>Fe500 (fy = 500 MPa)</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-gold btn-calc" id="btn-calc-footing" style="margin-top: 1.5rem;">Calculate Member</button>
+          </div>
+          
+          <div class="tool-outputs-card glass-card">
+            <h3>Analysis Output <span class="tool-status-badge pass" id="footing-status-badge">PASS</span></h3>
+            <div class="results-console text-mono">
+              <div class="console-line"><span class="console-label">Required Base Area (Af)</span><span class="console-val" id="footing-out-area">5.87 m²</span></div>
+              <div class="console-line"><span class="console-label">Footing Dimensions (L x W)</span><span class="console-val" id="footing-out-dim">2.45m x 2.45m</span></div>
+              <div class="console-line"><span class="console-label">Required Thickness (H)</span><span class="console-val" id="footing-out-thickness">450 mm</span></div>
+              <div class="console-line"><span class="console-label">Tension Steel Area (Ast)</span><span class="console-val" id="footing-out-ast">1245 mm²</span></div>
+              <div class="console-line"><span class="console-label">Required Base Mesh</span><span class="console-val" id="footing-out-mesh">12mm dia @ 150mm c/c</span></div>
+              <div class="console-line"><span class="console-label">One-Way Shear Check</span><span class="console-val" id="footing-out-shear">0.31 MPa (Safe)</span></div>
+            </div>
+            <div class="schematic-box">
+              <h4>Isolated Footing Elevation</h4>
+              <canvas id="footing-canvas" class="schematic-canvas"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ADMIN LEADS SECTION -->
+  <section class="section-padding" style="padding-top: 0; padding-bottom: 6rem; background-color: var(--bg-primary);">
+    <div class="container">
+      <div class="glass-card" style="max-width: 800px; margin: 0 auto; border-style: dashed;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+          <div>
+            <h3 style="font-family: var(--font-serif); font-size: 1.6rem; font-weight: 400; margin-bottom: 0.5rem; color: var(--color-gold);">Lead Database Export</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Generate and download a Microsoft Excel compatible (.csv) report containing all registered leads.</p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+            <div style="text-align: right;">
+              <span class="text-mono" id="leads-count" style="font-size: 1.5rem; font-weight: bold; color: var(--color-gold);">0</span>
+              <p style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.1em; margin-top: 0.1rem;">Leads Logged</p>
+            </div>
+            <button class="btn btn-ghost" id="btn-export-leads" style="font-size: 0.75rem; padding: 0.7rem 1.5rem; min-height: auto;"><i class="fa-solid fa-file-excel" style="margin-right: 0.5rem;"></i> Export to Excel</button>
+            <button class="btn" id="btn-clear-leads" style="font-size: 0.75rem; padding: 0.7rem 1.5rem; background: rgba(245, 34, 45, 0.1); color: #F5222D; border: 1px solid rgba(245, 34, 45, 0.3); min-height: auto;">Clear Database</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- PROJECTS / PORTFOLIO -->
+  <section class="section-padding" id="projects">
+    <div class="container">
+      <div class="section-header fade-up-init">
+        <h2><span>Our Portfolio</span>Iconic Architectural Landmarks</h2>
+        <p>A hand-picked selection of high-tech structural projects developed, audited, and optimized using our digital twin workflows.</p>
+      </div>
+
+      <!-- Filters -->
+      <div class="portfolio-filters fade-up-init">
+        <button class="filter-btn active" data-filter="all">All Projects</button>
+        <button class="filter-btn" data-filter="commercial">Commercial</button>
+        <button class="filter-btn" data-filter="residential">Residential</button>
+        <button class="filter-btn" data-filter="industrial">Industrial</button>
+        <button class="filter-btn" data-filter="infrastructure">Infrastructure</button>
+      </div>
+
+      <!-- Grid -->
+      <div class="portfolio-grid">
+        <!-- Project 1 -->
+        <div class="project-card fade-up-init" data-category="commercial">
+          <img src="assets/project_commercial.jpg" alt="Aether Helix Tower Commercial Headquarters Office Building Render" class="project-img">
+          <div class="project-overlay">
+            <span class="project-badge">BIM Level 3 | LOD 500</span>
+            <h3>Aether Helix Tower</h3>
+            <div class="project-loc"><i class="fa-solid fa-location-dot"></i> Frankfurt, Germany</div>
+          </div>
+        </div>
+        <!-- Project 2 -->
+        <div class="project-card fade-up-init" data-category="infrastructure">
+          <img src="assets/project_infra.jpg" alt="Valkyrie Arch Bridge Digital Twin infrastructure model render" class="project-img">
+          <div class="project-overlay">
+            <span class="project-badge">Structural FEM | IoT Twin</span>
+            <h3>Valkyrie Arch Bridge</h3>
+            <div class="project-loc"><i class="fa-solid fa-location-dot"></i> Oslo, Norway</div>
+          </div>
+        </div>
+        <!-- Project 3 -->
+        <div class="project-card fade-up-init" data-category="residential">
+          <img src="assets/project_residential.jpg" alt="Elysium Terraces Luxury Residential Development Render" class="project-img">
+          <div class="project-overlay">
+            <span class="project-badge">Green BIM | MEP Optimized</span>
+            <h3>Elysium Terraces</h3>
+            <div class="project-loc"><i class="fa-solid fa-location-dot"></i> Geneva, Switzerland</div>
+          </div>
+        </div>
+        <!-- Project 4 -->
+        <div class="project-card fade-up-init" data-category="industrial">
+          <img src="assets/project_industrial.jpg" alt="Nova Logix Facility automated factory plant render" class="project-img">
+          <div class="project-overlay">
+            <span class="project-badge">LOD 400 | Clash Resolved</span>
+            <h3>Nova Logix Facility</h3>
+            <div class="project-loc"><i class="fa-solid fa-location-dot"></i> Texas, USA</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- WHY CHOOSE US -->
+  <section class="section-padding" id="why-choose-us">
+    <div class="container">
+      <div class="section-header fade-up-init">
+        <h2><span>Our Benchmarks</span>Why Lead with TwinAnalytic</h2>
+        <p>We push structural safety and construction timeline predictability beyond conventional limitations.</p>
+      </div>
+
+      <div class="why-grid">
+        <div class="why-card fade-up-init">
+          <div class="why-icon"><i class="fa-solid fa-certificate"></i></div>
+          <h3>ISO 19650 Certified</h3>
+          <p>Strict compliance with international standards for managing building information modeling details across the building asset lifecycle.</p>
+        </div>
+        <div class="why-card fade-up-init">
+          <div class="why-icon"><i class="fa-solid fa-microchip"></i></div>
+          <h3>BIM Level 3 Compliance</h3>
+          <p>Fully collaborative, cloud-hosted master models allowing real-time multi-discipline synchronization with zero revision delays.</p>
+        </div>
+        <div class="why-card fade-up-init">
+          <div class="why-icon"><i class="fa-solid fa-tower-broadcast"></i></div>
+          <h3>Real-time IoT Sync</h3>
+          <p>Continuous bridge and tower health monitoring via digital twins feeding structural deformation telemetry data to dashboards.</p>
+        </div>
+        <div class="why-card fade-up-init">
+          <div class="why-icon"><i class="fa-solid fa-brain"></i></div>
+          <h3>AI-Powered Optimizations</h3>
+          <p>Generative code tools that run thousands of structural configurations to locate the most material-efficient cross sections.</p>
+        </div>
+        <div class="why-card fade-up-init">
+          <div class="why-icon"><i class="fa-solid fa-calendar-check"></i></div>
+          <h3>Guaranteed On-Time</h3>
+          <p>Simulating assembly sequence vectors (4D BIM) to predict scheduling bottlenecks and secure critical-path milestones.</p>
+        </div>
+        <div class="why-card fade-up-init">
+          <div class="why-icon"><i class="fa-solid fa-headset"></i></div>
+          <h3>24/7 Asset Telemetry</h3>
+          <p>Our dedicated operations command center stands watch on deployed digital twins, sending instant alerts on load spikes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- TEAM SECTION -->
+  <section class="section-padding" id="team">
+    <div class="container">
+      <div class="section-header fade-up-init">
+        <h2><span>The Minds Behind the Models</span>Executive Leadership</h2>
+        <p>Our leadership blends computational geometry, structural engineering, and luxury architecture design execution.</p>
+      </div>
+
+      <div class="team-grid">
+        <!-- Team 1 -->
+        <div class="team-card fade-up-init">
+          <div class="team-photo-wrap">
+            <img src="assets/team_ceo.jpg" alt="CEO MD. AHSAN HABIB ANIK" class="team-photo">
+          </div>
+          <h3>MD. AHSAN HABIB ANIK</h3>
+          <span class="team-role">Chief Executive Officer &amp; Founder</span>
+          <div class="team-social">
+            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+          </div>
+        </div>
+        <!-- Team 2 -->
+        <div class="team-card fade-up-init">
+          <div class="team-photo-wrap">
+            <img src="assets/team_cto.jpg" alt="CTO Helena Rostova" class="team-photo">
+          </div>
+          <h3>Helena Rostova</h3>
+          <span class="team-role">Chief Technology Officer</span>
+          <div class="team-social">
+            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+          </div>
+        </div>
+        <!-- Team 3 -->
+        <div class="team-card fade-up-init">
+          <div class="team-photo-wrap">
+            <img src="assets/team_cso.jpg" alt="Chief Structural Engineer Arthur Pendelton" class="team-photo">
+          </div>
+          <h3>Arthur Pendelton</h3>
+          <span class="team-role">Principal Structural Engineer</span>
+          <div class="team-social">
+            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- TESTIMONIALS -->
+  <section class="section-padding testimonials-section" id="testimonials">
+    <div class="container">
+      <div class="section-header fade-up-init">
+        <h2><span>Client Reviews</span>Trusted Across Industries</h2>
+      </div>
+
+      <div class="testimonial-carousel-container fade-up-init">
+        <div class="testimonials-wrapper">
+          <div class="testimonials-track" id="testimonials-track">
+            <!-- Slide 1 -->
+            <div class="testimonial-slide">
+              <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
+              <p class="testimonial-text">"TwinAnalytic's BIM coordination saved us over $4.2M in material conflict re-runs on the Helix Tower. Their digital twin capability is unmatched."</p>
+              <div class="testimonial-rating">
+                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+              </div>
+              <div class="testimonial-author">
+                <h4>Lord Sterling Sterling</h4>
+                <p>Aether Developments, VP Planning</p>
+              </div>
+            </div>
+            <!-- Slide 2 -->
+            <div class="testimonial-slide">
+              <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
+              <p class="testimonial-text">"The real-time stress testing of the Valkyrie Bridge via their IoT twin platform gives our city engineers absolute peace of mind."</p>
+              <div class="testimonial-rating">
+                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+              </div>
+              <div class="testimonial-author">
+                <h4>Astrid Lindqvist</h4>
+                <p>Oslo Public Transit Authority, Director</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="carousel-dots" id="carousel-dots">
+          <!-- Dots will be added dynamically by JS -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- BLOG / INSIGHTS -->
+  <section class="section-padding" id="blog">
+    <div class="container">
+      <div class="section-header fade-up-init">
+        <h2><span>Twin Insights</span>Latest Technical R&amp;D</h2>
+        <p>Read detailed design breakdowns, BIM methodology workflows, and software integration strategies.</p>
+      </div>
+
+      <div class="blog-grid">
+        <!-- Blog 1 -->
+        <div class="blog-card glass-card fade-up-init">
+          <div class="blog-img-wrap">
+            <img src="assets/blog_bim.jpg" alt="LOD 500 BIM Model Wireframe Render" class="blog-img">
+          </div>
+          <div class="blog-meta">
+            <span>BIM Tech</span> • <span>May 28, 2026</span>
+          </div>
+          <h3>Structuring LOD 500 Models for Asset Operations</h3>
+          <p>How developers can leverage detailed BIM files to configure facilities management automations and reduce annual maintenance overhead.</p>
+          <a href="#blog" class="blog-read-more">Read Breakdown <i class="fa-solid fa-arrow-right-long"></i></a>
+        </div>
+        <!-- Blog 2 -->
+        <div class="blog-card glass-card fade-up-init">
+          <div class="blog-img-wrap">
+            <img src="assets/blog_fem.jpg" alt="Finite Element Analysis structural grid heatmap render" class="blog-img">
+          </div>
+          <div class="blog-meta">
+            <span>Structural</span> • <span>Apr 15, 2026</span>
+          </div>
+          <h3>FEM Analysis Under Extreme Wind Vector Forces</h3>
+          <p>A technical guide detailing how we simulate non-linear dynamics of twisting tall towers under vortex shedding loads.</p>
+          <a href="#blog" class="blog-read-more">Read Breakdown <i class="fa-solid fa-arrow-right-long"></i></a>
+        </div>
+        <!-- Blog 3 -->
+        <div class="blog-card glass-card fade-up-init">
+          <div class="blog-img-wrap">
+            <img src="assets/blog_twin.jpg" alt="Digital Twin platform dashboard schematic render" class="blog-img">
+          </div>
+          <div class="blog-meta">
+            <span>IoT Integration</span> • <span>Mar 10, 2026</span>
+          </div>
+          <h3>Connecting IoT Sensor Hubs to 3D IFC Models</h3>
+          <p>Configuring telemetry feeds to highlight physical stresses on model sections dynamically for automated alarm systems.</p>
+          <a href="#blog" class="blog-read-more">Read Breakdown <i class="fa-solid fa-arrow-right-long"></i></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- CONTACT / GET A QUOTE -->
+  <section class="section-padding" id="contact">
+    <div class="container">
+      <div class="contact-grid">
+        <!-- Info -->
+        <div class="contact-info fade-up-init">
+          <div>
+            <h3>Connect with TwinAnalytic</h3>
+            <p>Ready to secure structural optimization, set up high-precision BIM models, or deploy real-time digital twins? Let's discuss details.</p>
+          </div>
+          <div class="contact-methods">
+            <div class="contact-method-item">
+              <div class="contact-method-icon"><i class="fa-solid fa-building-shield"></i></div>
+              <div class="contact-method-text">
+                <h4>Headquarters</h4>
+                <p>Level 48, Onyx Tower, Frankfurt, Germany</p>
+              </div>
+            </div>
+            <div class="contact-method-item">
+              <div class="contact-method-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
+              <div class="contact-method-text">
+                <h4>Email Communication</h4>
+                <p>solutions@twinanalytic.com</p>
+              </div>
+            </div>
+            <div class="contact-method-item">
+              <div class="contact-method-icon"><i class="fa-solid fa-phone-volume"></i></div>
+              <div class="contact-method-text">
+                <h4>Direct Operations Line</h4>
+                <p>+49 (69) 829-4820</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Map -->
+          <div class="contact-map-placeholder">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2559.8979854498327!2d8.672322316024982!3d50.110922079429415!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47bd096f477bf25b%3A0xffa3cbda6ef11d59!2sFrankfurt%2C%20Germany!5e0!3m2!1sen!2sus!4v1689200000000!5m2!1sen!2sus" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </div>
+        </div>
+
+        <!-- Form -->
+        <div class="contact-form-wrap glass-card fade-up-init">
+          <form class="contact-form" id="contact-form" onsubmit="event.preventDefault(); alert('Thank you! Our BIM coordination team will review your proposal details within 24 hours.'); this.reset();">
+            <div class="contact-form-row">
+              <div class="form-group">
+                <label for="c-name">Full Name</label>
+                <input type="text" id="c-name" placeholder="John Doe" required>
+              </div>
+              <div class="form-group">
+                <label for="c-email">Business Email</label>
+                <input type="email" id="c-email" placeholder="j.doe@company.com" required>
+              </div>
+            </div>
+            <div class="contact-form-row">
+              <div class="form-group">
+                <label for="c-phone">Phone Number</label>
+                <input type="tel" id="c-phone" placeholder="+49 170 1234567">
+              </div>
+              <div class="form-group">
+                <label for="c-type">Project Scope</label>
+                <select id="c-type">
+                  <option value="bim">Full BIM modeling &amp; Coordination</option>
+                  <option value="twin">Digital Twin Setup &amp; IoT Sync</option>
+                  <option value="structural">Structural Design &amp; FEM Analysis</option>
+                  <option value="all">Turnkey Tech Construction Management</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="c-msg">Project Summary &amp; Load Requirements</label>
+              <textarea id="c-msg" placeholder="Tell us about the project layout, location, number of floors, and structural load constraints..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-gold" style="width: 100%; margin-top: 1rem;">Transmit Proposal Specifications</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEAD CAPTURE MODAL -->
+  <div class="modal-overlay" id="auth-modal">
+    <div class="modal-card glass-card">
+      <div class="modal-header">
+        <h3>Unlock Engineering Suite</h3>
+        <p>Enter your professional credentials to run limit-state design checks and download coordinate schematics.</p>
+      </div>
+      <form class="modal-form" id="modal-auth-form">
+        <div class="form-group">
+          <label for="lead-name">Full Name</label>
+          <input type="text" id="lead-name" placeholder="E.g., MD. AHSAN HABIB ANIK" required>
+        </div>
+        <div class="form-group">
+          <label for="lead-phone">Contact Number</label>
+          <input type="tel" id="lead-phone" placeholder="E.g., +880 1712-345678" required>
+        </div>
+        <div class="form-group">
+          <label for="lead-email">Business Email</label>
+          <input type="email" id="lead-email" placeholder="anik@twinanalytic.com" required>
+        </div>
+        <button type="submit" class="btn btn-gold" style="width: 100%; margin-top: 1rem;">Unlock Calculators</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-top-gradient"></div>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col brand">
+          <h3>Twin<span>Analytic</span></h3>
+          <p>Precision building structures, high-fidelity BIM level 3 coordination modeling, and IoT-driven real-time structural performance tracking.</p>
+          <div class="footer-socials">
+            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="#"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#"><i class="fa-brands fa-youtube"></i></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h3>Services</h3>
+          <ul class="footer-links">
+            <li><a href="services.html">BIM Coordination</a></li>
+            <li><a href="services.html">Structural Design</a></li>
+            <li><a href="services.html">Digital Twin Analytics</a></li>
+            <li><a href="services.html">MEP Engineering</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Interactive</h3>
+          <ul class="footer-links">
+            <li><a href="tools.html">Beam Design Calculator</a></li>
+            <li><a href="tools.html">Column Design Calculator</a></li>
+            <li><a href="tools.html">Slab Spans Calculator</a></li>
+            <li><a href="tools.html">Foundation Analysis</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Company</h3>
+          <ul class="footer-links">
+            <li><a href="about.html">About Our Firm</a></li>
+            <li><a href="projects.html">Project Portfolio</a></li>
+            <li><a href="index.html#blog">Research R&amp;D</a></li>
+            <li><a href="contact.html">Contact Offices</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2025 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
+        <div class="footer-bottom-links">
+          <a href="#">Privacy Protocol</a>
+          <a href="#">Security Audits</a>
+          <a href="#">Sitemap</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Three.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Three.js OrbitControls -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  
+  <!-- Custom Logic Scripts -->
+  <script src="js/main.js"></script>
+  <script src="js/calculators.js"></script>
+  <script src="js/three-scene.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+# Dependency directories
+node_modules/
+
+# Local env files
+.env.local
+.env.*.local
+
+# Vercel directory
+.vercel/
+
+# Editor directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS metadata files
+.DS_Store
+Thumbs.db

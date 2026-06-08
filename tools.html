@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Structural Design Tools — TwinAnalytic</title>
+  <meta name="description" content="Use TwinAnalytic's online engineering calculators to check reinforced concrete beams, columns, slabs, pile caps, and footing foundations.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- jsPDF Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Tailwind CSS CDN Configured to disable preflight styles -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      corePlugins: {
+        preflight: false,
+      }
+    }
+  </script>
+  <style>
+    .page-banner {
+      padding: 10rem 0 4rem 0;
+      background: radial-gradient(circle at 10% 20%, rgba(13, 17, 23, 0.95) 0%, rgba(10, 10, 10, 0.98) 90%), 
+                  repeating-linear-gradient(45deg, rgba(201, 168, 76, 0.03) 0px, rgba(201, 168, 76, 0.03) 2px, transparent 2px, transparent 10px);
+      border-bottom: 1px solid var(--border-gold);
+      text-align: center;
+    }
+    .page-banner h1 {
+      font-family: var(--font-serif);
+      font-size: 3.5rem;
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+    .page-banner p {
+      color: var(--color-gold);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+    }
+    .tools-workspace-section {
+      padding: 4rem 0 8rem 0;
+      background-color: var(--bg-primary);
+    }
+
+    /* Modal Overlay & Card styling */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 10, 10, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition-smooth);
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 480px;
+      padding: 2.5rem;
+      transform: scale(0.9);
+      transition: var(--transition-smooth);
+      background: var(--bg-secondary);
+      border: 1px solid var(--color-gold);
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-header h3 {
+      font-family: var(--font-serif);
+      font-size: 1.8rem;
+      font-weight: 400;
+      color: var(--color-gold);
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-header p {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+
+    .modal-form .form-group {
+      margin-bottom: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      text-align: left;
+    }
+
+    .modal-form label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .modal-form input {
+      width: 100%;
+      background: rgba(10, 10, 10, 0.5);
+      border: 1px solid var(--border-gold);
+      border-radius: 4px;
+      padding: 0.8rem 1rem;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      transition: var(--transition-quick);
+    }
+
+    .modal-form input:focus {
+      outline: none;
+      border-color: var(--color-gold);
+      box-shadow: 0 0 10px rgba(201, 168, 76, 0.15);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVIGATION BAR -->
+  <nav class="navbar scrolled" id="navbar">
+    <div class="container">
+      <a href="index.html" class="logo">
+        Twin<span>Analytic</span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="bim-viewer.html">BIM Viewer</a></li>
+        <li><a href="tools.html" class="active">Tools</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="contact.html" class="btn btn-gold btn-sm">Get a Quote</a>
+      </div>
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- BANNER -->
+  <header class="page-banner">
+    <div class="container">
+      <p>Precision Analysis Suite</p>
+      <h1>Structural Member Calculators</h1>
+    </div>
+  </header>
+
+  <!-- CALCULATORS SUITE WORKSPACE -->
+  <section class="tools-workspace-section">
+    <div class="container">
+      <div class="tools-container">
+        <!-- Tabs -->
+        <div class="tools-tabs">
+          <button class="tool-tab-btn active" data-tab="beam">Beam Design</button>
+          <button class="tool-tab-btn" data-tab="column">Column Design</button>
+          <button class="tool-tab-btn" data-tab="slab">Slab Design</button>
+          <button class="tool-tab-btn" data-tab="pile-cap">Pile Cap</button>
+          <button class="tool-tab-btn" data-tab="footing">Footing</button>
+        </div>
+
+        <!-- Panel 1: BEAM -->
+        <div class="tool-content-panel active" id="panel-beam">
+          <div class="tool-inputs-card glass-card">
+            <h3>Input Parameters</h3>
+            <div class="input-grid">
+              <div class="input-field">
+                <label>Width, b (mm)</label>
+                <input type="number" id="beam-w" value="250" min="150" max="600">
+              </div>
+              <div class="input-field">
+                <label>Depth, D (mm)</label>
+                <input type="number" id="beam-d" value="450" min="200" max="1000">
+              </div>
+              <div class="input-field">
+                <label>Bending Moment, Mu (kNm)</label>
+                <input type="number" id="beam-moment" value="120" min="10" max="1000">
+              </div>
+              <div class="input-field">
+                <label>Clear Cover (mm)</label>
+                <input type="number" id="beam-cover" value="25" min="15" max="75">
+              </div>
+              <div class="input-field">
+                <label>Concrete Grade</label>
+                <select id="beam-concrete">
+                  <option value="20">M20 (fck = 20 MPa)</option>
+                  <option value="25" selected>M25 (fck = 25 MPa)</option>
+                  <option value="30">M30 (fck = 30 MPa)</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Steel Rebar Grade</label>
+                <select id="beam-steel">
+                  <option value="415">Fe415 (fy = 415 MPa)</option>
+                  <option value="500" selected>Fe500 (fy = 500 MPa)</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-gold btn-calc" id="btn-calc-beam" style="margin-top: 1.5rem;">Calculate Member</button>
+          </div>
+          
+          <div class="tool-outputs-card glass-card">
+            <h3>Analysis Output <span class="tool-status-badge pass" id="beam-status-badge">PASS</span></h3>
+            <div class="results-console text-mono">
+              <div class="console-line"><span class="console-label">Effective Depth (d)</span><span class="console-val" id="beam-out-depth">413 mm</span></div>
+              <div class="console-line"><span class="console-label">Limiting Moment Capacity (Mu,lim)</span><span class="console-val" id="beam-out-mulim">140.2 kNm</span></div>
+              <div class="console-line"><span class="console-label">Design Tension Steel Area (Ast)</span><span class="console-val" id="beam-out-ast">764 mm²</span></div>
+              <div class="console-line"><span class="console-label">Required Rebars (Tension)</span><span class="console-val" id="beam-out-bars">4 Nos - 16mm dia</span></div>
+              <div class="console-line"><span class="console-label">Minimum Steel Area (Ast,min)</span><span class="console-val" id="beam-out-astmin">176 mm²</span></div>
+              <div class="console-line"><span class="console-label">Steel Reinforcement Ratio (pt)</span><span class="console-val" id="beam-out-ratio">0.74%</span></div>
+            </div>
+            <div class="schematic-box">
+              <h4>Cross-Section Layout</h4>
+              <canvas id="beam-canvas" class="schematic-canvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 2: COLUMN -->
+        <div class="tool-content-panel" id="panel-column">
+          <div class="tool-inputs-card glass-card">
+            <h3>Input Parameters</h3>
+            <div class="input-grid">
+              <div class="input-field">
+                <label>Project Name</label>
+                <input type="text" id="column-proj-name" value="TwinAnalytic Tower">
+              </div>
+              <div class="input-field">
+                <label>Project Number</label>
+                <input type="text" id="column-proj-num" value="2026-001">
+              </div>
+              <div class="input-field">
+                <label>Designer Initials</label>
+                <input type="text" id="column-designer" value="AH">
+              </div>
+              <div class="input-field">
+                <label>Reviewer Initials</label>
+                <input type="text" id="column-reviewer" value="MB">
+              </div>
+              <div class="input-field">
+                <label>Column Height (ft)</label>
+                <input type="number" id="column-height" value="10" min="1" max="100" step="any">
+              </div>
+              <div class="input-field">
+                <label>Dead Load, PDL (k)</label>
+                <input type="number" id="column-pdl" value="300" min="0.1" step="any">
+              </div>
+              <div class="input-field">
+                <label>Live Load, PLL (k)</label>
+                <input type="number" id="column-pll" value="200" min="0.1" step="any">
+              </div>
+              <div class="input-field">
+                <label>Concrete Strength, f'c (ksi)</label>
+                <input type="number" id="column-fc" value="3" min="0.1" step="any">
+              </div>
+              <div class="input-field">
+                <label>Steel Strength, fy (ksi)</label>
+                <input type="number" id="column-fy" value="60" min="0.1" step="any">
+              </div>
+              <div class="input-field">
+                <label>Phi Factor, Ø</label>
+                <input type="number" id="column-phi" value="0.65" min="0.01" max="1.0" step="0.01">
+              </div>
+              <div class="input-field">
+                <label>Steel Ratio, ρ</label>
+                <select id="column-p">
+                  <option value="0.01">0.01</option>
+                  <option value="0.02" selected>0.02</option>
+                  <option value="0.03">0.03</option>
+                  <option value="0.04">0.04</option>
+                  <option value="0.05">0.05</option>
+                  <option value="0.06">0.06</option>
+                  <option value="0.07">0.07</option>
+                  <option value="0.08">0.08</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Main Bar Size</label>
+                <select id="column-main-bar">
+                  <option value="#7">#7 (7/8")</option>
+                  <option value="#8" selected>#8 (1")</option>
+                  <option value="#9">#9 (1-1/8")</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Tie Bar Size</label>
+                <select id="column-tie-bar">
+                  <option value="#3" selected>#3 (3/8")</option>
+                  <option value="#4">#4 (1/2")</option>
+                </select>
+              </div>
+            </div>
+            <!-- Validation Message -->
+            <div id="column-validation-error" class="hidden" style="color: #f5222d; font-size: 0.8rem; margin-top: 1rem; font-family: var(--font-mono);">
+              Please ensure all values are positive and steel ratio is between 0.01 and 0.08.
+            </div>
+            <button class="btn btn-gold btn-calc" id="btn-calc-column" style="margin-top: 1.5rem;">Calculate Member</button>
+          </div>
+          
+          <div class="tool-outputs-card glass-card">
+            <h3>Analysis Output <span class="tool-status-badge pass" id="column-status-badge">PASS</span></h3>
+            <div class="results-console text-mono">
+              <div class="console-line"><span class="console-label">Factored Load (Pu)</span><span class="console-val" id="column-out-pu">0 k</span></div>
+              <div class="console-line"><span class="console-label">Gross Concrete Area Required (Ag)</span><span class="console-val" id="column-out-ag">0 in²</span></div>
+              <div class="console-line"><span class="console-label">Column Dimension (Dim)</span><span class="console-val" id="column-out-dim">0 in</span></div>
+              <div class="console-line"><span class="console-label">Final Column Area</span><span class="console-val" id="column-out-final-area">0 in²</span></div>
+              <div class="console-line"><span class="console-label">Required Steel Area (Ast)</span><span class="console-val" id="column-out-ast">0 in²</span></div>
+              <div class="console-line"><span class="console-label">Max Tie Spacing</span><span class="console-val" id="column-out-tie-spacing">0 in</span></div>
+              <div class="console-line"><span class="console-label">Std Tie Hook Extension</span><span class="console-val" id="column-out-hook-extension">0 in</span></div>
+              <div class="console-line"><span class="console-label">Nominal Strength (Pn,max)</span><span class="console-val" id="column-out-pn-max">0 k</span></div>
+              <div class="console-line"><span class="console-label">Design Strength (Phi Pn)</span><span class="console-val" id="column-out-phi-pn">0 k</span></div>
+              <div class="console-line"><span class="console-label">D/C Ratio</span><span class="console-val" id="column-out-dc-ratio">0.00</span></div>
+              <div class="console-line"><span class="console-label">Concrete Volume</span><span class="console-val" id="column-out-concrete-vol">0.00 m³</span></div>
+              <div class="console-line"><span class="console-label">Steel Weight</span><span class="console-val" id="column-out-steel-weight">0.00 kg</span></div>
+              <div class="console-line" id="column-row-warning" style="display: none; color: #f5222d; border-top: 1px dashed rgba(245, 34, 45, 0.3); padding-top: 0.5rem; margin-top: 0.5rem; flex-direction: column; align-items: flex-start; gap: 0.25rem;">
+                <span class="console-label" style="color: #f5222d; font-weight: bold;">ACI Compliance Alert</span>
+                <span class="console-val" id="column-out-warning-text" style="color: #f5222d; font-size: 0.75rem; text-align: left; white-space: normal;"></span>
+              </div>
+            </div>
+            <div class="schematic-box">
+              <h4>Cross-Section Layout</h4>
+              <canvas id="column-canvas" class="schematic-canvas"></canvas>
+            </div>
+            <button class="btn btn-ghost" id="btn-download-pdf" style="margin-top: 1.5rem; width: 100%;">
+              <i class="fa-solid fa-file-pdf" style="margin-right: 0.5rem;"></i> Download PDF Report
+            </button>
+          </div>
+        </div>
+
+        <!-- Panel 3: SLAB -->
+        <div class="tool-content-panel" id="panel-slab">
+          <div class="tool-inputs-card glass-card">
+            <h3>Input Parameters</h3>
+            <div class="input-grid">
+              <div class="input-field">
+                <label>Clear Span, L (m)</label>
+                <input type="number" id="slab-span" value="3.5" min="1.0" max="8.0" step="0.1">
+              </div>
+              <div class="input-field">
+                <label>Thickness, t (mm)</label>
+                <input type="number" id="slab-t" value="125" min="90" max="250">
+              </div>
+              <div class="input-field">
+                <label>Superimposed Load (kN/m²)</label>
+                <input type="number" id="slab-load" value="4.0" min="1.0" max="15.0" step="0.5">
+              </div>
+              <div class="input-field">
+                <label>Concrete Grade</label>
+                <select id="slab-concrete">
+                  <option value="20" selected>M20 (fck = 20 MPa)</option>
+                  <option value="25">M25 (fck = 25 MPa)</option>
+                  <option value="30">M30 (fck = 30 MPa)</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Steel Rebar Grade</label>
+                <select id="slab-steel">
+                  <option value="415">Fe415 (fy = 415 MPa)</option>
+                  <option value="500" selected>Fe500 (fy = 500 MPa)</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-gold btn-calc" id="btn-calc-slab" style="margin-top: 1.5rem;">Calculate Member</button>
+          </div>
+          
+          <div class="tool-outputs-card glass-card">
+            <h3>Analysis Output <span class="tool-status-badge pass" id="slab-status-badge">PASS</span></h3>
+            <div class="results-console text-mono">
+              <div class="console-line"><span class="console-label">Design Factored Load (wu)</span><span class="console-val" id="slab-out-wu">10.69 kN/m</span></div>
+              <div class="console-line"><span class="console-label">Design Bending Moment (Mu)</span><span class="console-val" id="slab-out-mu">16.37 kNm</span></div>
+              <div class="console-line"><span class="console-label">Required Main Steel (Ast)</span><span class="console-val" id="slab-out-ast">384 mm²/m</span></div>
+              <div class="console-line"><span class="console-label">Main Rebar Spacing</span><span class="console-val" id="slab-out-spacing">10mm @ 200mm c/c</span></div>
+              <div class="console-line"><span class="console-label">Distribution Steel Area</span><span class="console-val" id="slab-out-dist">150 mm²/m</span></div>
+              <div class="console-line"><span class="console-label">Deflection Check Ratio</span><span class="console-val" id="slab-out-deflect">1.08 (Safe)</span></div>
+            </div>
+            <div class="schematic-box">
+              <h4>Cross-Section Layout</h4>
+              <canvas id="slab-canvas" class="schematic-canvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 4: PILE CAP -->
+        <div class="tool-content-panel" id="panel-pile-cap">
+          <div class="tool-inputs-card glass-card">
+            <h3>Input Parameters</h3>
+            <div class="input-grid">
+              <div class="input-field">
+                <label>Pile Diameter (mm)</label>
+                <input type="number" id="pile-dia" value="600" min="400" max="1500">
+              </div>
+              <div class="input-field">
+                <label>Number of Piles</label>
+                <select id="pile-count">
+                  <option value="2">2 Piles (Linear Layout)</option>
+                  <option value="3">3 Piles (Triangular Layout)</option>
+                  <option value="4" selected>4 Piles (Square Layout)</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Axial Column Load (kN)</label>
+                <input type="number" id="pile-load" value="2500" min="500" max="10000">
+              </div>
+              <div class="input-field">
+                <label>Cap Depth, H (mm)</label>
+                <input type="number" id="pile-depth" value="900" min="600" max="2000">
+              </div>
+              <div class="input-field">
+                <label>Concrete Grade</label>
+                <select id="pile-concrete">
+                  <option value="25" selected>M25 (fck = 25 MPa)</option>
+                  <option value="30">M30 (fck = 30 MPa)</option>
+                  <option value="35">M35 (fck = 35 MPa)</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-gold btn-calc" id="btn-calc-pile-cap" style="margin-top: 1.5rem;">Calculate Member</button>
+          </div>
+          
+          <div class="tool-outputs-card glass-card">
+            <h3>Analysis Output <span class="tool-status-badge pass" id="pile-cap-status-badge">PASS</span></h3>
+            <div class="results-console text-mono">
+              <div class="console-line"><span class="console-label">Truss Model Tension (T)</span><span class="console-val" id="pile-out-tension">781.3 kN</span></div>
+              <div class="console-line"><span class="console-label">Required Main Steel Area (Ast)</span><span class="console-val" id="pile-out-ast">1797 mm²</span></div>
+              <div class="console-line"><span class="console-label">Main Rebars Arrangement</span><span class="console-val" id="pile-out-bars">6 Nos - 20mm dia (each direction)</span></div>
+              <div class="console-line"><span class="console-label">Load Per Pile (Fpile)</span><span class="console-val" id="pile-out-pileload">625.0 kN</span></div>
+              <div class="console-line"><span class="console-label">Punching Shear Stress</span><span class="console-val" id="pile-out-shear">1.12 MPa</span></div>
+              <div class="console-line"><span class="console-label">Punching Shear Check</span><span class="console-val" id="pile-out-shearcheck">0.82 (Safe)</span></div>
+            </div>
+            <div class="schematic-box">
+              <h4>Top Plan Layout</h4>
+              <canvas id="pile-cap-canvas" class="schematic-canvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 5: FOOTING -->
+        <div class="tool-content-panel" id="panel-footing">
+          <div class="tool-inputs-card glass-card">
+            <h3>Input Parameters</h3>
+            <div class="input-grid">
+              <div class="input-field">
+                <label>Axial Column Load (kN)</label>
+                <input type="number" id="footing-load" value="800" min="200" max="5000">
+              </div>
+              <div class="input-field">
+                <label>Soil Bearing Capacity (kN/m²)</label>
+                <input type="number" id="footing-sbc" value="150" min="50" max="400">
+              </div>
+              <div class="input-field">
+                <label>Column Size (mm)</label>
+                <input type="number" id="footing-col" value="300" min="150" max="600">
+              </div>
+              <div class="input-field">
+                <label>Concrete Grade</label>
+                <select id="footing-concrete">
+                  <option value="20" selected>M20 (fck = 20 MPa)</option>
+                  <option value="25">M25 (fck = 25 MPa)</option>
+                  <option value="30">M30 (fck = 30 MPa)</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Steel Rebar Grade</label>
+                <select id="footing-steel">
+                  <option value="415">Fe415 (fy = 415 MPa)</option>
+                  <option value="500" selected>Fe500 (fy = 500 MPa)</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-gold btn-calc" id="btn-calc-footing" style="margin-top: 1.5rem;">Calculate Member</button>
+          </div>
+          
+          <div class="tool-outputs-card glass-card">
+            <h3>Analysis Output <span class="tool-status-badge pass" id="footing-status-badge">PASS</span></h3>
+            <div class="results-console text-mono">
+              <div class="console-line"><span class="console-label">Required Base Area (Af)</span><span class="console-val" id="footing-out-area">5.87 m²</span></div>
+              <div class="console-line"><span class="console-label">Footing Dimensions (L x W)</span><span class="console-val" id="footing-out-dim">2.45m x 2.45m</span></div>
+              <div class="console-line"><span class="console-label">Required Thickness (H)</span><span class="console-val" id="footing-out-thickness">450 mm</span></div>
+              <div class="console-line"><span class="console-label">Tension Steel Area (Ast)</span><span class="console-val" id="footing-out-ast">1245 mm²</span></div>
+              <div class="console-line"><span class="console-label">Required Base Mesh</span><span class="console-val" id="footing-out-mesh">12mm dia @ 150mm c/c</span></div>
+              <div class="console-line"><span class="console-label">One-Way Shear Check</span><span class="console-val" id="footing-out-shear">0.31 MPa (Safe)</span></div>
+            </div>
+            <div class="schematic-box">
+              <h4>Isolated Footing Elevation</h4>
+              <canvas id="footing-canvas" class="schematic-canvas"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ADMIN LEADS SECTION -->
+  <section class="section-padding" style="padding-top: 0; padding-bottom: 6rem; background-color: var(--bg-primary);">
+    <div class="container">
+      <div class="glass-card" style="max-width: 800px; margin: 0 auto; border-style: dashed;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+          <div>
+            <h3 style="font-family: var(--font-serif); font-size: 1.6rem; font-weight: 400; margin-bottom: 0.5rem; color: var(--color-gold);">Lead Database Export</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Generate and download a Microsoft Excel compatible (.csv) report containing all registered leads.</p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+            <div style="text-align: right;">
+              <span class="text-mono" id="leads-count" style="font-size: 1.5rem; font-weight: bold; color: var(--color-gold);">0</span>
+              <p style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.1em; margin-top: 0.1rem;">Leads Logged</p>
+            </div>
+            <button class="btn btn-ghost" id="btn-export-leads" style="font-size: 0.75rem; padding: 0.7rem 1.5rem; min-height: auto;"><i class="fa-solid fa-file-excel" style="margin-right: 0.5rem;"></i> Export to Excel</button>
+            <button class="btn" id="btn-clear-leads" style="font-size: 0.75rem; padding: 0.7rem 1.5rem; background: rgba(245, 34, 45, 0.1); color: #F5222D; border: 1px solid rgba(245, 34, 45, 0.3); min-height: auto;">Clear Database</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEAD CAPTURE MODAL -->
+  <div class="modal-overlay" id="auth-modal">
+    <div class="modal-card glass-card">
+      <div class="modal-header">
+        <h3>Unlock Engineering Suite</h3>
+        <p>Enter your professional credentials to run limit-state design checks and download coordinate schematics.</p>
+      </div>
+      <form class="modal-form" id="modal-auth-form">
+        <div class="form-group">
+          <label for="lead-name">Full Name</label>
+          <input type="text" id="lead-name" placeholder="E.g., MD. AHSAN HABIB ANIK" required>
+        </div>
+        <div class="form-group">
+          <label for="lead-phone">Contact Number</label>
+          <input type="tel" id="lead-phone" placeholder="E.g., +880 1712-345678" required>
+        </div>
+        <div class="form-group">
+          <label for="lead-email">Business Email</label>
+          <input type="email" id="lead-email" placeholder="anik@twinanalytic.com" required>
+        </div>
+        <button type="submit" class="btn btn-gold" style="width: 100%; margin-top: 1rem;">Unlock Calculators</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-top-gradient"></div>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col brand">
+          <h3>Twin<span>Analytic</span></h3>
+          <p>Precision building structures, high-fidelity BIM level 3 coordination modeling, and IoT-driven real-time structural performance tracking.</p>
+          <div class="footer-socials">
+            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="#"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#"><i class="fa-brands fa-youtube"></i></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h3>Services</h3>
+          <ul class="footer-links">
+            <li><a href="services.html">BIM Coordination</a></li>
+            <li><a href="services.html">Structural Design</a></li>
+            <li><a href="services.html">Digital Twin Analytics</a></li>
+            <li><a href="services.html">MEP Engineering</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Interactive</h3>
+          <ul class="footer-links">
+            <li><a href="tools.html">Beam Design Calculator</a></li>
+            <li><a href="tools.html">Column Design Calculator</a></li>
+            <li><a href="tools.html">Slab Spans Calculator</a></li>
+            <li><a href="tools.html">Foundation Analysis</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Company</h3>
+          <ul class="footer-links">
+            <li><a href="about.html">About Our Firm</a></li>
+            <li><a href="projects.html">Project Portfolio</a></li>
+            <li><a href="index.html#blog">Research R&amp;D</a></li>
+            <li><a href="contact.html">Contact Offices</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2025 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
+        <div class="footer-bottom-links">
+          <a href="#">Privacy Protocol</a>
+          <a href="#">Security Audits</a>
+          <a href="#">Sitemap</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/calculators.js"></script>
+</body>
+</html>

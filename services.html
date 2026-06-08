@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our Services — TwinAnalytic</title>
+  <meta name="description" content="Explore TwinAnalytic's technical services, ranging from high-precision BIM Level 3 modeling and structural finite element analysis (FEA) to real-time digital twin integrations.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .page-banner {
+      padding: 10rem 0 5rem 0;
+      background: radial-gradient(circle at 10% 20%, rgba(13, 17, 23, 0.95) 0%, rgba(10, 10, 10, 0.98) 90%), 
+                  repeating-linear-gradient(45deg, rgba(201, 168, 76, 0.03) 0px, rgba(201, 168, 76, 0.03) 2px, transparent 2px, transparent 10px);
+      border-bottom: 1px solid var(--border-gold);
+      text-align: center;
+    }
+    .page-banner h1 {
+      font-family: var(--font-serif);
+      font-size: 3.5rem;
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+    .page-banner p {
+      color: var(--color-gold);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+    }
+    .services-expanded-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 3rem;
+      margin-top: 4rem;
+    }
+    @media(max-width: 992px) {
+      .services-expanded-grid { grid-template-columns: 1fr; }
+    }
+    .spec-list {
+      margin-top: 1.5rem;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      padding-top: 1.2rem;
+    }
+    .spec-list li {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .spec-list li i {
+      color: var(--color-gold);
+      font-size: 0.8rem;
+    }
+    .cta-card {
+      margin-top: 6rem;
+      text-align: center;
+      padding: 4rem 2rem;
+      background: radial-gradient(circle, rgba(201, 168, 76, 0.05) 0%, transparent 80%), var(--bg-card);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVIGATION BAR -->
+  <nav class="navbar scrolled" id="navbar">
+    <div class="container">
+      <a href="index.html" class="logo">
+        Twin<span>Analytic</span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="services.html" class="active">Services</a></li>
+        <li><a href="bim-viewer.html">BIM Viewer</a></li>
+        <li><a href="tools.html">Tools</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="contact.html" class="btn btn-gold btn-sm">Get a Quote</a>
+      </div>
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- BANNER -->
+  <header class="page-banner">
+    <div class="container">
+      <p>Expertise &amp; Technologies</p>
+      <h1>Computational Engineering Services</h1>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <section class="section-padding">
+    <div class="container">
+      <div class="section-header fade-up-init">
+        <h2><span>Our Offerings</span>High-Performance Workflows</h2>
+        <p>We combine standard engineering disciplines with custom generative design software and real-time model analysis.</p>
+      </div>
+
+      <div class="services-expanded-grid">
+        <!-- Service 1 -->
+        <div class="glass-card fade-up-init">
+          <div class="service-icon"><i class="fa-solid fa-cube"></i></div>
+          <h3 style="font-family: var(--font-serif); font-size: 1.6rem; margin-bottom: 0.8rem; font-weight: 400;">BIM Modeling &amp; Coordination</h3>
+          <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7;">End-to-end 3D modeling up to LOD 500, enabling precise clash detection, cost estimation, and asset lifecycle management.</p>
+          <ul class="spec-list">
+            <li><i class="fa-solid fa-check-double"></i> Modeling parameters from LOD 100 up to LOD 500</li>
+            <li><i class="fa-solid fa-check-double"></i> Multi-disciplinary clash resolution reports</li>
+            <li><i class="fa-solid fa-check-double"></i> COBie &amp; IFC database mapping for facilities management</li>
+          </ul>
+          <a href="bim-modeling.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-gold); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1.5rem;">Read Details <i class="fa-solid fa-arrow-right-long"></i></a>
+        </div>
+        <!-- Service 2 -->
+        <div class="glass-card fade-up-init">
+          <div class="service-icon"><i class="fa-solid fa-drafting-compass"></i></div>
+          <h3 style="font-family: var(--font-serif); font-size: 1.6rem; margin-bottom: 0.8rem; font-weight: 400;">Structural Design &amp; Analysis</h3>
+          <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7;">Advanced structural analysis under static, dynamic, wind, and seismic loads using finite element modeling (FEM) methods.</p>
+          <ul class="spec-list">
+            <li><i class="fa-solid fa-check-double"></i> Non-linear seismic time-history structural simulations</li>
+            <li><i class="fa-solid fa-check-double"></i> Wind loading tunnel dynamic vector models</li>
+            <li><i class="fa-solid fa-check-double"></i> Optimization of structural concrete core wall sizing</li>
+          </ul>
+          <a href="structural-design.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-gold); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1.5rem;">Read Details <i class="fa-solid fa-arrow-right-long"></i></a>
+        </div>
+        <!-- Service 3 -->
+        <div class="glass-card fade-up-init">
+          <div class="service-icon"><i class="fa-solid fa-network-wired"></i></div>
+          <h3 style="font-family: var(--font-serif); font-size: 1.6rem; margin-bottom: 0.8rem; font-weight: 400;">Digital Twin Integration</h3>
+          <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7;">Connecting physical IoT strain gauges and accelerometer sensor data to high-fidelity 3D structural models.</p>
+          <ul class="spec-list">
+            <li><i class="fa-solid fa-check-double"></i> Real-time structure deformation telemetry maps</li>
+            <li><i class="fa-solid fa-check-double"></i> Automated stress-exceedance alert triggers</li>
+            <li><i class="fa-solid fa-check-double"></i> Telemetry synchronization with Autodesk Tandem</li>
+          </ul>
+          <a href="digital-twin.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-gold); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1.5rem;">Read Details <i class="fa-solid fa-arrow-right-long"></i></a>
+        </div>
+        <!-- Service 4 -->
+        <div class="glass-card fade-up-init">
+          <div class="service-icon"><i class="fa-solid fa-chart-line"></i></div>
+          <h3 style="font-family: var(--font-serif); font-size: 1.6rem; margin-bottom: 0.8rem; font-weight: 400;">Project Management (4D BIM)</h3>
+          <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7;">Integrating schedule timeline vectors directly into the 3D model, allowing builders to test the sequence virtually.</p>
+          <ul class="spec-list">
+            <li><i class="fa-solid fa-check-double"></i> Assembly timeline sequencing visualizations</li>
+            <li><i class="fa-solid fa-check-double"></i> Critical-path logistics delay analysis</li>
+            <li><i class="fa-solid fa-check-double"></i> Construction site drone mesh comparison layouts</li>
+          </ul>
+          <a href="project-management.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-gold); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1.5rem;">Read Details <i class="fa-solid fa-arrow-right-long"></i></a>
+        </div>
+        <!-- Service 5 -->
+        <div class="glass-card fade-up-init">
+          <div class="service-icon"><i class="fa-solid fa-hard-hat"></i></div>
+          <h3 style="font-family: var(--font-serif); font-size: 1.6rem; margin-bottom: 0.8rem; font-weight: 400;">Construction Supervision</h3>
+          <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7;">On-site quality audits matched against the digital blueprint specifications using mixed-reality headsets.</p>
+          <ul class="spec-list">
+            <li><i class="fa-solid fa-check-double"></i> Mixed-reality blueprint overlays (HoloLens 2)</li>
+            <li><i class="fa-solid fa-check-double"></i> Concrete quality core test verification mapping</li>
+            <li><i class="fa-solid fa-check-double"></i> Automated audit checklist generation</li>
+          </ul>
+          <a href="construction-supervision.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-gold); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1.5rem;">Read Details <i class="fa-solid fa-arrow-right-long"></i></a>
+        </div>
+        <!-- Service 6 -->
+        <div class="glass-card fade-up-init">
+          <div class="service-icon"><i class="fa-solid fa-calculator"></i></div>
+          <h3 style="font-family: var(--font-serif); font-size: 1.6rem; margin-bottom: 0.8rem; font-weight: 400;">Feasibility &amp; Cost Estimation</h3>
+          <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7;">AI-driven material quantity takeoffs linked to structural parameters, keeping budgets aligned with design edits.</p>
+          <ul class="spec-list">
+            <li><i class="fa-solid fa-check-double"></i> Real-time 5D cost-takeoff calculators</li>
+            <li><i class="fa-solid fa-check-double"></i> Generative structural weight optimizations</li>
+            <li><i class="fa-solid fa-check-double"></i> Carbon footprint lifecycle estimation reporting</li>
+          </ul>
+          <a href="feasibility-cost.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-gold); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1.5rem;">Read Details <i class="fa-solid fa-arrow-right-long"></i></a>
+        </div>
+        <!-- Service 7 -->
+        <div class="glass-card fade-up-init">
+          <div class="service-icon"><i class="fa-solid fa-bolt"></i></div>
+          <h3 style="font-family: var(--font-serif); font-size: 1.6rem; margin-bottom: 0.8rem; font-weight: 400;">MEP Engineering</h3>
+          <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7;">Integrated mechanical, electrical, and plumbing engineering optimized for thermal efficiency and smart-grid controls.</p>
+          <ul class="spec-list">
+            <li><i class="fa-solid fa-check-double"></i> CFD analysis of thermal HVAC airflow patterns</li>
+            <li><i class="fa-solid fa-check-double"></i> Solar integration energy grid mapping</li>
+            <li><i class="fa-solid fa-check-double"></i> Integrated acoustics insulation coordination</li>
+          </ul>
+          <a href="mep-engineering.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-gold); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1.5rem;">Read Details <i class="fa-solid fa-arrow-right-long"></i></a>
+        </div>
+        <!-- Service 8 -->
+        <div class="glass-card fade-up-init">
+          <div class="service-icon"><i class="fa-solid fa-vr-cardboard"></i></div>
+          <h3 style="font-family: var(--font-serif); font-size: 1.6rem; margin-bottom: 0.8rem; font-weight: 400;">3D Visualization &amp; Rendering</h3>
+          <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7;">Photorealistic architectural renderings, walk-through experiences, and immersive VR setups for presentations.</p>
+          <ul class="spec-list">
+            <li><i class="fa-solid fa-check-double"></i> Unreal Engine real-time luxury VR walkthroughs</li>
+            <li><i class="fa-solid fa-check-double"></i> High-resolution 8K photorealistic marketing renders</li>
+            <li><i class="fa-solid fa-check-double"></i> Multi-variant interior design configuration dashboards</li>
+          </ul>
+          <a href="3d-visualization.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-gold); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1.5rem;">Read Details <i class="fa-solid fa-arrow-right-long"></i></a>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="cta-card glass-card fade-up-init">
+        <h3 style="font-family: var(--font-serif); font-size: 2.2rem; margin-bottom: 1.2rem; font-weight: 300;">Ready to Engineer with TwinAnalytic?</h3>
+        <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto 2.5rem auto; font-size: 1.05rem;">Request a detailed quote or coordination consult. Our design team will check your structural specs within 24 hours.</p>
+        <a href="contact.html" class="btn btn-gold">Initiate Proposal Request</a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-top-gradient"></div>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col brand">
+          <h3>Twin<span>Analytic</span></h3>
+          <p>Precision building structures, high-fidelity BIM level 3 coordination modeling, and IoT-driven real-time structural performance tracking.</p>
+          <div class="footer-socials">
+            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="#"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#"><i class="fa-brands fa-youtube"></i></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h3>Services</h3>
+          <ul class="footer-links">
+            <li><a href="services.html">BIM Coordination</a></li>
+            <li><a href="services.html">Structural Design</a></li>
+            <li><a href="services.html">Digital Twin Analytics</a></li>
+            <li><a href="services.html">MEP Engineering</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Interactive</h3>
+          <ul class="footer-links">
+            <li><a href="tools.html">Beam Design Calculator</a></li>
+            <li><a href="tools.html">Column Design Calculator</a></li>
+            <li><a href="tools.html">Slab Spans Calculator</a></li>
+            <li><a href="tools.html">Foundation Analysis</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Company</h3>
+          <ul class="footer-links">
+            <li><a href="about.html">About Our Firm</a></li>
+            <li><a href="projects.html">Project Portfolio</a></li>
+            <li><a href="index.html#blog">Research R&amp;D</a></li>
+            <li><a href="contact.html">Contact Offices</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2025 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
+        <div class="footer-bottom-links">
+          <a href="#">Privacy Protocol</a>
+          <a href="#">Security Audits</a>
+          <a href="#">Sitemap</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

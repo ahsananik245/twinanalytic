@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Structural Design &amp; Analysis — TwinAnalytic</title>
+  <meta name="description" content="Advanced structural analysis under static, dynamic, wind, and seismic loads. Finite Element Modeling (FEM) and code checks by TwinAnalytic.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .page-banner {
+      padding: 10rem 0 4rem 0;
+      background: radial-gradient(circle at 10% 20%, rgba(13, 17, 23, 0.95) 0%, rgba(10, 10, 10, 0.98) 90%), 
+                  repeating-linear-gradient(45deg, rgba(201, 168, 76, 0.03) 0px, rgba(201, 168, 76, 0.03) 2px, transparent 2px, transparent 10px);
+      border-bottom: 1px solid var(--border-gold);
+      text-align: center;
+    }
+    .page-banner h1 {
+      font-family: var(--font-serif);
+      font-size: 3.5rem;
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+    .page-banner p {
+      color: var(--color-gold);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+    }
+    .service-layout {
+      display: grid;
+      grid-template-columns: 2fr 1.1fr;
+      gap: 4rem;
+    }
+    @media (max-width: 992px) {
+      .service-layout { grid-template-columns: 1fr; }
+    }
+    .service-nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+    .service-nav-item {
+      padding: 1rem 1.2rem;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(201, 168, 76, 0.1);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: var(--transition-quick);
+    }
+    .service-nav-item:hover,
+    .service-nav-item.active {
+      border-color: var(--color-gold);
+      color: var(--text-primary);
+      background: rgba(201, 168, 76, 0.05);
+    }
+    .software-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    @media (max-width: 600px) {
+      .software-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .software-badge {
+      background: rgba(0,0,0,0.3);
+      border: 1px dashed var(--border-gold);
+      border-radius: 4px;
+      padding: 0.8rem;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--color-gold-light);
+    }
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin: 2.5rem 0;
+    }
+    .metric-box {
+      text-align: center;
+      border: 1px solid var(--border-gold);
+      padding: 1.5rem 1rem;
+      border-radius: 8px;
+      background: rgba(201, 168, 76, 0.02);
+    }
+    .metric-val {
+      font-family: var(--font-serif);
+      font-size: 2.2rem;
+      color: var(--color-gold);
+      font-weight: 500;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+    .metric-lbl {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-secondary);
+    }
+    .process-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin: 2.5rem 0;
+    }
+    .process-step {
+      display: flex;
+      gap: 1.5rem;
+      align-items: flex-start;
+    }
+    .step-number {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--color-gold);
+      color: var(--color-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      background: rgba(201, 168, 76, 0.05);
+    }
+    .step-text h4 {
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      font-weight: 400;
+      margin-bottom: 0.3rem;
+    }
+    .step-text p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    .case-reference {
+      border-left: 3px solid var(--color-gold);
+      padding-left: 1.5rem;
+      margin: 3rem 0;
+      font-style: italic;
+      color: var(--color-gold-light);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVIGATION BAR -->
+  <nav class="navbar scrolled" id="navbar">
+    <div class="container">
+      <a href="index.html" class="logo">
+        Twin<span>Analytic</span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="services.html" class="active">Services</a></li>
+        <li><a href="bim-viewer.html">BIM Viewer</a></li>
+        <li><a href="tools.html">Tools</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="contact.html" class="btn btn-gold btn-sm">Get a Quote</a>
+      </div>
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- BANNER -->
+  <header class="page-banner">
+    <div class="container">
+      <p>Finite Element Analysis &amp; Sizing</p>
+      <h1>Structural Design &amp; Analysis</h1>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <section class="section-padding">
+    <div class="container">
+      <div class="service-layout">
+        <!-- Main Details -->
+        <div class="fade-up-init">
+          <h2 style="font-family: var(--font-serif); font-size: 2.2rem; font-weight: 400; margin-bottom: 1.5rem;">Engineering Structural Integrity</h2>
+          <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.8;">Our structural engineering division is tasked with ensuring safety, stability, and efficiency. We run rigorous computational simulations to test foundations, columns, beams, and slabs under extreme loads. Whether evaluating wind vortex vectors on high-rises or modeling non-linear seismic behavior on arch bridges, we design systems that exceed regulatory code requirements.</p>
+          <p style="color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.8;">By linking finite element modeling (FEM) with architectural layout configurations, we optimize concrete and steel ratios. This data-driven sizing prevents over-reinforced zones, saving materials while maintaining absolute structural capacity limits.</p>
+
+          <!-- Key Metrics -->
+          <div class="metrics-row">
+            <div class="metric-box">
+              <div class="metric-val">18%</div>
+              <div class="metric-lbl">Concrete Saved</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-val">0.02mm</div>
+              <div class="metric-lbl">Lateral Tolerance</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-val">ANSYS</div>
+              <div class="metric-lbl">FEA Solver</div>
+            </div>
+          </div>
+
+          <!-- Project Timeline Process -->
+          <h3 style="font-family: var(--font-serif); font-size: 1.6rem; font-weight: 400; margin-top: 3rem; margin-bottom: 1.2rem;">Our Execution Methodology</h3>
+          <div class="process-timeline">
+            <div class="process-step">
+              <div class="step-number">01</div>
+              <div class="step-text">
+                <h4>Mesh Generation &amp; Boundary Mapping</h4>
+                <p>Constructing localized volumetric discretization blocks and constraining joints against foundational anchors using advanced solid mesh equations.</p>
+              </div>
+            </div>
+            <div class="process-step">
+              <div class="step-number">02</div>
+              <div class="step-text">
+                <h4>Multi-Scenario Wind Vortex Modeling</h4>
+                <p>Simulating high-velocity cross-wind profiles and dynamic shear stresses at variable architectural elevations to evaluate structural resonance.</p>
+              </div>
+            </div>
+            <div class="process-step">
+              <div class="step-number">03</div>
+              <div class="step-text">
+                <h4>Non-Linear Time-History Solvers</h4>
+                <p>Applying real-world earthquake acceleration waves to model stress responses and size optimal tuned mass dampers and bracing arrays.</p>
+              </div>
+            </div>
+            <div class="process-step">
+              <div class="step-number">04</div>
+              <div class="step-text">
+                <h4>Optimized Member Dimension Sizing</h4>
+                <p>Iteratively running design algorithms to optimize steel reinforcement ratios and reduce structural mass without compromising safety limits.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quote case reference -->
+          <div class="case-reference">
+            "Using advanced FEA dynamic models on the Marina Skytower, we optimized structural steel sizing, cutting concrete raw-material costs by 18% while guaranteeing rigidity in 120-mph wind conditions."
+          </div>
+
+          <h3 style="font-family: var(--font-serif); font-size: 1.6rem; font-weight: 400; margin-top: 3rem; margin-bottom: 1.2rem;">Core Workflows &amp; Deliverables</h3>
+          <ul class="spec-list" style="margin-top: 0; border: none; padding: 0;">
+            <li><i class="fa-solid fa-drafting-compass"></i> <strong>Finite Element Sizing:</strong> Detailed structural member stress-gradient simulations.</li>
+            <li><i class="fa-solid fa-wind"></i> <strong>Wind Vector Analysis:</strong> Aerodynamic simulations testing dynamic torsion forces on skyscraper facades.</li>
+            <li><i class="fa-solid fa-earthquake"></i> <strong>Seismic Time-History Audits:</strong> Simulating dynamic earthquake vibration vectors to design damping networks.</li>
+            <li><i class="fa-solid fa-weight-hanging"></i> <strong>Slab Span Optimization:</strong> Sizing deflection profiles to minimize material weight ratios.</li>
+          </ul>
+
+          <h3 style="font-family: var(--font-serif); font-size: 1.6rem; font-weight: 400; margin-top: 3rem; margin-bottom: 0.5rem;">Technology &amp; Software Stack</h3>
+          <p style="color: var(--text-secondary); font-size: 0.95rem;">Our design tools combine industry FEA software with automated limit-state code checkers:</p>
+          <div class="software-grid">
+            <div class="software-badge">SAP2000</div>
+            <div class="software-badge">ETABS</div>
+            <div class="software-badge">ANSYS Mechanical</div>
+            <div class="software-badge">Tekla Structural Designer</div>
+            <div class="software-badge">SAFE (Slab Design)</div>
+            <div class="software-badge">STAAD.Pro</div>
+          </div>
+        </div>
+
+        <!-- Sidebar Navigation -->
+        <div class="fade-up-init">
+          <div class="glass-card" style="padding: 2rem;">
+            <h3 style="font-family: var(--font-serif); font-size: 1.4rem; font-weight: 400; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-gold); padding-bottom: 0.8rem;">All Services</h3>
+            <div class="service-nav-list">
+              <a href="bim-modeling.html" class="service-nav-item">BIM Coordination <i class="fa-solid fa-chevron-right"></i></a>
+              <a href="structural-design.html" class="service-nav-item active">Structural Analysis <i class="fa-solid fa-chevron-right"></i></a>
+              <a href="digital-twin.html" class="service-nav-item">Digital Twins <i class="fa-solid fa-chevron-right"></i></a>
+              <a href="project-management.html" class="service-nav-item">Project Management <i class="fa-solid fa-chevron-right"></i></a>
+              <a href="construction-supervision.html" class="service-nav-item">Site Supervision <i class="fa-solid fa-chevron-right"></i></a>
+              <a href="feasibility-cost.html" class="service-nav-item">Cost &amp; Feasibility <i class="fa-solid fa-chevron-right"></i></a>
+              <a href="mep-engineering.html" class="service-nav-item">MEP Engineering <i class="fa-solid fa-chevron-right"></i></a>
+              <a href="3d-visualization.html" class="service-nav-item">3D Rendering &amp; VR <i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+            <a href="contact.html" class="btn btn-gold" style="width: 100%; margin-top: 2rem; font-size: 0.8rem; padding: 0.8rem;">Request Consultation</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-top-gradient"></div>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col brand">
+          <h3>Twin<span>Analytic</span></h3>
+          <p>Precision building structures, high-fidelity BIM level 3 coordination modeling, and IoT-driven real-time structural performance tracking.</p>
+          <div class="footer-socials">
+            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="#"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#"><i class="fa-brands fa-youtube"></i></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h3>Services</h3>
+          <ul class="footer-links">
+            <li><a href="services.html">BIM Coordination</a></li>
+            <li><a href="services.html">Structural Design</a></li>
+            <li><a href="services.html">Digital Twin Analytics</a></li>
+            <li><a href="services.html">MEP Engineering</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Interactive</h3>
+          <ul class="footer-links">
+            <li><a href="tools.html">Beam Design Calculator</a></li>
+            <li><a href="tools.html">Column Design Calculator</a></li>
+            <li><a href="tools.html">Slab Spans Calculator</a></li>
+            <li><a href="tools.html">Foundation Analysis</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Company</h3>
+          <ul class="footer-links">
+            <li><a href="about.html">About Our Firm</a></li>
+            <li><a href="projects.html">Project Portfolio</a></li>
+            <li><a href="index.html#blog">Research R&amp;D</a></li>
+            <li><a href="contact.html">Contact Offices</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2025 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
+        <div class="footer-bottom-links">
+          <a href="#">Privacy Protocol</a>
+          <a href="#">Security Audits</a>
+          <a href="#">Sitemap</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
