@@ -503,27 +503,80 @@
         <!-- Panel 3: SLAB -->
         <div class="tool-content-panel" id="panel-slab">
           <div class="tool-inputs-card glass-card">
-            <h3>Input Parameters</h3>
-            <div class="input-grid">
+            <h3>Two-Way Slab Thickness Calculator (ACI Code)</h3>
+            
+            <h4 class="text-gold border-b border-gray-700 pb-1 mb-3" style="font-family: var(--font-serif); font-size: 1.1rem; color: var(--color-gold);">Project Information</h4>
+            <div class="input-grid mb-4">
               <div class="input-field">
                 <label>Project Name</label>
                 <input type="text" id="slab-proj-name" value="TwinAnalytic Tower">
               </div>
               <div class="input-field">
-                <label>Slab Mark ID</label>
-                <input type="text" id="slab-id" value="S101">
-              </div>
-              <div class="input-field">
-                <label>Designer Initials</label>
+                <label>Designed By</label>
                 <input type="text" id="slab-designer" value="AH">
               </div>
               <div class="input-field">
-                <label>Long Span, l1 (ft)</label>
-                <input type="number" id="slab-l1" value="20" min="5" max="50" step="0.5">
+                <label>Date</label>
+                <input type="date" id="slab-date">
               </div>
               <div class="input-field">
-                <label>Transverse Span, l2 (ft)</label>
-                <input type="number" id="slab-l2" value="18" min="5" max="50" step="0.5">
+                <label>Project Location</label>
+                <input type="text" id="slab-location" value="New York, NY">
+              </div>
+              <div class="input-field">
+                <label>Floor Level</label>
+                <input type="text" id="slab-floor" value="Floor 2">
+              </div>
+            </div>
+
+            <h4 class="text-gold border-b border-gray-700 pb-1 mb-3" style="font-family: var(--font-serif); font-size: 1.1rem; color: var(--color-gold);">Basic Parameters</h4>
+            <div class="input-grid">
+              <div class="input-field">
+                <label>Clear span in long direction, ln (feet)</label>
+                <input type="number" id="slab-ln-long" value="20" min="5" max="50" step="0.5">
+              </div>
+              <div class="input-field">
+                <label>Clear span in short direction (feet)</label>
+                <input type="number" id="slab-ln-short" value="18" min="5" max="50" step="0.5">
+              </div>
+              <div class="input-field">
+                <label>Yield strength of steel, fy (psi)</label>
+                <select id="slab-fy">
+                  <option value="40000">40,000 psi</option>
+                  <option value="60000" selected>60,000 psi</option>
+                  <option value="75000">75,000 psi</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Compressive strength of concrete, f'c (psi)</label>
+                <select id="slab-fc">
+                  <option value="3000" selected>3,000 psi</option>
+                  <option value="4000">4,000 psi</option>
+                  <option value="5000">5,000 psi</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Slab Type</label>
+                <select id="slab-type">
+                  <option value="flat-plate" selected>Without Interior Beams (Flat Plate)</option>
+                  <option value="flat-slab">Without Interior Beams (Flat Slab)</option>
+                  <option value="with-beams">With Interior Beams</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Panel Type</label>
+                <select id="slab-panel">
+                  <option value="interior" selected>Interior Panel</option>
+                  <option value="exterior-no-edge">Exterior Panel without edge beams</option>
+                  <option value="exterior-edge">Exterior Panel with edge beams</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Drop Panels</label>
+                <select id="slab-drops">
+                  <option value="no" selected>No</option>
+                  <option value="yes">Yes</option>
+                </select>
               </div>
               <div class="input-field">
                 <label>Column Width, c1 (in)</label>
@@ -534,62 +587,149 @@
                 <input type="number" id="slab-c2" value="18" min="6" max="60">
               </div>
               <div class="input-field">
-                <label>Slab System Selection</label>
-                <select id="slab-system">
-                  <option value="flat-plate" selected>Flat Plate Flat Slab (No Interior Beams)</option>
-                  <option value="two-way">Two-Way Slab with Continuous Beams on All Sides</option>
-                </select>
-              </div>
-              <div class="input-field">
-                <label>Slab Thickness, h (in)</label>
-                <input type="number" id="slab-h" value="7.0" min="4.0" max="20.0" step="0.25">
+                <label>Service Live Load (psf)</label>
+                <input type="number" id="slab-ll" value="50" min="0" max="300" step="5">
               </div>
               <div class="input-field">
                 <label>Service Dead Load (psf)</label>
                 <input type="number" id="slab-sdl" value="40" min="0" max="300" step="5">
               </div>
               <div class="input-field">
-                <label>Service Live Load (psf)</label>
-                <input type="number" id="slab-ll" value="50" min="0" max="300" step="5">
-              </div>
-              <div class="input-field">
-                <label>Concrete Strength, f'c (psi)</label>
-                <input type="number" id="slab-fc" value="3000" min="2000" max="10000" step="500">
-              </div>
-              <div class="input-field">
-                <label>Steel Strength, fy (psi)</label>
-                <input type="number" id="slab-fy" value="60000" min="40000" max="100000" step="10000">
+                <label>Normal Weight Concrete</label>
+                <select id="slab-normal-weight">
+                  <option value="yes" selected>Yes (150 pcf)</option>
+                  <option value="no">No (110 pcf)</option>
+                </select>
               </div>
             </div>
-            <button class="btn btn-gold btn-calc" id="btn-calc-slab" style="margin-top: 1.5rem;">Calculate Member</button>
+
+            <!-- Beams section: shown only when slab-type = 'with-beams' -->
+            <div id="slab-beams-inputs-container" style="display: none; margin-top: 1rem;">
+              <h4 class="text-gold border-b border-gray-700 pb-1 mb-3" style="font-family: var(--font-serif); font-size: 1.1rem; color: var(--color-gold);">For Slabs WITH Interior Beams</h4>
+              <div class="input-grid">
+                <div class="input-field">
+                  <label>Average stiffness ratio, αfm</label>
+                  <input type="number" id="slab-alpha-fm" value="1.5" min="0.01" max="10.0" step="0.1">
+                </div>
+                <div class="input-field">
+                  <label>Long to short clear span ratio, β</label>
+                  <input type="number" id="slab-beta-val" value="1.11" min="0.1" max="5.0" step="0.01">
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+              <button class="btn btn-gold btn-calc" id="btn-calc-slab" style="flex: 1;">Calculate Member</button>
+              <button class="btn" id="btn-reset-slab" style="background: rgba(255, 255, 255, 0.05); color: #FFF; border: 1px solid rgba(255, 255, 255, 0.2);">Reset All</button>
+            </div>
           </div>
           
           <div class="tool-outputs-card glass-card">
             <h3>Analysis Output <span class="tool-status-badge pass" id="slab-status-badge">PASS</span></h3>
-            <div class="results-console text-mono">
-              <div class="console-line"><span class="console-label">Design Ultimate Load (qu)</span><span class="console-val" id="slab-out-wu">0.00 ksf</span></div>
-              <div class="console-line"><span class="console-label">Long Clear Span (ln,long)</span><span class="console-val" id="slab-out-ln-long">0.00 ft</span></div>
-              <div class="console-line"><span class="console-label">Short Clear Span (ln,short)</span><span class="console-val" id="slab-out-ln-short">0.00 ft</span></div>
-              <div class="console-line"><span class="console-label">Aspect Ratio (Beta)</span><span class="console-val" id="slab-out-beta">0.00</span></div>
-              <div class="console-line"><span class="console-label">Code Slab Thickness (h_req)</span><span class="console-val" id="slab-out-h-req">0.00 in</span></div>
-              <div class="console-line"><span class="console-label">Total Static Moment (Mo)</span><span class="console-val" id="slab-out-mo">0.00 kip-ft</span></div>
-              <div class="console-line"><span class="console-label">Col Strip Neg Moment</span><span class="console-val" id="slab-out-col-neg">0.00 kip-ft</span></div>
-              <div class="console-line"><span class="console-label">Col Strip Pos Moment</span><span class="console-val" id="slab-out-col-pos">0.00 kip-ft</span></div>
-              <div class="console-line"><span class="console-label">Mid Strip Neg Moment</span><span class="console-val" id="slab-out-mid-neg">0.00 kip-ft</span></div>
-              <div class="console-line"><span class="console-label">Mid Strip Pos Moment</span><span class="console-val" id="slab-out-mid-pos">0.00 kip-ft</span></div>
-              <div class="console-line"><span class="console-label">Concrete Volume</span><span class="console-val" id="slab-out-concrete-vol">0.00 m³</span></div>
-              <div class="console-line"><span class="console-label">Steel Weight</span><span class="console-val" id="slab-out-steel-weight">0.0 kg</span></div>
-              <div class="console-line" id="slab-row-warning" style="display: none; color: #f5222d; border-top: 1px dashed rgba(245, 34, 45, 0.3); padding-top: 0.5rem; margin-top: 0.5rem; flex-direction: column; align-items: flex-start; gap: 0.25rem;">
-                <span class="console-label" style="color: #f5222d; font-weight: bold;">ACI Compliance Alert</span>
-                <span class="console-val" id="slab-out-warning-text" style="color: #f5222d; font-size: 0.75rem; text-align: left; white-space: normal;"></span>
+            
+            <div id="slab-validation-error" style="display: none; background: rgba(245, 34, 45, 0.1); border: 1px solid #F5222D; color: #F5222D; padding: 0.75rem; border-radius: 4px; margin-bottom: 1rem; font-size: 0.85rem; text-align: left;">
+            </div>
+
+            <div id="slab-results-container">
+              <!-- Section 1: Slab Thickness -->
+              <div class="mb-4" style="text-align: left;">
+                <h4 class="text-gold border-b border-gray-800 pb-1 mb-2 font-bold" style="font-size: 0.95rem; color: var(--color-gold); border-bottom: 1px solid rgba(255,255,255,0.1);">Section 1: Slab Thickness Sizing</h4>
+                <div class="text-mono" style="font-size: 0.8rem; line-height: 1.4; color: #ccc;">
+                  <div class="mb-1">Method Used: <span id="slab-out-thickness-method" class="text-white font-bold"></span></div>
+                  <div class="mb-1">Symbolic Formula: <span id="slab-out-thickness-formula" class="text-white font-bold"></span></div>
+                  <div class="mb-1">Value Substitution: <span id="slab-out-thickness-sub" class="text-white" style="word-break: break-all;"></span></div>
+                  <div class="mb-1">Calculated thickness (h): <span id="slab-out-thickness-calc" class="text-white font-bold"></span></div>
+                  <div class="mb-1">Minimum thickness check: <span id="slab-out-thickness-min" class="text-white"></span></div>
+                  <div class="mt-2" style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                    <span style="font-weight: bold; color: #fff;">FINAL DESIGN THICKNESS (h):</span>
+                    <span id="slab-out-thickness-final" class="bg-green-900 border border-green-600 text-green-200 font-bold px-2 py-1 rounded" style="font-size: 0.9rem; background-color: rgba(30, 86, 49, 0.4); border: 1px solid #2e7d32; color: #81c784; padding: 0.25rem 0.5rem; border-radius: 4px;"></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section 2: Load Calculations -->
+              <div class="mb-4" style="text-align: left;">
+                <h4 class="text-gold border-b border-gray-800 pb-1 mb-2 font-bold" style="font-size: 0.95rem; color: var(--color-gold); border-bottom: 1px solid rgba(255,255,255,0.1);">Section 2: Load Sizing</h4>
+                <div class="text-mono" style="font-size: 0.8rem; line-height: 1.4; color: #ccc;">
+                  <div class="mb-1">Slab Self-Weight: <span id="slab-out-self-weight" class="text-white"></span></div>
+                  <div class="mb-1">Total Dead Load (DL): <span id="slab-out-total-dl" class="text-white"></span></div>
+                  <div class="mb-1">Service Live Load (LL): <span id="slab-out-total-ll" class="text-white"></span></div>
+                  <div class="mb-1">Factored Design Load (qu): <span id="slab-out-factored-qu" class="text-white font-bold" style="color: #fff;"></span></div>
+                </div>
+              </div>
+
+              <!-- Section 3: Static Moments -->
+              <div class="mb-4" style="text-align: left;">
+                <h4 class="text-gold border-b border-gray-800 pb-1 mb-2 font-bold" style="font-size: 0.95rem; color: var(--color-gold); border-bottom: 1px solid rgba(255,255,255,0.1);">Section 3: ACI Static Moments</h4>
+                <div class="text-mono" style="font-size: 0.8rem; line-height: 1.4; color: #ccc;">
+                  <div class="mb-2">Long Direction Moment (Mol): <div id="slab-out-mol-detail" class="text-white" style="margin-left: 1rem; font-size: 0.75rem; color: #aaa;"></div><span id="slab-out-mol-val" class="text-white font-bold" style="color: #fff;"></span></div>
+                  <div>Short Direction Moment (Mos): <div id="slab-out-mos-detail" class="text-white" style="margin-left: 1rem; font-size: 0.75rem; color: #aaa;"></div><span id="slab-out-mos-val" class="text-white font-bold" style="color: #fff;"></span></div>
+                </div>
+              </div>
+
+              <!-- Section 4: Moment Distribution Table -->
+              <div class="mb-4" style="text-align: left;">
+                <h4 class="text-gold border-b border-gray-800 pb-1 mb-2 font-bold" style="font-size: 0.95rem; color: var(--color-gold); border-bottom: 1px solid rgba(255,255,255,0.1);">Section 4: Moment Distribution Table</h4>
+                <div style="overflow-x: auto;">
+                  <table class="w-full text-mono border-collapse" style="font-size: 0.75rem; color: #ddd; border: 1px solid rgba(255,255,255,0.1); width: 100%; text-align: left;">
+                    <thead>
+                      <tr style="background-color: rgba(255,255,255,0.05); color: var(--color-gold);">
+                        <th style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.1);">Strip</th>
+                        <th style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.1);">Direction</th>
+                        <th style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.1);">Negative Mu (k-ft)</th>
+                        <th style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.1);">Positive Mu (k-ft)</th>
+                      </tr>
+                    </thead>
+                    <tbody id="slab-out-moments-tbody">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Section 5: Reinforcement Table -->
+              <div class="mb-4" style="text-align: left;">
+                <h4 class="text-gold border-b border-gray-800 pb-1 mb-2 font-bold" style="font-size: 0.95rem; color: var(--color-gold); border-bottom: 1px solid rgba(255,255,255,0.1);">Section 5: Reinforcement Schedule</h4>
+                <div style="overflow-x: auto;">
+                  <table class="w-full text-mono border-collapse" style="font-size: 0.72rem; color: #ddd; border: 1px solid rgba(255,255,255,0.1); width: 100%; text-align: left;">
+                    <thead>
+                      <tr style="background-color: rgba(255,255,255,0.05); color: var(--color-gold);">
+                        <th style="padding: 0.4rem; border: 1px solid rgba(255,255,255,0.1);">Zone</th>
+                        <th style="padding: 0.4rem; border: 1px solid rgba(255,255,255,0.1);">Mu (k-ft)</th>
+                        <th style="padding: 0.4rem; border: 1px solid rgba(255,255,255,0.1);">d (in)</th>
+                        <th style="padding: 0.4rem; border: 1px solid rgba(255,255,255,0.1);">As Req</th>
+                        <th style="padding: 0.4rem; border: 1px solid rgba(255,255,255,0.1);">As Min</th>
+                        <th style="padding: 0.4rem; border: 1px solid rgba(255,255,255,0.1);">As Used</th>
+                        <th style="padding: 0.4rem; border: 1px solid rgba(255,255,255,0.1);">Rebar Size</th>
+                        <th style="padding: 0.4rem; border: 1px solid rgba(255,255,255,0.1);">Spacing</th>
+                        <th style="padding: 0.4rem; border: 1px solid rgba(255,255,255,0.1);">Bars</th>
+                      </tr>
+                    </thead>
+                    <tbody id="slab-out-rebar-tbody">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Section 6: Shear Checks -->
+              <div class="mb-4" style="text-align: left;">
+                <h4 class="text-gold border-b border-gray-800 pb-1 mb-2 font-bold" style="font-size: 0.95rem; color: var(--color-gold); border-bottom: 1px solid rgba(255,255,255,0.1);">Section 6: Shear Verifications</h4>
+                <div class="text-mono" style="font-size: 0.8rem; line-height: 1.4; color: #ccc;">
+                  <div class="mb-2 p-2 rounded" style="background-color: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); padding: 0.5rem; border-radius: 4px;">
+                    <div class="font-bold text-white mb-1" style="color: #fff;">Punching Shear (Two-Way):</div>
+                    <div style="font-size: 0.75rem; color: #aaa;">bo = <span id="slab-out-bo" class="text-white"></span> in | Vu = <span id="slab-out-punch-vu" class="text-white"></span> kips | φVc = <span id="slab-out-punch-vc" class="text-white"></span> kips</div>
+                    <div class="mt-1">Status: <span id="slab-out-punch-badge" class="font-bold px-1 rounded" style="padding: 0.1rem 0.3rem; border-radius: 3px;"></span></div>
+                  </div>
+                  <div class="p-2 rounded" style="background-color: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); padding: 0.5rem; border-radius: 4px;">
+                    <div class="font-bold text-white mb-1" style="color: #fff;">One-Way Beam Shear:</div>
+                    <div style="font-size: 0.75rem; color: #aaa;">Vu1 = <span id="slab-out-ow-vu" class="text-white"></span> kips/ft | φVc = <span id="slab-out-ow-vc" class="text-white"></span> kips/ft</div>
+                    <div class="mt-1">Status: <span id="slab-out-ow-badge" class="font-bold px-1 rounded" style="padding: 0.1rem 0.3rem; border-radius: 3px;"></span></div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="schematic-box">
-              <h4>Direct Design Moment Distribution</h4>
-              <canvas id="slab-canvas" class="schematic-canvas"></canvas>
-            </div>
+
             <button class="btn btn-ghost" id="btn-download-slab-pdf" style="margin-top: 1.5rem; width: 100%;">
-              <i class="fa-solid fa-file-pdf" style="margin-right: 0.5rem;"></i> Download PDF Report
+              <i class="fa-solid fa-file-pdf" style="margin-right: 0.5rem;"></i> Download Full Report (PDF)
             </button>
           </div>
         </div>
