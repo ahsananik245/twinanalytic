@@ -1445,6 +1445,7 @@ function downloadSlabPDF() {
   let hMin = 5.0;
   let factor = 30;
   let formulaStr = "";
+  let subStr = "";
   let methodStr = "";
 
   if (type !== 'with-beams') {
@@ -1472,6 +1473,7 @@ function downloadSlabPDF() {
     }
     hCalc = (lnLong * 12) / factor;
     formulaStr = `h = ln / ${factor}`;
+    subStr = `h = (${lnLong} ft * 12) / ${factor} = ${hCalc.toFixed(2)} in`;
   } else {
     methodStr = "ACI 318-19 Section 8.3.1.2 (With Interior Beams)";
     const alpha = parseFloat(document.getElementById('slab-alpha-fm').value) || 1.5;
@@ -1488,14 +1490,17 @@ function downloadSlabPDF() {
       }
       hCalc = (lnLong * 12) / factor;
       formulaStr = `h = ln / ${factor} (since αfm <= 0.2)`;
+      subStr = `h = (${lnLong} ft * 12) / ${factor} = ${hCalc.toFixed(2)} in`;
     } else if (alpha > 0.2 && alpha <= 2.0) {
       hMin = 5.0;
       hCalc = (lnLong * 12 * (0.8 + fy / 200000)) / (36 + 5 * beta * (alpha - 0.2));
       formulaStr = `h = ln * (0.8 + fy/200,000) / [36 + 5*β*(αfm - 0.2)]`;
+      subStr = `h = (${lnLong}*12 * (0.8 + ${fy}/200k)) / [36 + 5*${beta.toFixed(2)}*(${alpha} - 0.2)] = ${hCalc.toFixed(2)} in`;
     } else {
       hMin = 3.5;
       hCalc = (lnLong * 12 * (0.8 + fy / 200000)) / (36 + 9 * beta);
       formulaStr = `h = ln * (0.8 + fy/200,000) / [36 + 9*β]`;
+      subStr = `h = (${lnLong}*12 * (0.8 + ${fy}/200k)) / [36 + 9*${beta.toFixed(2)}] = ${hCalc.toFixed(2)} in`;
     }
   }
 
