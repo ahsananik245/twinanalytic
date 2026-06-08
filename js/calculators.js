@@ -446,10 +446,9 @@ function handleAuthSubmit(event) {
     completeUnlock();
   })
   .catch((error) => {
-    console.error("Submission error:", error);
-    alert("Error connecting to database. Please check your network connection and try again.");
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = originalBtnText;
+    console.error("Database sync failed, proceeding with local unlock:", error);
+    // Proceed with unlocking anyway so the user's experience is not blocked by adblockers, DNS errors, or firewalls
+    completeUnlock();
   });
 }
 
