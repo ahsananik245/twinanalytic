@@ -2164,19 +2164,102 @@ function downloadSlabPDF() {
   doc.text('4. FLEXURAL REINFORCEMENT DESIGN', 0.5, 0.7);
   doc.line(0.5, 0.78, 8.0, 0.78);
 
-  doc.setTextColor(60, 60, 60);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.text('DESIGN FORMULAS:', 0.5, 1.15);
-  doc.setFont('courier', 'normal');
-  doc.setFontSize(8.5);
-  doc.text(`Ru = Mu / (0.9 * b * d²),   ρ = (0.85 * f'c / fy) * [1 - √(1 - 2*Ru / (0.85*f'c))]`, 0.5, 1.35);
-  doc.text(`As,req = ρ * b * d,          As,min = ${fy <= 40000 ? '0.0020' : '0.0018'} * b * h`, 0.5, 1.55);
+  doc.setTextColor(201, 168, 76);
+  doc.setFont('times', 'bold');
+  doc.setFontSize(16);
+  doc.text('4. FLEXURAL REINFORCEMENT DESIGN', 0.5, 0.7);
+  doc.line(0.5, 0.78, 8.0, 0.78);
 
-  // Table header
-  let ry = 1.95;
+  // --- STEP 4.1: COLUMN STRIP & MIDDLE STRIP WIDTH DEFINITION ---
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
+  doc.setFontSize(9.5);
+  doc.setTextColor(201, 168, 76);
+  doc.text('Step 4.1: Column Strip & Middle Strip Width Definition (ACI 318 Section 8.4.1.5)', 0.5, 1.05);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.0);
+  doc.setTextColor(60, 60, 60);
+  doc.text(`Smaller panel dimension = min(l1, l2) = ${Math.min(l1, l2).toFixed(2)} ft`, 0.5, 1.22);
+  doc.text(`Column strip width (each side of column line) = smaller span / 4 = ${(Math.min(l1, l2) / 4).toFixed(2)} ft`, 0.5, 1.36);
+  doc.text(`Total column strip width = smaller span / 2 = ${bColFt.toFixed(2)} ft = ${bColIn.toFixed(0)} in`, 0.5, 1.50);
+  doc.text(`Middle strip width (Long direction) = l2 - column strip width = ${bMidLongFt.toFixed(2)} ft = ${bMidLongIn.toFixed(0)} in`, 0.5, 1.64);
+  doc.text(`Middle strip width (Short direction) = l1 - column strip width = ${bMidShortFt.toFixed(2)} ft = ${bMidShortIn.toFixed(0)} in`, 0.5, 1.78);
+
+  let wty = 1.92;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(30, 30, 30);
+  doc.rect(0.5, wty, 7.5, 0.16);
+  doc.text('Strip', 0.6, wty + 0.11);
+  doc.text('Direction', 3.0, wty + 0.11);
+  doc.text('Width b (in)', 5.5, wty + 0.11);
+
+  const wRows = [
+    ['Column Strip', 'Long', bColIn.toFixed(0) + ' in'],
+    ['Column Strip', 'Short', bColIn.toFixed(0) + ' in'],
+    ['Middle Strip', 'Long', bMidLongIn.toFixed(0) + ' in'],
+    ['Middle Strip', 'Short', bMidShortIn.toFixed(0) + ' in']
+  ];
+
+  wRows.forEach(([sName, sDir, sW]) => {
+    wty += 0.16;
+    doc.rect(0.5, wty, 7.5, 0.16);
+    doc.setFont('helvetica', 'normal');
+    doc.text(sName, 0.6, wty + 0.11);
+    doc.text(sDir, 3.0, wty + 0.11);
+    doc.text(sW, 5.5, wty + 0.11);
+  });
+
+  // --- STEP 4.2: SAMPLE CALCULATION ---
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9.5);
+  doc.setTextColor(201, 168, 76);
+  doc.text('Step 4.2: Sample Calculation — Column Strip Top (Long Direction)', 0.5, 2.95);
+
+  const sampleMu_kft = lColNeg_slab;
+  const sampleMu_kin = sampleMu_kft * 12;
+  const sampleB = bColIn;
+  const sampleD = dLong;
+  const sampleRn_ksi = sampleMu_kin / (0.9 * sampleB * Math.pow(sampleD, 2));
+  const sampleRn_psi = sampleRn_ksi * 1000;
+  const sampleFc_psi = fc;
+  const sampleFy_psi = fy;
+  let sampleRho = 0;
+  if (sampleRn_ksi < 0.85 * (sampleFc_psi / 1000) / 2) {
+    sampleRho = (0.85 * sampleFc_psi / sampleFy_psi) * (1 - Math.sqrt(1 - (2 * sampleRn_psi) / (0.85 * sampleFc_psi)));
+  }
+  const sampleAsReq = sampleRho * sampleB * sampleD;
+  const sampleAsMin = 0.0018 * sampleB * hFinal;
+  const sampleAsUsed = Math.max(sampleAsReq, sampleAsMin);
+  let sampleBarArea = 0.20;
+  if (dLColNeg.size === '#5') sampleBarArea = 0.31;
+  else if (dLColNeg.size === '#6') sampleBarArea = 0.44;
+  const sampleSpacing = (sampleBarArea * sampleB) / sampleAsUsed;
+  const sampleSpacingLimit = Math.min(2 * hFinal, 18);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(60, 60, 60);
+  let scy = 3.05;
+  doc.text(`Step 1: Mu = ${sampleMu_kft.toFixed(1)} k-ft = ${sampleMu_kin.toFixed(1)} k-in`, 0.6, scy += 0.13);
+  doc.text(`Step 2: b = ${sampleB.toFixed(0)} in`, 0.6, scy += 0.13);
+  doc.text(`Step 3: d = h - 0.75"(cover) - 0.50"(half bar dia) = ${sampleD.toFixed(2)} in`, 0.6, scy += 0.13);
+  doc.text(`Step 4: Ru = Mu / (φ × b × d²) = ${sampleMu_kin.toFixed(1)} / (0.9 × ${sampleB.toFixed(0)} × ${sampleD.toFixed(2)}²) = ${sampleRn_psi.toFixed(1)} psi`, 0.6, scy += 0.13);
+  doc.text(`Step 5: ρ = (0.85 × f'c/fy) × [1 - √(1 - 2Ru/0.85f'c)] = ${sampleRho.toFixed(5)}`, 0.6, scy += 0.13);
+  doc.text(`Step 6: As,req = ρ × b × d = ${sampleAsReq.toFixed(2)} in²`, 0.6, scy += 0.13);
+  doc.text(`Step 7: As,min = 0.0018 × b × h = ${sampleAsMin.toFixed(2)} in²`, 0.6, scy += 0.13);
+  doc.text(`Step 8: As,used = max(As,req, As,min) = ${sampleAsUsed.toFixed(2)} in²`, 0.6, scy += 0.13);
+  doc.text(`Step 9: Try ${dLColNeg.size} bars: bar area = ${sampleBarArea.toFixed(2)} in² | Spacing = (bar area × b) / As,used = ${sampleSpacing.toFixed(1)}" [Limit: <= ${sampleSpacingLimit.toFixed(1)}"] ✓ | Number = ${dLColNeg.num}`, 0.6, scy += 0.13);
+
+  // --- STEP 4.3: REINFORCEMENT SUMMARY TABLE ---
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9.5);
+  doc.setTextColor(201, 168, 76);
+  doc.text('Step 4.3: Reinforcement Summary Table', 0.5, 4.55);
+
+  let ry = 4.72;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
   doc.setTextColor(30, 30, 30);
   
   doc.text('Strip & Zone', 0.5, ry);
@@ -2187,7 +2270,7 @@ function downloadSlabPDF() {
   doc.text('As Used', 5.4, ry);
   doc.text('Rebar detail', 6.2, ry);
   doc.text('Bars', 7.4, ry);
-  doc.line(0.5, ry + 0.05, 8.0, ry + 0.05);
+  doc.line(0.5, ry + 0.04, 8.0, ry + 0.04);
 
   const rowsData = [
     ['Col Strip Top (Long)', lColNeg_slab, dLong, dLColNeg],
@@ -2204,7 +2287,7 @@ function downloadSlabPDF() {
   doc.setTextColor(60, 60, 60);
 
   rowsData.forEach(([zone, MuVal, dVal, design]) => {
-    ry += 0.32;
+    ry += 0.20;
     doc.setFont('helvetica', 'bold');
     doc.text(zone, 0.5, ry);
     doc.setFont('helvetica', 'normal');
@@ -2218,8 +2301,18 @@ function downloadSlabPDF() {
     doc.text(`${design.size} @ ${design.spacing.toFixed(1)}" c/c`, 6.2, ry);
     doc.setTextColor(60, 60, 60);
     doc.text(`${design.num}`, 7.4, ry);
-    doc.line(0.5, ry + 0.08, 8.0, ry + 0.08);
+    doc.line(0.5, ry + 0.04, 8.0, ry + 0.04);
   });
+
+  // --- FOOTNOTE: ENHANCED AS_MIN EXPLANATION ---
+  ry += 0.25;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(120, 120, 120);
+  doc.text("Note: As,min values differ between strips because strip widths differ.", 0.5, ry);
+  doc.text(`Column strip b = ${bColIn.toFixed(0)} in → As,min = 0.0018 × ${bColIn.toFixed(0)} × h = ${sampleAsMin.toFixed(2)} in²`, 0.5, ry + 0.14);
+  doc.text(`Middle strip (Long) b = ${bMidLongIn.toFixed(0)} in → As,min = 0.0018 × ${bMidLongIn.toFixed(0)} × h = ${(0.0018 * bMidLongIn * hFinal).toFixed(2)} in²`, 0.5, ry + 0.26);
+  doc.text(`Middle strip (Short) b = ${bMidShortIn.toFixed(0)} in → As,min = 0.0018 × ${bMidShortIn.toFixed(0)} × h = ${(0.0018 * bMidShortIn * hFinal).toFixed(2)} in²`, 0.5, ry + 0.38);
 
   // ==========================================
   // PAGE 6 — SHEAR VERIFICATION
@@ -2240,64 +2333,68 @@ function downloadSlabPDF() {
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9.5);
-  doc.text(`- Average effective depth: d_avg = h - 1.5" = ${dAvg.toFixed(2)} in`, 0.5, 1.5);
-  doc.text(`- Column Size: c1 x c2 = ${c1} x ${c2} in`, 0.5, 1.7);
-  doc.text(`- Critical perimeter bo = 2*(c1 + d) + 2*(c2 + d) = ${bo.toFixed(1)} in`, 0.5, 1.9);
+  doc.text(`- Effective depth derivation:`, 0.5, 1.45);
+  doc.text(`  d₁ (long direction) = h - cover - 0.5(bar dia) = ${hFinal.toFixed(1)} - 0.75 - 0.50 = ${dLong.toFixed(2)} in`, 0.5, 1.62);
+  doc.text(`  d₂ (short direction) = h - cover - 1.0(bar dia below) - 0.5 = ${hFinal.toFixed(1)} - 0.75 - 1.00 = ${dShort.toFixed(2)} in`, 0.5, 1.79);
+  doc.text(`  d_avg = (d₁ + d₂) / 2 = (${dLong.toFixed(2)} + ${dShort.toFixed(2)}) / 2 = ${dAvg.toFixed(2)} in`, 0.5, 1.96);
+
+  doc.text(`- Column Size: c1 x c2 = ${c1} x ${c2} in`, 0.5, 2.15);
+  doc.text(`- Critical perimeter bo = 2*(c1 + d) + 2*(c2 + d) = ${bo.toFixed(1)} in`, 0.5, 2.35);
   
-  doc.text(`Factored punching shear force:`, 0.5, 2.2);
+  doc.text(`Factored punching shear force:`, 0.5, 2.65);
   doc.setFont('courier', 'bold');
-  doc.text(`Vu = qu * (l1 * l2 - (c1 + d)*(c2 + d)/144)`, 0.6, 2.4);
-  doc.text(`   = ${punchVu.toFixed(1)} kips`, 0.6, 2.6);
+  doc.text(`Vu = qu * (l1 * l2 - (c1 + d)*(c2 + d)/144)`, 0.6, 2.85);
+  doc.text(`   = ${punchVu.toFixed(1)} kips`, 0.6, 3.05);
 
   doc.setFont('helvetica', 'normal');
-  doc.text(`Nominal punching shear capacity (governed by 4*lambda*√f'c):`, 0.5, 2.9);
+  doc.text(`Nominal punching shear capacity (governed by 4*lambda*√f'c):`, 0.5, 3.35);
   doc.setFont('courier', 'bold');
-  doc.text(`φVc = 0.75 * 4 * λ * √f'c * bo * d`, 0.6, 3.1);
-  doc.text(`    = ${phiPunchVc.toFixed(1)} kips`, 0.6, 3.3);
+  doc.text(`φVc = 0.75 * 4 * λ * √f'c * bo * d`, 0.6, 3.55);
+  doc.text(`    = ${phiPunchVc.toFixed(1)} kips`, 0.6, 3.75);
 
   doc.setFont('helvetica', 'bold');
-  doc.text(`Punching Shear Status:`, 0.5, 3.65);
+  doc.text(`Punching Shear Status:`, 0.5, 4.1);
   if (punchPass) {
     doc.setTextColor(30, 150, 30);
-    doc.text('PASS (φVc >= Vu)', 2.3, 3.65);
+    doc.text('PASS (φVc >= Vu)', 2.3, 4.1);
   } else {
     doc.setTextColor(220, 50, 50);
-    doc.text('FAIL (φVc < Vu)', 2.3, 3.65);
+    doc.text('FAIL (φVc < Vu)', 2.3, 4.1);
   }
   doc.setTextColor(60, 60, 60);
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
-  doc.text('5.2 One-Way Beam Shear (ACI 318 Section 22.5)', 0.5, 4.25);
+  doc.text('5.2 One-Way Beam Shear (ACI 318 Section 22.5)', 0.5, 4.65);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9.5);
-  doc.text(`One-way shear is checked on a 12-inch wide strip at a distance 'd' from column face.`, 0.5, 4.5);
+  doc.text(`One-way shear is checked on a 12-inch wide strip at a distance 'd' from column face.`, 0.5, 4.9);
 
   doc.setFont('courier', 'bold');
-  doc.text(`Vu1 = qu * (ln_long/2 - d/12) = ${owVu.toFixed(2)} kips`, 0.6, 4.75);
-  doc.text(`φVc = 0.75 * 2 * λ * √f'c * 12 * d = ${phiOwVc.toFixed(2)} kips`, 0.6, 4.95);
+  doc.text(`Vu1 = qu * (ln_long/2 - d/12) = ${owVu.toFixed(2)} kips`, 0.6, 5.15);
+  doc.text(`φVc = 0.75 * 2 * λ * √f'c * 12 * d = ${phiOwVc.toFixed(2)} kips`, 0.6, 5.35);
 
   doc.setFont('helvetica', 'bold');
-  doc.text(`One-Way Shear Status:`, 0.5, 5.3);
+  doc.text(`One-Way Shear Status:`, 0.5, 5.7);
   if (owPass) {
     doc.setTextColor(30, 150, 30);
-    doc.text('PASS (φVc >= Vu1)', 2.3, 5.3);
+    doc.text('PASS (φVc >= Vu1)', 2.3, 5.7);
   } else {
     doc.setTextColor(220, 50, 50);
-    doc.text('FAIL (φVc < Vu1)', 2.3, 5.3);
+    doc.text('FAIL (φVc < Vu1)', 2.3, 5.7);
   }
   doc.setTextColor(60, 60, 60);
 
   // Critical perimeter text description
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
-  doc.text('5.3 Critical Perimeter Description', 0.5, 5.9);
+  doc.text('5.3 Critical Perimeter Description', 0.5, 6.25);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9.5);
   const criticalText = `The critical perimeter for two-way punching shear is located at a distance d/2 from the face of the column. This forms a rectangle of dimensions (c1 + d) by (c2 + d) centered on the column. Concrete shear strength is checked along this boundary.`;
   const splitCrit = doc.splitTextToSize(criticalText, 7.0);
-  doc.text(splitCrit, 0.5, 6.15);
+  doc.text(splitCrit, 0.5, 6.5);
 
   // ==========================================
   // PAGE 7 — REINFORCEMENT DETAILING DIAGRAM
@@ -2306,100 +2403,228 @@ function downloadSlabPDF() {
   drawBorder(7);
 
   doc.setTextColor(201, 168, 76);
-  doc.setFont('times', 'bold');
-  doc.setFontSize(16);
-  doc.text('6. REINFORCEMENT DETAILING DIAGRAM', 0.5, 0.7);
-  doc.line(0.5, 0.78, 8.0, 0.78);
+  // --- DIAGRAM ARROW HELPERS ---
+  const drawDimArrowH = (x1, x2, y, label) => {
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.006);
+    doc.line(x1, y, x2, y);
+    doc.setFillColor(0, 0, 0);
+    doc.triangle(x1, y, x1 + 0.05, y - 0.015, x1 + 0.05, y + 0.015, 'F');
+    doc.triangle(x2, y, x2 - 0.05, y - 0.015, x2 - 0.05, y + 0.015, 'F');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.text(label, (x1 + x2)/2, y - 0.03, { align: 'center' });
+  };
 
-  // Top view
-  doc.setDrawColor(120, 120, 120);
-  doc.setLineWidth(0.008);
-  doc.rect(0.5, 1.2, 3.4, 2.8); // Panel top view
+  const drawDimArrowV = (x, y1, y2, label) => {
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.006);
+    doc.line(x, y1, x, y2);
+    doc.setFillColor(0, 0, 0);
+    doc.triangle(x, y1, x - 0.015, y1 + 0.05, x + 0.015, y1 + 0.05, 'F');
+    doc.triangle(x, y2, x - 0.015, y2 - 0.05, x + 0.015, y2 - 0.04, 'F');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.text(label, x - 0.03, (y1 + y2)/2, { align: 'right' });
+  };
 
-  // Boundaries for strips
-  doc.setDrawColor(180, 180, 180);
-  doc.setLineDashPattern([0.05, 0.05], 0);
-  doc.line(1.35, 1.2, 1.35, 4.0);
-  doc.line(3.05, 1.2, 3.05, 4.0);
-  doc.line(0.5, 1.9, 3.9, 1.9);
-  doc.line(0.5, 3.3, 3.9, 3.3);
-  doc.setLineDashPattern([], 0); // Reset dash
-
-  // Column square in center
-  doc.setFillColor(60, 60, 60);
-  doc.rect(2.0, 2.4, 0.4, 0.4, 'FD');
-
+  // --- DIAGRAM 1: TOP VIEW PANEL ZONE LAYOUT ---
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(6.5);
-  doc.setTextColor(60, 60, 60);
-  doc.text('COLUMN STRIP', 1.8, 1.6);
-  doc.text('MIDDLE STRIP', 0.6, 2.6);
-  doc.text('COLUMN STRIP', 1.8, 3.7);
-
-  doc.setFontSize(8);
-  doc.text('TOP VIEW - PANEL ZONES', 0.5, 4.25);
-
-  // Section A-A (Long direction)
-  doc.setDrawColor(80, 80, 80);
-  doc.setLineWidth(0.015);
-  doc.line(4.5, 1.6, 7.8, 1.6); // Slab top line
-  doc.line(4.5, 2.2, 7.8, 2.2); // Slab bottom line
-  doc.line(4.5, 1.6, 4.5, 2.2); // End support
-  doc.line(7.8, 1.6, 7.8, 2.2); // End support
-  
-  // Rebar details - top bars
-  doc.setDrawColor(220, 50, 50); // Red for rebar
-  doc.setLineWidth(0.02);
-  doc.line(4.5, 1.7, 5.2, 1.7); // top bar left
-  doc.line(7.1, 1.7, 7.8, 1.7); // top bar right
-  // Bottom bars
-  doc.line(4.55, 2.1, 7.75, 2.1); // bottom bars continuous
-
-  // Support column sketch
-  doc.setFillColor(240, 240, 240);
-  doc.setDrawColor(80, 80, 80);
-  doc.rect(5.9, 2.2, 0.5, 0.8, 'FD');
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(30, 30, 30);
-  doc.text('SECTION A-A (LONG DIRECTION)', 4.5, 1.4);
+  doc.setFontSize(10);
+  doc.setTextColor(201, 168, 76);
+  doc.text('DIAGRAM 1: PANEL ZONE LAYOUT (TOP VIEW)', 0.5, 1.15);
+  doc.setFont('helvetica', 'italic');
   doc.setFontSize(7);
   doc.setTextColor(100, 100, 100);
-  doc.text('Top Bars: extend 0.22ln', 4.55, 3.2);
-  doc.text('Bottom Bars: 6" into support', 4.55, 3.4);
+  doc.text('Not to Scale — Schematic Only', 7.5, 1.15, { align: 'right' });
 
-  // Detailing Table at the bottom
-  let dty = 4.8;
+  const W_panel = 2.8;
+  const H_panel = 2.0;
+  const startX_panel = 4.25 - W_panel / 2;
+  const startY_panel = 1.35;
+
+  // Draw slab outline in blue
+  doc.setDrawColor(0, 70, 130);
+  doc.setLineWidth(0.015);
+  doc.rect(startX_panel, startY_panel, W_panel, H_panel);
+
+  // Column corners (black squares)
+  doc.setFillColor(0, 0, 0);
+  doc.rect(startX_panel - 0.08, startY_panel - 0.08, 0.16, 0.16, 'F');
+  doc.rect(startX_panel + W_panel - 0.08, startY_panel - 0.08, 0.16, 0.16, 'F');
+  doc.rect(startX_panel - 0.08, startY_panel + H_panel - 0.08, 0.16, 0.16, 'F');
+  doc.rect(startX_panel + W_panel - 0.08, startY_panel + H_panel - 0.08, 0.16, 0.16, 'F');
+
+  // Strip boundaries (dashed gray lines)
+  const l_min = Math.min(l1, l2);
+  const dx = (0.25 * l_min / l2) * W_panel;
+  const dy = (0.25 * l_min / l1) * H_panel;
+
+  doc.setDrawColor(180, 180, 180);
+  doc.setLineDashPattern([0.04, 0.04], 0);
+  doc.line(startX_panel + dx, startY_panel, startX_panel + dx, startY_panel + H_panel);
+  doc.line(startX_panel + W_panel - dx, startY_panel, startX_panel + W_panel - dx, startY_panel + H_panel);
+  doc.line(startX_panel, startY_panel + dy, startX_panel + W_panel, startY_panel + dy);
+  doc.line(startX_panel, startY_panel + H_panel - dy, startX_panel + W_panel, startY_panel + H_panel - dy);
+  doc.setLineDashPattern([], 0);
+
+  // Label strip zones
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(0, 0, 0);
+  doc.text('COLUMN STRIP', startX_panel + W_panel / 2, startY_panel + H_panel / 2, { align: 'center' });
+  doc.text('MIDDLE STRIP', startX_panel + W_panel / 2, startY_panel + dy / 2 + 0.05, { align: 'center' });
+  doc.text('MIDDLE STRIP', startX_panel + W_panel / 2, startY_panel + H_panel - dy / 2 + 0.05, { align: 'center' });
+
+  // Dimension lines
+  drawDimArrowH(startX_panel, startX_panel + dx, startY_panel - 0.15, 'l2/4');
+  drawDimArrowH(startX_panel + dx, startX_panel + W_panel - dx, startY_panel - 0.15, 'l2/2 (Col Strip)');
+  drawDimArrowH(startX_panel + W_panel - dx, startX_panel + W_panel, startY_panel - 0.15, 'l2/4');
+
+  drawDimArrowV(startX_panel - 0.15, startY_panel, startY_panel + dy, 'l1/4');
+  drawDimArrowV(startX_panel - 0.15, startY_panel + dy, startY_panel + H_panel - dy, 'l1/2 (Col)');
+  drawDimArrowV(startX_panel - 0.15, startY_panel + H_panel - dy, startY_panel + H_panel, 'l1/4');
+
+  // --- DIAGRAM 2: SECTION A-A (LONG CROSS SECTION) ---
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(201, 168, 76);
+  doc.text('DIAGRAM 2: SECTION A-A (LONG DIRECTION CROSS SECTION)', 0.5, 3.65);
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(7);
+  doc.setTextColor(100, 100, 100);
+  doc.text('Not to Scale — Schematic Only', 7.5, 3.65, { align: 'right' });
+
+  const W_sec = 6.0;
+  const H_sec = 0.5;
+  const startX_sec = 1.25;
+  const startY_sec = 3.95;
+
+  // Draw slab outline in blue
+  doc.setDrawColor(0, 70, 130);
+  doc.setLineWidth(0.012);
+  doc.rect(startX_sec, startY_sec, W_sec, H_sec);
+
+  // Top bars (Red negative moment)
+  const y_top = startY_sec + 0.12;
+  doc.setFillColor(220, 50, 50);
+  doc.circle(startX_sec + 0.25, y_top, 0.03, 'F');
+  doc.circle(startX_sec + 0.45, y_top, 0.03, 'F');
+  doc.circle(startX_sec + 0.65, y_top, 0.03, 'F');
+  doc.circle(startX_sec + W_sec - 0.25, y_top, 0.03, 'F');
+  doc.circle(startX_sec + W_sec - 0.45, y_top, 0.03, 'F');
+  doc.circle(startX_sec + W_sec - 0.65, y_top, 0.03, 'F');
+
+  // Bottom bars (Green positive moment)
+  const y_bot = startY_sec + H_sec - 0.12;
+  doc.setFillColor(30, 150, 30);
+  doc.circle(startX_sec + 2.0, y_bot, 0.03, 'F');
+  doc.circle(startX_sec + 2.5, y_bot, 0.03, 'F');
+  doc.circle(startX_sec + 3.0, y_bot, 0.03, 'F');
+  doc.circle(startX_sec + 3.5, y_bot, 0.03, 'F');
+  doc.circle(startX_sec + 4.0, y_bot, 0.03, 'F');
+
+  // Dimension lines
+  drawDimArrowV(startX_sec + 1.0, startY_sec, y_top, '0.75"');
+  drawDimArrowV(startX_sec + 1.0, y_bot, startY_sec + H_sec, '0.75"');
+  drawDimArrowV(startX_sec - 0.2, startY_sec, startY_sec + H_sec, `h = ${hFinal.toFixed(1)}"`);
+  drawDimArrowV(startX_sec + W_sec + 0.2, startY_sec, y_bot, `d1 = ${dLong.toFixed(2)}"`);
+
+  // Extension reference lines (dashed red and green)
+  doc.setDrawColor(220, 50, 50);
+  doc.setLineWidth(0.015);
+  doc.line(startX_sec - 0.15, startY_sec + 0.08, startX_sec + 1.3, startY_sec + 0.08); // Top left
+  doc.line(startX_sec + W_sec - 1.1, startY_sec + 0.08, startX_sec + W_sec + 0.15, startY_sec + 0.08); // Top right
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.setTextColor(220, 50, 50);
+  doc.text(`0.22ln = ${(0.22 * lnLong * 12).toFixed(1)} in`, startX_sec + 0.35, startY_sec + 0.03);
+  doc.text(`0.15l1 = ${(0.15 * l1 * 12).toFixed(1)} in`, startX_sec + W_sec - 0.7, startY_sec + 0.03);
+
+  doc.setDrawColor(30, 150, 30);
+  doc.line(startX_sec - 0.1, startY_sec + H_sec - 0.08, startX_sec + W_sec + 0.1, startY_sec + H_sec - 0.08);
+  doc.setTextColor(30, 150, 30);
+  doc.text('6 in min support embedment', startX_sec + 2.2, startY_sec + H_sec - 0.03);
+
+  // --- DIAGRAM 3: SECTION B-B (SHORT CROSS SECTION) ---
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(201, 168, 76);
+  doc.text('DIAGRAM 3: SECTION B-B (SHORT DIRECTION CROSS SECTION)', 0.5, 5.85);
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(7);
+  doc.setTextColor(100, 100, 100);
+  doc.text('Not to Scale — Schematic Only', 7.5, 5.85, { align: 'right' });
+
+  const startY_sec2 = 6.15;
+  doc.setDrawColor(0, 70, 130);
+  doc.setLineWidth(0.012);
+  doc.rect(startX_sec, startY_sec2, W_sec, H_sec);
+
+  // Top bars shifted lower (Red)
+  const y_top2 = startY_sec2 + 0.18;
+  doc.setFillColor(220, 50, 50);
+  doc.circle(startX_sec + 0.25, y_top2, 0.03, 'F');
+  doc.circle(startX_sec + 0.45, y_top2, 0.03, 'F');
+  doc.circle(startX_sec + 0.65, y_top2, 0.03, 'F');
+  doc.circle(startX_sec + W_sec - 0.25, y_top2, 0.03, 'F');
+  doc.circle(startX_sec + W_sec - 0.45, y_top2, 0.03, 'F');
+  doc.circle(startX_sec + W_sec - 0.65, y_top2, 0.03, 'F');
+
+  // Bottom bars shifted higher (Green)
+  const y_bot2 = startY_sec2 + H_sec - 0.18;
+  doc.setFillColor(30, 150, 30);
+  doc.circle(startX_sec + 2.0, y_bot2, 0.03, 'F');
+  doc.circle(startX_sec + 2.5, y_bot2, 0.03, 'F');
+  doc.circle(startX_sec + 3.0, y_bot2, 0.03, 'F');
+  doc.circle(startX_sec + 3.5, y_bot2, 0.03, 'F');
+  doc.circle(startX_sec + 4.0, y_bot2, 0.03, 'F');
+
+  // Dimensions
+  drawDimArrowV(startX_sec - 0.2, startY_sec2, startY_sec2 + H_sec, `h = ${hFinal.toFixed(1)}"`);
+  drawDimArrowV(startX_sec + W_sec + 0.2, startY_sec2, y_bot2, `d2 = d1 - 1.0" = ${dShort.toFixed(2)}"`);
+
+  // Spacing labels
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(0, 0, 0);
+  doc.text(`Col Strip spacing = ${dSColNeg.spacing.toFixed(1)}" c/c`, startX_sec + 1.2, startY_sec2 + 0.43);
+  doc.text(`Mid Strip spacing = ${dSMidNeg.spacing.toFixed(1)}" c/c`, startX_sec + 3.4, startY_sec2 + 0.43);
+
+  // --- BAR EXTENSION REFERENCE TABLE ---
+  let dty = 7.75;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
   doc.setTextColor(201, 168, 76);
   doc.text('REINFORCEMENT DETAILED EXTENSIONS', 0.5, dty);
-  doc.line(0.5, dty + 0.05, 8.0, dty + 0.05);
+  doc.line(0.5, dty + 0.04, 8.0, dty + 0.04);
 
-  doc.setFontSize(8.5);
-  doc.setTextColor(60, 60, 60);
-  
-  dty += 0.3;
+  dty += 0.22;
+  doc.rect(0.5, dty, 7.5, 0.18);
   doc.setFont('helvetica', 'bold');
-  doc.text('Slab Reinforcement Component', 0.6, dty);
-  doc.text('ACI 318 Standard Extension Lengths', 4.0, dty);
-  doc.line(0.5, dty + 0.05, 8.0, dty + 0.05);
+  doc.setFontSize(7.5);
+  doc.setTextColor(30, 30, 30);
+  doc.text('Reinforcement Location', 0.6, dty + 0.12);
+  doc.text('Extension Rule', 3.4, dty + 0.12);
+  doc.text('Calculated Length', 5.9, dty + 0.12);
 
   const detailRows = [
-    ['Top bars at interior supports', 'Extend minimum 0.22 * ln beyond face of support'],
-    ['Top bars at exterior supports', 'Extend minimum 0.15 * ln beyond face of support'],
-    ['Bottom continuous reinforcement', 'Extend minimum 6 inches into support lines'],
-    ['Bottom non-continuous reinforcement', 'Extend ln / 3 past midspan minimum'],
-    ['At least 2 bottom bars', 'Must remain continuous through support boundary']
+    ['Top bars — interior support', '0.22 × ln', `${(0.22 * lnLong * 12).toFixed(1)} inches`],
+    ['Top bars — exterior support', '0.15 × l', `${(0.15 * l1 * 12).toFixed(1)} inches`],
+    ['Bottom bars — into support', '6 in min', '6.0 inches'],
+    ['Bottom non-continuous bars', 'ln/3 past midspan', `${(lnLong / 3 * 12).toFixed(1)} inches`],
+    ['Minimum continuous bottom bars', '2 bars through support', '—']
   ];
 
-  detailRows.forEach(([lbl, desc]) => {
-    dty += 0.26;
+  detailRows.forEach(([lbl, rule, calcVal]) => {
+    dty += 0.18;
+    doc.rect(0.5, dty, 7.5, 0.18);
     doc.setFont('helvetica', 'bold');
-    doc.text(lbl, 0.6, dty);
+    doc.text(lbl, 0.6, dty + 0.12);
     doc.setFont('helvetica', 'normal');
-    doc.text(desc, 4.0, dty);
+    doc.text(rule, 3.4, dty + 0.12);
+    doc.text(calcVal, 5.9, dty + 0.12);
   });
 
   // ==========================================
@@ -2415,17 +2640,20 @@ function downloadSlabPDF() {
   doc.line(0.5, 0.78, 8.0, 0.78);
 
   // Table header
-  let sy = 1.2;
+  let sy = 1.05;
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
+  doc.setFontSize(8.5);
   doc.setTextColor(30, 30, 30);
   doc.text('Structural Item', 0.6, sy);
   doc.text('Calculated Sizing Value', 3.3, sy);
   doc.text('Adopted Design Value', 5.8, sy);
-  doc.line(0.5, sy + 0.05, 8.0, sy + 0.05);
+  doc.line(0.5, sy + 0.04, 8.0, sy + 0.04);
 
   const summaryData = [
     ['Slab Thickness (h)', `${hCalc.toFixed(2)} in`, `${hFinal.toFixed(1)} in`],
+    ['Column Strip Width', `min(l1, l2)/2 = ${bColFt.toFixed(2)} ft`, `${bColIn.toFixed(0)} in`],
+    ['Middle Strip Width (Long)', `l2 - col strip = ${bMidLongFt.toFixed(2)} ft`, `${bMidLongIn.toFixed(0)} in`],
+    ['Middle Strip Width (Short)', `l1 - col strip = ${bMidShortFt.toFixed(2)} ft`, `${bMidShortIn.toFixed(0)} in`],
     ['Long Direction - Column Strip Top', `${dLColNeg.gov.toFixed(2)} in²`, `${dLColNeg.size} @ ${dLColNeg.spacing.toFixed(1)}" c/c`],
     ['Long Direction - Column Strip Bottom', `${dLColPos.gov.toFixed(2)} in²`, `${dLColPos.size} @ ${dLColPos.spacing.toFixed(1)}" c/c`],
     ['Long Direction - Middle Strip Top', `${dLMidNeg.gov.toFixed(2)} in²`, `${dLMidNeg.size} @ ${dLMidNeg.spacing.toFixed(1)}" c/c`],
@@ -2444,7 +2672,7 @@ function downloadSlabPDF() {
   doc.setTextColor(60, 60, 60);
 
   summaryData.forEach(([item, calc, adop]) => {
-    sy += 0.28;
+    sy += 0.20;
     doc.setFont('helvetica', 'bold');
     doc.text(item, 0.6, sy);
     doc.setFont('helvetica', 'normal');
@@ -2453,37 +2681,83 @@ function downloadSlabPDF() {
     doc.setTextColor(201, 168, 76);
     doc.text(adop, 5.8, sy);
     doc.setTextColor(60, 60, 60);
-    doc.line(0.5, sy + 0.05, 8.0, sy + 0.05);
+    doc.line(0.5, sy + 0.04, 8.0, sy + 0.04);
+  });
+
+  // --- REINFORCEMENT QUANTITY ESTIMATE ---
+  sy += 0.35;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(201, 168, 76);
+  doc.text('REINFORCEMENT QUANTITY ESTIMATE', 0.5, sy);
+  doc.line(0.5, sy + 0.04, 8.0, sy + 0.04);
+
+  sy += 0.20;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(30, 30, 30);
+  doc.text('Bar Location', 0.6, sy);
+  doc.text('Bar Size', 2.8, sy);
+  doc.text('Spacing', 3.8, sy);
+  doc.text('Strip Width', 4.8, sy);
+  doc.text('Est. Qty', 6.2, sy);
+  doc.line(0.5, sy + 0.04, 8.0, sy + 0.04);
+
+  const qtyRows = [
+    ['Col Strip Top Long', dLColNeg.size, `${dLColNeg.spacing.toFixed(1)}"`, `${bColFt.toFixed(2)} ft`, `${dLColNeg.num} bars`],
+    ['Col Strip Bot Long', dLColPos.size, `${dLColPos.spacing.toFixed(1)}"`, `${bColFt.toFixed(2)} ft`, `${dLColPos.num} bars`],
+    ['Mid Strip Top Long', dLMidNeg.size, `${dLMidNeg.spacing.toFixed(1)}"`, `${bMidLongFt.toFixed(2)} ft`, `${dLMidNeg.num} bars`],
+    ['Mid Strip Bot Long', dLMidPos.size, `${dLMidPos.spacing.toFixed(1)}"`, `${bMidLongFt.toFixed(2)} ft`, `${dLMidPos.num} bars`],
+    ['Col Strip Top Short', dSColNeg.size, `${dSColNeg.spacing.toFixed(1)}"`, `${bColFt.toFixed(2)} ft`, `${dSColNeg.num} bars`],
+    ['Col Strip Bot Short', dSColPos.size, `${dSColPos.spacing.toFixed(1)}"`, `${bColFt.toFixed(2)} ft`, `${dSColPos.num} bars`],
+    ['Mid Strip Top Short', dSMidNeg.size, `${dSMidNeg.spacing.toFixed(1)}"`, `${bMidShortFt.toFixed(2)} ft`, `${dSMidNeg.num} bars`],
+    ['Mid Strip Bot Short', dSMidPos.size, `${dSMidPos.spacing.toFixed(1)}"`, `${bMidShortFt.toFixed(2)} ft`, `${dSMidPos.num} bars`]
+  ];
+
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(60, 60, 60);
+
+  qtyRows.forEach(([lbl, size, spacing, width, qty]) => {
+    sy += 0.18;
+    doc.setFont('helvetica', 'bold');
+    doc.text(lbl, 0.6, sy);
+    doc.setFont('helvetica', 'normal');
+    doc.text(size, 2.8, sy);
+    doc.text(spacing, 3.8, sy);
+    doc.text(width, 4.8, sy);
+    doc.setFont('helvetica', 'bold');
+    doc.text(qty, 6.2, sy);
+    doc.line(0.5, sy + 0.04, 8.0, sy + 0.04);
   });
 
   // End design notes
-  sy += 0.5;
+  sy += 0.35;
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
+  doc.setFontSize(9.5);
   doc.setTextColor(201, 168, 76);
   doc.text('CONCLUDING STRUCTURAL NOTES:', 0.5, sy);
   
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
+  doc.setFontSize(8.0);
   doc.setTextColor(60, 60, 60);
-  sy += 0.22;
+  sy += 0.18;
   doc.text('* All reinforcement shall conform to ASTM A615 Grade 60.', 0.5, sy);
-  sy += 0.18;
+  sy += 0.14;
   doc.text('* Concrete clear cover to reinforcement = 3/4 inch.', 0.5, sy);
-  sy += 0.18;
+  sy += 0.14;
   doc.text('* Design based on ACI 318 Building Code Requirements.', 0.5, sy);
 
   // Signatures
-  sy += 0.5;
+  sy += 0.35;
   doc.setLineWidth(0.008);
   doc.setDrawColor(100, 100, 100);
-  doc.line(0.7, sy + 0.5, 2.7, sy + 0.5);
-  doc.line(5.3, sy + 0.5, 7.3, sy + 0.5);
+  doc.line(0.7, sy + 0.4, 2.7, sy + 0.4);
+  doc.line(5.3, sy + 0.4, 7.3, sy + 0.4);
   
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.text('DESIGNER SIGNATURE', 1.0, sy + 0.65);
-  doc.text('REVIEWER SIGNATURE', 5.6, sy + 0.65);
+  doc.setFontSize(7.5);
+  doc.text('DESIGNER SIGNATURE', 1.0, sy + 0.52);
+  doc.text('REVIEWER SIGNATURE', 5.6, sy + 0.52);
 
   doc.save(`twinanalytic_slab_report_${new Date().toISOString().split('T')[0]}.pdf`);
 }
