@@ -1,4 +1,5 @@
-// --- STRUCTURAL ENGINEERING DESIGN CALCULATORS & CANVAS DRAWINGS ---
+// Google Sheets Apps Script Web App Integration URL
+const GOOGLE_SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
 
 document.addEventListener('DOMContentLoaded', () => {
   initTabs();
@@ -110,44 +111,251 @@ function openAuthModal(callback, calcType) {
   }
 }
 
-// Handle auth form submission, save lead to localStorage database, and close modal
+// Internal calculation engine to compute metrics before sending to database
+function calculateMetricsInternally(calcType) {
+  const metrics = {
+    geometry: "N/A",
+    reinforcement: "N/A",
+    status: "PASS",
+    concreteVol: "N/A",
+    steelWeight: "N/A"
+  };
+
+  try {
+    if (calcType.includes("Column")) {
+      const pdl = parseFloat(document.getElementById('column-pdl').value) || 0;
+      const pll = parseFloat(document.getElementById('column-pll').value) || 0;
+      const fc = parseFloat(document.getElementById('column-fc').value) || 3;
+      const fy = parseFloat(document.getElementById('column-fy').value) || 60;
+      const phi = parseFloat(document.getElementById('column-phi').value) || 0.65;
+      const p = parseFloat(document.getElementById('column-p').value) || 0.02;
+      const colHeight = parseFloat(document.getElementById('column-height').value) || 10;
+
+      const Pu = (1.2 * pdl) + (1.6 * pll);
+      const denominator = phi * 0.80 * (0.85 * fc * (1 - p) + fy * p);
+      if (denominator > 0) {
+        const Ag = Pu / denominator;
+        const Dim = Math.ceil(Math.sqrt(Ag));
+        const ColumnArea = Dim * Dim;
+        const Ast = ((Pu / (phi * 0.80)) - (0.85 * fc * ColumnArea)) / (fy - (0.85 * fc));
+
+        const mainBarSize = document.getElementById('column-main-bar').value;
+        const tieBarSize = document.getElementById('column-tie-bar').value;
+        let mainBarDia = mainBarSize === '#7' ? 0.875 : mainBarSize === '#8' ? 1.0 : 1.128;
+        let tieBarDia = tieBarSize === '#3' ? 0.375 : 0.500;
+        const maxTieSpacing = Math.min(16 * mainBarDia, 48 * tieBarDia, Dim);
+
+        const PnMax = 0.80 * (0.85 * fc * (ColumnArea - Ast) + fy * Ast);
+        const PhiPn = 0.65 * PnMax;
+        const dcRatio = PhiPn > 0 ? Pu / PhiPn : 0;
+
+        const concreteVol = ((ColumnArea / 144) * colHeight) * 0.02831685;
+        const steelWeight = ((Ast * 3.4) * colHeight) * 0.45359237;
+
+        metrics.geometry = `${Dim}" x ${Dim}"`;
+        metrics.reinforcement = `8 Nos ${mainBarSize} (Ties: ${maxTieSpacing.toFixed(1)}")`;
+        metrics.status = dcRatio <= 1.0 ? `PASS [D/C = ${dcRatio.toFixed(2)}]` : `FAIL - OVERSTRESSED [D/C = ${dcRatio.toFixed(2)}]`;
+        metrics.concreteVol = `${concreteVol.toFixed(2)} m³`;
+        metrics.steelWeight = `${steelWeight.toFixed(1)} kg`;
+      }
+    } else if (calcType.includes("Beam")) {
+      const b = parseFloat(document.getElementById('beam-w').value) || 0;
+      const D = parseFloat(document.getElementById('beam-d').value) || 0;
+      const Mu = parseFloat(document.getElementById('beam-moment').value) || 0;
+      const cover = parseFloat(document.getElementById('beam-cover').value) || 0;
+      const fck = parseFloat(document.getElementById('beam-concrete').value) || 25;
+      const fy = parseFloat(document.getElementById('beam-steel').value) || 500;
+
+      const d = D - cover - 12;
+      const xuMax_d = fy === 500 ? 0.46 : 0.48;
+      const RuLim = 0.36 * (fck / 1.5) * xuMax_d * (1 - 0.42 * xuMax_d);
+      const MuLim = RuLim * b * d * d * 1e-6;
+
+      let status = "PASS";
+      let rebarText = "";
+      if (Mu > MuLim) {
+        status = "FAIL";
+        rebarText = "Over-reinforced (Resize)";
+      } else {
+        let ast = (0.5 * fck * b * d / fy) * (1 - Math.sqrt(1 - (4.6 * Mu * 1e6) / (fck * b * d * d)));
+        const astMin = (0.85 * b * d) / fy;
+        if (ast < astMin) ast = astMin;
+        const numBars = Math.max(2, Math.ceil(ast / (Math.PI * 16 * 16 / 4)));
+        rebarText = `${numBars} Nos - 16mm`;
+      }
+
+      metrics.geometry = `${b}mm x ${D}mm`;
+      metrics.reinforcement = rebarText;
+      metrics.status = status;
+    } else if (calcType.includes("Slab")) {
+      const L = parseFloat(document.getElementById('slab-span').value) || 0;
+      const t = parseFloat(document.getElementById('slab-t').value) || 0;
+      const liveLoad = parseFloat(document.getElementById('slab-load').value) || 0;
+      const fck = parseFloat(document.getElementById('slab-concrete').value) || 20;
+      const fy = parseFloat(document.getElementById('slab-steel').value) || 500;
+
+      const deadLoad = 25 * (t / 1000);
+      const wu = 1.5 * (deadLoad + liveLoad + 1.0);
+      const Mu = (wu * L * L) / 8;
+      const d = t - 20;
+
+      let ast = (0.5 * fck * 1000 * d / fy) * (1 - Math.sqrt(1 - (4.6 * Mu * 1e6) / (fck * 1000 * d * d)));
+      let status = "PASS";
+      let reinforcement = "";
+
+      if (isNaN(ast)) {
+        status = "FAIL";
+        reinforcement = "Thin depth";
+      } else {
+        const astMin = 0.0012 * 1000 * t;
+        if (ast < astMin) ast = astMin;
+        let spacing = (1000 * (Math.PI * 10 * 10 / 4)) / ast;
+        spacing = Math.floor(spacing / 10) * 10;
+        spacing = Math.min(spacing, 3 * d, 300);
+        reinforcement = `10mm @ ${spacing}mm c/c`;
+      }
+
+      metrics.geometry = `t = ${t} mm`;
+      metrics.reinforcement = reinforcement;
+      metrics.status = status;
+    } else if (calcType.includes("Pile Cap")) {
+      const dia = parseFloat(document.getElementById('pile-dia').value) || 0;
+      const count = parseInt(document.getElementById('pile-count').value, 10) || 4;
+      const load = parseFloat(document.getElementById('pile-load').value) || 0;
+      const depth = parseFloat(document.getElementById('pile-depth').value) || 0;
+      const fck = parseFloat(document.getElementById('pile-concrete').value) || 25;
+
+      const d = depth - 100;
+      const punchingStress = (load * 1e3) / (4 * 500 * d);
+      const permissibleShear = 0.25 * Math.sqrt(fck);
+      const ratio = punchingStress / permissibleShear;
+
+      metrics.geometry = `depth: ${depth} mm`;
+      metrics.reinforcement = `${count} piles (${dia}mm)`;
+      metrics.status = ratio <= 1.0 ? "PASS" : "FAIL (Shear)";
+    } else if (calcType.includes("Footing")) {
+      const load = parseFloat(document.getElementById('footing-load').value) || 0;
+      const sbc = parseFloat(document.getElementById('footing-sbc').value) || 150;
+      const colSize = parseFloat(document.getElementById('footing-col').value) || 300;
+
+      const reqArea = (load * 1.1) / sbc;
+      const width = Math.ceil(Math.sqrt(reqArea) * 20) / 20;
+
+      metrics.geometry = `${width.toFixed(2)}m x ${width.toFixed(2)}m`;
+      metrics.reinforcement = `Col: ${colSize}mm`;
+      metrics.status = "PASS";
+    }
+  } catch (err) {
+    console.error("Internal calculation failed:", err);
+  }
+
+  return metrics;
+}
+
+// Handle auth form submission, save lead to Google Sheets and local database, and close modal
 function handleAuthSubmit(event) {
   event.preventDefault();
-  
-  const name = document.getElementById('lead-name').value;
-  const phone = document.getElementById('lead-phone').value;
-  const email = document.getElementById('lead-email').value;
+
+  const name = document.getElementById('lead-name').value.trim();
+  const phone = document.getElementById('lead-phone').value.trim();
+  const email = document.getElementById('lead-email').value.trim();
   const timestamp = new Date().toLocaleString();
 
-  // Save entry in leads array
-  let leads = JSON.parse(localStorage.getItem('tools_leads') || '[]');
-  leads.push({
+  // 1. Client-side Validation
+  if (!name) {
+    alert("Please enter your full name.");
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    alert("Please enter a valid business email address.");
+    return;
+  }
+
+  const cleanPhone = phone.replace(/\D/g, '');
+  if (cleanPhone.length !== 10) {
+    alert("Please enter a valid 10-digit contact number (digits only, e.g. 555-123-4567).");
+    return;
+  }
+
+  // 2. Button Loading State
+  const submitBtn = event.target.querySelector('button[type="submit"]');
+  const originalBtnText = submitBtn.innerHTML;
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right: 0.5rem;"></i> Unlocking...';
+
+  // 3. Compute calculated metrics internally before submission
+  const calculatedMetrics = calculateMetricsInternally(pendingType);
+
+  const payload = {
     name: name,
-    phone: phone,
     email: email,
+    phone: cleanPhone,
     timestamp: timestamp,
-    calcType: pendingType
+    calcType: pendingType,
+    geometry: calculatedMetrics.geometry,
+    reinforcement: calculatedMetrics.reinforcement,
+    status: calculatedMetrics.status,
+    concreteVol: calculatedMetrics.concreteVol,
+    steelWeight: calculatedMetrics.steelWeight
+  };
+
+  const completeUnlock = () => {
+    // Save entry in leads array locally
+    let leads = JSON.parse(localStorage.getItem('tools_leads') || '[]');
+    leads.push({
+      ...payload,
+      timestamp: timestamp
+    });
+    localStorage.setItem('tools_leads', JSON.stringify(leads));
+    localStorage.setItem('tools_user_unlocked', 'true');
+
+    // Close modal
+    const modal = document.getElementById('auth-modal');
+    if (modal) {
+      modal.classList.remove('active');
+    }
+
+    // Update lead indicators
+    updateLeadsCount();
+
+    // Run the blocked calculator callback (runs calculation or downloads PDF)
+    if (pendingCallback) {
+      pendingCallback();
+    }
+
+    // Reset button and form inputs
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalBtnText;
+    event.target.reset();
+  };
+
+  // 4. API Posting block
+  const googleScriptUrl = GOOGLE_SCRIPT_URL;
+  if (!googleScriptUrl || googleScriptUrl === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL") {
+    console.warn("Google Sheets Apps Script URL not configured. Logging locally.");
+    setTimeout(completeUnlock, 1000); // Simulate smooth network latency
+    return;
+  }
+
+  fetch(googleScriptUrl, {
+    method: 'POST',
+    mode: 'no-cors', // standard way to post to Apps Script redirect URLs
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(() => {
+    completeUnlock();
+  })
+  .catch((error) => {
+    console.error("Submission error:", error);
+    alert("Error connecting to database. Please check your network connection and try again.");
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalBtnText;
   });
-
-  localStorage.setItem('tools_leads', JSON.stringify(leads));
-  localStorage.setItem('tools_user_unlocked', 'true');
-
-  // Close modal
-  const modal = document.getElementById('auth-modal');
-  if (modal) {
-    modal.classList.remove('active');
-  }
-
-  // Update lead indicators
-  updateLeadsCount();
-
-  // Run the calculator
-  if (pendingCallback) {
-    pendingCallback();
-  }
-
-  // Reset form inputs
-  event.target.reset();
 }
 
 // Initialize admin leads management actions
