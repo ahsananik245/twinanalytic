@@ -2744,7 +2744,7 @@ function downloadSlabPDF() {
   doc.setDrawColor(200, 0, 0);
   doc.setLineWidth(0.008);
   doc.line(startX_sec, y_top_line, startX_sec + 0.22 * W_sec, y_top_line); // Left support
-  doc.line(startX_sec + W_sec - 0.15 * W_sec, y_top_line, startX_sec + W_sec); // Right support
+  doc.line(startX_sec + W_sec - 0.15 * W_sec, y_top_line, startX_sec + W_sec, y_top_line); // Right support
 
   // Draw perpendicular short direction bars as small red circles placed below long direction bars
   let y_top_circle = y_top_line + 0.05;
