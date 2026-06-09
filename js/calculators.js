@@ -3693,6 +3693,7 @@ function drawFootingCanvas() {
 // 8. PDF REPORT GENERATION
 // ==========================================
 function downloadColumnPDF() {
+  let axialDcr = 0.0;
   const code = document.getElementById('column-code').value || 'ACI 318-14';
   const type = document.getElementById('column-type').value; // 'TIED' or 'SPIRAL'
   const pdl = parseFloat(document.getElementById('column-pdl').value) || 0;
@@ -4585,7 +4586,7 @@ function downloadColumnPDF() {
   const Pn_pure = 0.85 * fc * (Ag - Ast_actual) + Ast_actual * fy;
   const alpha_phi_Pn = alpha * phi_axial * Pn_pure;
   const isAxialOk = Pu <= alpha_phi_Pn;
-  const axialDcr = Pu / alpha_phi_Pn;
+  axialDcr = Pu / alpha_phi_Pn;
 
   doc.setFont('helvetica', 'bold');
   doc.text(`Pn = ${Pn_pure.toFixed(1)} kips`, 2.0, cy);
@@ -5304,112 +5305,272 @@ function downloadColumnPDF() {
   }
   cy += 0.15;
 
-  // SECTION 12.6 (Correction 3)
-  const d_eff_min = Dim - cover - d_tie - mainBarDia / 2;
-  const a_est = 0.2 * d_eff_min;
-  const c_est = a_est / beta1;
-  const C_est = 0.85 * fc * a_est * Dim;
-  const Mn_est = C_est * (d_eff_min - a_est / 2) / 12;
-  const phiMn_est = 0.9 * Mn_est;
 
-  checkPageBreak(doc, 2.5);
+  // SECTION 12.5 — MOMENT MAGNIFICATION FACTOR DERIVATION (Correction 4)
+  const Ec_val = 57000 * Math.sqrt(fc * 1000) / 1000;
+  const Ig_val = type === 'TIED' ? (Math.pow(Dim, 4) / 12) : (Math.PI * Math.pow(Dim, 4) / 64);
+  const beta_dns_val = 1.2 * pdl / Pu;
+  const EI_val = 0.4 * Ec_val * Ig_val / (1 + beta_dns_val);
+  const Pc_val = Math.PI * Math.PI * EI_val / Math.pow(1.0 * colHeight * 12, 2);
+  const Cm_val = 1.0;
+  const delta_ns_calc = Cm_val / (1 - Pu / (0.75 * Pc_val));
+  const delta_ns_governing = Math.max(1.0, delta_ns_calc);
+
+  checkPageBreak(doc, 3.2);
   doc.setFont('times', 'bold');
   doc.setFontSize(11);
   doc.setTextColor(201, 168, 76);
-  doc.text('12.6 Moment Capacity for Minimum Eccentricity Check:', 0.5, cy);
+  doc.text('12.5 Moment Magnification Factor Derivation (ACI 318-14 Section 6.6):', 0.5, cy);
   cy += 0.16;
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
   doc.setTextColor(60, 60, 60);
 
-  if (type === 'SPIRAL') {
-    doc.text('Effective depth (circular):', 0.6, cy);
-    cy += 0.15;
-    doc.text('Formula:', 0.6, cy);
-    doc.setFont('courier', 'normal');
-    doc.text('d = D - cover - d_spiral - db/2', 2.0, cy);
+  doc.text('Concrete modulus:', 0.6, cy);
+  cy += 0.15;
+  doc.text('Formula:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text("Ec = 57000 * sqrt(fc' * 1000) / 1000", 2.0, cy);
+  cy += 0.15;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Substitution:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`Ec = 57000 * sqrt(${fc.toFixed(2)} * 1000) / 1000`, 2.0, cy);
+  cy += 0.15;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Ec = ${Ec_val.toFixed(2)} ksi`, 2.0, cy);
+  cy += 0.20;
+
+  doc.setFont('helvetica', 'normal');
+  doc.text('Gross moment of inertia:', 0.6, cy);
+  cy += 0.15;
+  doc.text('Formula:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  if (type === 'TIED') {
+    doc.text('Ig = b * h^3 / 12', 2.0, cy);
     cy += 0.15;
     doc.setFont('helvetica', 'normal');
     doc.text('Substitution:', 0.6, cy);
     doc.setFont('courier', 'normal');
-    doc.text(`d = ${Dim.toFixed(1)} - ${cover.toFixed(1)} - ${d_tie.toFixed(3)} - ${(mainBarDia/2).toFixed(3)}`, 2.0, cy);
+    doc.text(`Ig = ${Dim.toFixed(1)} * ${Dim.toFixed(1)}^3 / 12`, 2.0, cy);
   } else {
-    doc.text('Effective depth (rectangular):', 0.6, cy);
-    cy += 0.15;
-    doc.text('Formula:', 0.6, cy);
-    doc.setFont('courier', 'normal');
-    doc.text('d = h - cover - d_tie - db/2', 2.0, cy);
+    doc.text('Ig = pi * D^4 / 64', 2.0, cy);
     cy += 0.15;
     doc.setFont('helvetica', 'normal');
     doc.text('Substitution:', 0.6, cy);
     doc.setFont('courier', 'normal');
-    doc.text(`d = ${Dim.toFixed(1)} - ${cover.toFixed(1)} - ${d_tie.toFixed(3)} - ${(mainBarDia/2).toFixed(3)}`, 2.0, cy);
+    doc.text(`Ig = 3.1416 * ${Dim.toFixed(1)}^4 / 64`, 2.0, cy);
   }
   cy += 0.15;
   doc.setFont('helvetica', 'bold');
-  doc.text(`d = ${d_eff_min.toFixed(2)} in`, 2.0, cy);
+  doc.text(`Ig = ${Ig_val.toFixed(2)} in4`, 2.0, cy);
   cy += 0.20;
 
   doc.setFont('helvetica', 'normal');
-  doc.text('Neutral axis depth (approximate for pure moment):', 0.6, cy);
-  cy += 0.15;
-  doc.text(`Assume a = 0.2 * d = 0.2 * ${d_eff_min.toFixed(2)} = ${a_est.toFixed(2)} in`, 0.6, cy);
-  cy += 0.15;
-  doc.text(`c = a / beta1 = ${a_est.toFixed(2)} / ${beta1.toFixed(3)} = ${c_est.toFixed(2)} in`, 0.6, cy);
-  cy += 0.20;
-
-  doc.text('Compression force:', 0.6, cy);
+  doc.text('Sustained load ratio:', 0.6, cy);
   cy += 0.15;
   doc.text('Formula:', 0.6, cy);
   doc.setFont('courier', 'normal');
-  doc.text('C = 0.85 * fc\' * a * b', 2.0, cy);
+  doc.text('beta_dns = 1.2 * PDL / Pu', 2.0, cy);
   cy += 0.15;
   doc.setFont('helvetica', 'normal');
   doc.text('Substitution:', 0.6, cy);
   doc.setFont('courier', 'normal');
-  doc.text(`C = 0.85 * ${fc.toFixed(2)} * ${a_est.toFixed(2)} * ${Dim.toFixed(1)}`, 2.0, cy);
+  doc.text(`beta_dns = 1.2 * ${pdl.toFixed(1)} / ${Pu.toFixed(1)}`, 2.0, cy);
   cy += 0.15;
   doc.setFont('helvetica', 'bold');
-  doc.text(`C = ${C_est.toFixed(1)} kips`, 2.0, cy);
+  doc.text(`beta_dns = ${beta_dns_val.toFixed(3)}`, 2.0, cy);
   cy += 0.20;
 
   doc.setFont('helvetica', 'normal');
-  doc.text('Moment capacity:', 0.6, cy);
+  doc.text('Stiffness:', 0.6, cy);
   cy += 0.15;
   doc.text('Formula:', 0.6, cy);
   doc.setFont('courier', 'normal');
-  doc.text('Mn = C * (d - a/2) / 12', 2.0, cy);
+  doc.text('EI = 0.4 * Ec * Ig / (1 + beta_dns)', 2.0, cy);
   cy += 0.15;
   doc.setFont('helvetica', 'normal');
   doc.text('Substitution:', 0.6, cy);
   doc.setFont('courier', 'normal');
-  doc.text(`Mn = ${C_est.toFixed(1)} * (${d_eff_min.toFixed(2)} - ${(a_est/2).toFixed(2)}) / 12`, 2.0, cy);
+  doc.text(`EI = 0.4 * ${Ec_val.toFixed(2)} * ${Ig_val.toFixed(2)} / (1 + ${beta_dns_val.toFixed(3)})`, 2.0, cy);
   cy += 0.15;
   doc.setFont('helvetica', 'bold');
-  doc.text(`Mn = ${Mn_est.toFixed(2)} kip-ft`, 2.0, cy);
+  doc.text(`EI = ${EI_val.toFixed(2)} kip-in2`, 2.0, cy);
   cy += 0.20;
 
   doc.setFont('helvetica', 'normal');
-  doc.text('Factored moment capacity:', 0.6, cy);
+  doc.text('Critical buckling load:', 0.6, cy);
   cy += 0.15;
   doc.text('Formula:', 0.6, cy);
   doc.setFont('courier', 'normal');
-  doc.text('phi * Mn = 0.9 * Mn', 2.0, cy);
+  doc.text('Pc = pi^2 * EI / (k * lu * 12)^2', 2.0, cy);
   cy += 0.15;
   doc.setFont('helvetica', 'normal');
   doc.text('Substitution:', 0.6, cy);
   doc.setFont('courier', 'normal');
-  doc.text(`phi * Mn = 0.9 * ${Mn_est.toFixed(2)}`, 2.0, cy);
+  doc.text(`Pc = 9.8696 * ${EI_val.toFixed(2)} / (1.0 * ${colHeight.toFixed(1)} * 12)^2`, 2.0, cy);
   cy += 0.15;
   doc.setFont('helvetica', 'bold');
-  doc.text(`phi * Mn = ${phiMn_est.toFixed(2)} kip-ft`, 2.0, cy);
+  doc.text(`Pc = ${Pc_val.toFixed(2)} kips`, 2.0, cy);
   cy += 0.20;
 
-  const isMinMnOk = phiMn_est >= Mc_min;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Equivalent moment factor:', 0.6, cy);
+  cy += 0.15;
+  doc.text('Formula:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text('Cm = 0.6 + 0.4 * (M1/M2) >= 0.4', 2.0, cy);
+  cy += 0.15;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Substitution:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text('Cm = 0.6 + 0.4 * (1.0)', 2.0, cy);
+  cy += 0.15;
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(isMinMnOk ? 30 : 200, isMinMnOk ? 150 : 30, 30);
-  doc.text(`Check: phi * Mn >= Mc -> ${phiMn_est.toFixed(2)} kip-ft >= ${Mc_min.toFixed(2)} kip-ft -> ${isMinMnOk ? 'PASS ✓' : 'FAIL ✗'}`, 0.6, cy);
+  doc.text(`Cm = ${Cm_val.toFixed(2)}`, 2.0, cy);
+  cy += 0.20;
+
+  doc.setFont('helvetica', 'normal');
+  doc.text('Magnification factor:', 0.6, cy);
+  cy += 0.15;
+  doc.text('Formula:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text('delta_ns = Cm / (1 - Pu / (0.75 * Pc))', 2.0, cy);
+  cy += 0.15;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Substitution:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`delta_ns = ${Cm_val.toFixed(2)} / (1 - ${Pu.toFixed(1)} / (0.75 * ${Pc_val.toFixed(2)}))`, 2.0, cy);
+  cy += 0.15;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`delta_ns = ${delta_ns_calc.toFixed(3)}`, 2.0, cy);
+  cy += 0.20;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Check: delta_ns >= 1.0 -> use ${delta_ns_governing.toFixed(3)}`, 0.6, cy);
+  cy += 0.25;
+
+
+  // SECTION 12.6 (Correction 1)
+  const d_eff_min = Dim - cover - d_tie - mainBarDia / 2;
+  const d_prime_min = cover + d_tie + mainBarDia / 2;
+  const As_each_face = Ast_actual / 2;
+  const a_equilibrium = Pu / (0.85 * fc * Dim);
+  const c_equilibrium = a_equilibrium / beta1;
+  const eps_s_prime_eq = 0.003 * (c_equilibrium - d_prime_min) / c_equilibrium;
+  const eps_s_eq = 0.003 * (d_eff_min - c_equilibrium) / c_equilibrium;
+  const eps_y_val = fy / 29000;
+
+  const term1 = 0.85 * fc * a_equilibrium * Dim * (Dim / 2 - a_equilibrium / 2);
+  const term2 = As_each_face * fy * (Dim / 2 - d_prime_min);
+  const term3 = As_each_face * fy * (d_eff_min - Dim / 2);
+  const Mn_equilibrium_in = term1 + term2 + term3;
+  const Mn_equilibrium_ft = Mn_equilibrium_in / 12;
+  const phiMn_equilibrium_ft = 0.9 * Mn_equilibrium_ft;
+
+  checkPageBreak(doc, 2.5);
+  doc.setFont('times', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(201, 168, 76);
+  doc.text('12.6 Moment Capacity at Minimum Eccentricity (Force Equilibrium):', 0.5, cy);
+  cy += 0.16;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(60, 60, 60);
+
+  doc.text(`Known values:`, 0.6, cy);
+  cy += 0.15;
+  doc.text(`  Pu = ${Pu.toFixed(1)} kips`, 0.6, cy);
+  doc.text(`  b = ${Dim.toFixed(1)} in, h = ${Dim.toFixed(1)} in`, 2.5, cy);
+  cy += 0.14;
+  doc.text(`  d = ${d_eff_min.toFixed(2)} in, d' = ${d_prime_min.toFixed(3)} in`, 0.6, cy);
+  doc.text(`  As = As' = ${As_each_face.toFixed(3)} in2 (each face)`, 2.5, cy);
+  cy += 0.14;
+  doc.text(`  fc' = ${fc.toFixed(2)} ksi, fy = ${fy.toFixed(1)} ksi, beta1 = ${beta1.toFixed(3)}`, 0.6, cy);
+  cy += 0.20;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Step 1 — Assume steel yields:`, 0.6, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Force equilibrium:`, 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`Pu = 0.85 * fc' * a * b + As' * fy - As * fy`, 2.0, cy);
+  cy += 0.15;
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Substitution:`, 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`a = Pu / (0.85 * fc' * b)`, 2.0, cy);
+  cy += 0.15;
+  doc.text(`a = ${Pu.toFixed(1)} / (0.85 * ${fc.toFixed(2)} * ${Dim.toFixed(1)})`, 2.0, cy);
+  cy += 0.15;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`a = ${a_equilibrium.toFixed(3)} in`, 2.0, cy);
+  cy += 0.15;
+  doc.text(`c = a / beta1 = ${c_equilibrium.toFixed(3)} in`, 2.0, cy);
+  cy += 0.20;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Step 2 — Verify steel yields:`, 0.6, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Strains:`, 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`epsilon_s' = 0.003 * (c - d') / c = ${eps_s_prime_eq.toFixed(5)}`, 2.0, cy);
+  cy += 0.15;
+  doc.text(`epsilon_s = 0.003 * (d - c) / c = ${eps_s_eq.toFixed(5)}`, 2.0, cy);
+  cy += 0.15;
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Check:`, 0.6, cy);
+  doc.text(`epsilon_s >= epsilon_y = fy/Es = ${eps_y_val.toFixed(5)}`, 2.0, cy);
+  cy += 0.15;
+  const isYieldConfirmed = eps_s_eq >= eps_y_val;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`→ Steel yields confirmed: ${isYieldConfirmed ? 'YES' : 'NO (yield assumed for limits)'}`, 2.0, cy);
+  cy += 0.20;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Step 3 — Moment about centroid (h/2):`, 0.6, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Formula:`, 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`Mn = 0.85*fc'*a*b*(h/2 - a/2) + As'*fy*(h/2 - d') + As*fy*(d - h/2)`, 2.0, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Substitution:`, 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`Mn = ${term1.toFixed(1)} + ${term2.toFixed(1)} + ${term3.toFixed(1)}`, 2.0, cy);
+  cy += 0.15;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Mn = ${Mn_equilibrium_in.toFixed(1)} kip-in = ${Mn_equilibrium_ft.toFixed(2)} kip-ft`, 2.0, cy);
+  cy += 0.20;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Step 4 — Factored capacity:`, 0.6, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Formula:`, 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`phi * Mn = 0.9 * Mn`, 2.0, cy);
+  cy += 0.15;
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Substitution:`, 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`phi * Mn = 0.9 * ${Mn_equilibrium_ft.toFixed(2)}`, 2.0, cy);
+  cy += 0.15;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`phi * Mn = ${phiMn_equilibrium_ft.toFixed(2)} kip-ft`, 2.0, cy);
+  cy += 0.20;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Step 5 — Check capacity:`, 0.6, cy);
+  cy += 0.16;
+  const isMinEquilibriumMnOk = phiMn_equilibrium_ft >= Mc_min;
+  doc.setTextColor(isMinEquilibriumMnOk ? 30 : 200, isMinEquilibriumMnOk ? 150 : 30, 30);
+  doc.text(`phi * Mn >= Mc -> ${phiMn_equilibrium_ft.toFixed(2)} kip-ft >= ${Mc_min.toFixed(2)} kip-ft -> ${isMinEquilibriumMnOk ? 'PASS ✓' : 'FAIL ✗'}`, 0.6, cy);
   cy += 0.25;
   doc.setTextColor(60, 60, 60);
 
@@ -5423,12 +5584,18 @@ function downloadColumnPDF() {
   let transQty = 0;
   let transLen = 0;
   let L_spiral = 0;
+  let N_ties = 0;
+  let L_tie = 0;
+  let L_tie_total = 0;
+
   const lu_in = colHeight * 12;
   const dc = Dim - 2 * cover;
   if (type === 'TIED') {
-    transQty = Math.floor(colHeight * 12 / s_final) + 1;
-    const L_tie = 4 * (Dim - 2 * cover) + 2 * hookExtension;
-    transLen = L_tie / 12;
+    N_ties = Math.ceil(colHeight * 12 / s_final) + 1;
+    L_tie = 2 * (Dim + Dim) - 8 * cover + 24 * d_tie;
+    L_tie_total = N_ties * L_tie / 12;
+    transQty = N_ties;
+    transLen = L_tie_total;
   } else {
     L_spiral = (lu_in / s_final) * Math.PI * dc / 12;
     transLen = L_spiral; // for compatibility
@@ -5438,7 +5605,57 @@ function downloadColumnPDF() {
   const l_splice_ft = Math.max(1.0, 1.3 * ld_comp_ft);
   const longBarLen = colHeight + l_splice_ft;
 
-  if (type === 'SPIRAL') {
+  if (type === 'TIED') {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(60, 60, 60);
+    doc.text('Tie Spacing and Quantity Calculation:', 0.6, cy);
+    cy += 0.16;
+    doc.text('Formula:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('N_ties = ceil(lu * 12 / s_tie) + 1', 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`N_ties = ceil(${colHeight.toFixed(1)} * 12 / ${s_final.toFixed(2)}) + 1`, 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`N_ties = ${N_ties}`, 2.0, cy);
+    cy += 0.22;
+
+    doc.setFont('helvetica', 'normal');
+    doc.text('Length per tie (with standard 135-deg hooks):', 0.6, cy);
+    cy += 0.16;
+    doc.text('Formula:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('L_tie = 2*(b + h) - 8*cover + 24*d_tie', 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`L_tie = 2*(${Dim.toFixed(1)} + ${Dim.toFixed(1)}) - 8*1.5 + 24*${d_tie.toFixed(3)}`, 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`L_tie = ${L_tie.toFixed(2)} in = ${(L_tie/12).toFixed(2)} ft`, 2.0, cy);
+    cy += 0.22;
+
+    doc.setFont('helvetica', 'normal');
+    doc.text('Total tie length:', 0.6, cy);
+    cy += 0.16;
+    doc.text('Formula:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('L_tie_total = N_ties * L_tie / 12', 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`L_tie_total = ${N_ties} * ${L_tie.toFixed(2)} / 12`, 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`L_tie_total = ${L_tie_total.toFixed(2)} ft`, 2.0, cy);
+    cy += 0.25;
+  } else {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);
     doc.setTextColor(60, 60, 60);
@@ -5481,7 +5698,7 @@ function downloadColumnPDF() {
 
   const detailingRows = type === 'TIED' ? [
     ['L1', mainBarSize, `${N_bars}`, `${longBarLen.toFixed(2)} ft`, 'Longitudinal Bars'],
-    ['T1', tieBarSize, `${transQty}`, `${transLen.toFixed(2)} ft`, 'Ties / Stirrups']
+    ['T1', tieBarSize, `${N_ties}`, `${L_tie_total.toFixed(2)} ft`, `Ties @ ${s_final.toFixed(1)}" c/c`]
   ] : [
     ['L1', mainBarSize, '—', `${longBarLen.toFixed(2)} ft`, 'Longitudinal Bars'],
     ['S1', tieBarSize, `${s_final.toFixed(2)} in`, `${L_spiral.toFixed(2)} ft`, 'Spiral reinf.']
@@ -5551,11 +5768,11 @@ function downloadColumnPDF() {
   const summaryRows = [
     ['Axial capacity Pu <= alpha * phi * Pn', `${Pu.toFixed(1)} kips`, `${(res_sol.Pn * res_sol.phi).toFixed(1)} kips`, (Pu <= res_sol.Pn * res_sol.phi) ? '✓ PASS' : '✗ FAIL'],
     ['Moment capacity Mu <= phi * Mn', `${Mu_d.toFixed(1)} kip-ft`, `${phiMn_d.toFixed(1)} kip-ft`, (mux === 0 && muy === 0) ? 'N/A' : (Mu_d <= phiMn_d) ? '✓ PASS' : '✗ FAIL'],
-    ['Min eccentricity Mc', `${Mc_min.toFixed(2)} kip-ft`, `${phiMn_est.toFixed(2)} kip-ft`, (phiMn_est >= Mc_min) ? '✓ PASS' : '✗ FAIL'],
+    ['Min eccentricity Mc', `${Mc_min.toFixed(2)} kip-ft`, `${phiMn_equilibrium_ft.toFixed(2)} kip-ft`, (phiMn_equilibrium_ft >= Mc_min) ? '✓ PASS' : '✗ FAIL'],
     ['Shear capacity Vu <= phi * Vc', `${vu.toFixed(1)} kips`, `${(0.75 * Vc_final).toFixed(1)} kips`, (vu <= 0.75 * Vc_final) ? '✓ PASS' : '✗ FAIL'],
     ['Steel ratio 0.01 <= rho_g <= 0.08', '0.010 to 0.080', `${p_actual.toFixed(4)}`, isRatioOk ? '✓ PASS' : '✗ FAIL'],
     ['Tie spacing (ACI limits)', `${s_limit.toFixed(2)} in`, `${s_final.toFixed(2)} in`, (s_final <= s_limit) ? '✓ PASS' : '✗ FAIL'],
-    ['DCR (Pu / (alpha * phi * Pn))', '<= 1.00', `${dcRatio.toFixed(3)}`, dcRatio <= 1.00 ? '✓ PASS' : '✗ FAIL'],
+    ['DCR (Pu / (alpha * phi * Pn))', '<= 1.00', `${axialDcr.toFixed(3)}`, axialDcr <= 1.00 ? '✓ PASS' : '✗ FAIL'],
     ['Slenderness', 'Short/Slender', isSlender ? 'Slender' : 'Short', isSlender ? ('Slender, delta_ns=' + delta_ns.toFixed(3)) : 'Short — no magnification']
   ];
 
@@ -5579,7 +5796,7 @@ function downloadColumnPDF() {
   });
 
   cy += 0.10;
-  const overallVerdict = dcRatio <= 1.0 && isRatioOk && isSpacingOk && (vu <= 0.75 * Vc_final) && (phiMn_est >= Mc_min);
+  const overallVerdict = axialDcr <= 1.0 && isRatioOk && isSpacingOk && (vu <= 0.75 * Vc_final) && (phiMn_equilibrium_ft >= Mc_min);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9.5);
   if (overallVerdict) {
