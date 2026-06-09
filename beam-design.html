@@ -637,16 +637,83 @@
       background: white;
       color: black;
       width: 210mm;
-      min-height: 297mm;
-      padding: 20mm;
+      height: 297mm;
+      padding: 10mm;
       box-sizing: border-box;
       box-shadow: 0 4px 15px rgba(0,0,0,0.35);
-      font-family: var(--font-mono);
-      font-size: 11px;
-      line-height: 1.4;
-      white-space: pre-wrap;
       position: relative;
       text-align: left;
+    }
+    .report-page-inner {
+      border: 1.5px solid #c9a84c;
+      height: 100%;
+      box-sizing: border-box;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      padding: 10mm 10mm 8mm 10mm;
+    }
+    .report-header-grid {
+      display: grid;
+      grid-template-columns: 32% 43% 25%;
+      border: 1px solid #1a202c;
+      margin-bottom: 1.25rem;
+      font-size: 8.5px;
+      line-height: 1.35;
+      font-family: var(--font-sans);
+    }
+    .header-col {
+      padding: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .header-col:not(:last-child) {
+      border-right: 1px solid #1a202c;
+    }
+    .header-col.col-brand {
+      color: #1a202c;
+    }
+    .header-col.col-brand .brand-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #c9a84c;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+    .header-col.col-brand .brand-name span {
+      color: #1a202c;
+    }
+    .header-col.col-brand .brand-sub {
+      font-size: 6.5px;
+      color: #4a5568;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      margin-top: 3px;
+    }
+    .header-col strong {
+      color: #1a202c;
+    }
+    .report-content {
+      flex-grow: 1;
+      white-space: pre-wrap;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      line-height: 1.35;
+      color: #1a202c;
+      overflow: hidden;
+    }
+    .report-footer {
+      border-top: 1px solid #c9a84c;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 0.4rem;
+      margin-top: 0.5rem;
+      font-family: var(--font-sans);
+      font-size: 8px;
+      color: #718096;
     }
 
     /* Print Stylesheet Overrides */
@@ -674,7 +741,7 @@
         height: auto !important;
         display: block !important;
       }
-      .report-modal-header, #btn-trigger-print, #btn-close-report {
+      .report-modal-header, #btn-trigger-print, #btn-close-report, #btn-download-pdf {
         display: none !important;
       }
       #report-preview-container {
@@ -690,7 +757,7 @@
         page-break-inside: avoid;
         width: 210mm;
         height: 297mm;
-        padding: 20mm;
+        padding: 10mm;
         background: white !important;
         color: black !important;
         border: none !important;
@@ -1797,6 +1864,48 @@
       };
     }
 
+    function createReportPage(pageNum, contentHtml) {
+      const projName = document.getElementById('beam-proj-name').value || "TwinAnalytic Tower";
+      const beamMark = document.getElementById('beam-mark').value || "B1";
+      const designer = document.getElementById('beam-designer').value || "AH";
+      const date = new Date().toLocaleDateString();
+
+      const page = document.createElement('div');
+      page.className = 'report-page-a4';
+      page.innerHTML = `
+        <div class="report-page-inner">
+          <!-- Header Grid -->
+          <div class="report-header-grid">
+            <div class="header-col col-brand">
+              <div class="brand-name">Twin<span>Analytic</span></div>
+              <div class="brand-sub">STRUCTURAL DESIGN GROUP</div>
+              <div class="brand-sub">ACI 318-19 COMPLIANCE</div>
+            </div>
+            <div class="header-col col-project">
+              <div><strong>PROJECT:</strong> ${projName}</div>
+              <div><strong>ELEMENT:</strong> ${beamMark} — Flexural Design</div>
+              <div><strong>CODE:</strong> ACI 318-19 / BNBC 2020</div>
+            </div>
+            <div class="header-col col-meta">
+              <div><strong>DESIGN BY:</strong> ${designer}</div>
+              <div><strong>CHECKED BY:</strong> MB</div>
+              <div><strong>DATE:</strong> ${date}</div>
+            </div>
+          </div>
+          
+          <!-- Content Area -->
+          <div class="report-content">${contentHtml}</div>
+          
+          <!-- Footer -->
+          <div class="report-footer">
+            <div class="footer-left">Calculated via TwinAnalytic — www.twinanalytic.com</div>
+            <div class="footer-right">Page ${pageNum} of 9</div>
+          </div>
+        </div>
+      `;
+      return page;
+    }
+
     function generateAndOpenReport(showModal = true) {
       const r = window.calcResults;
       if (!r) {
@@ -1893,19 +2002,9 @@
       const ld_final = Math.max(ld_calc, 300);
 
       // Page 1
-      const p1 = document.createElement('div');
-      p1.className = 'report-page-a4';
-      p1.innerHTML = `
+      const p1 = createReportPage(1, `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         STRUCTURAL DESIGN CALCULATION SHEET
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Project    : ${projName}
-Element    : ${beamMark} — Flexural Design
-Design by  : ${designer}
-Date       : ${date}
-Code       : ACI 318-19 / BNBC 2020
-Method     : Ultimate Strength Design (USD)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 SCOPE OF CALCULATION:
@@ -1933,13 +2032,10 @@ Design Summary Table:
 │ Net tensile strain   │ ${r.eps_t.toFixed(5)}               │
 │ phi factor           │ ${r.phi.toFixed(3)}                 │
 └──────────────────────┴──────────────────────┘
-`;
+`);
       container.appendChild(p1);
 
       // Page 2
-      const p2 = document.createElement('div');
-      p2.className = 'report-page-a4';
-      
       let doublyInputText = '';
       if (r.type === 'doubly') {
         const d_prime_val = cc + ds + r.db_prime/2;
@@ -1952,7 +2048,7 @@ Design Summary Table:
          = ${d_prime_val.toFixed(1)} mm`;
       }
 
-      p2.innerHTML = `
+      const p2 = createReportPage(2, `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 1.0  GIVEN DATA AND DESIGN PARAMETERS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2029,13 +2125,11 @@ ${doublyInputText}
   • Steel is elastic-perfectly plastic
   • Beam is adequately braced against lateral torsional buckling
   • Design per ACI 318-19 USD method: Mu <= phiMn
-`;
+`);
       container.appendChild(p2);
 
       // Page 3
-      const p3 = document.createElement('div');
-      p3.className = 'report-page-a4';
-      p3.innerHTML = `
+      const p3 = createReportPage(3, `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 2.0  FACTORED LOADS AND DESIGN MOMENT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2057,13 +2151,11 @@ ${doublyInputText}
          = ${r.Mu.toFixed(1)} kN·m
 
   ∴  Design moment:   Mu = ${r.Mu.toFixed(1)} kN·m
-`;
+`);
       container.appendChild(p3);
 
       // Page 4
-      const p4 = document.createElement('div');
-      p4.className = 'report-page-a4';
-      p4.innerHTML = `
+      const p4 = createReportPage(4, `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 3.0  REINFORCEMENT RATIO LIMITS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2119,13 +2211,10 @@ ${doublyInputText}
   Economic design range: 0.50×rho_0.005 to 0.75×rho_0.005
       Lower bound = ${econ_lower}
       Upper bound = ${econ_upper}
-`;
+`);
       container.appendChild(p4);
 
       // Page 5
-      const p5 = document.createElement('div');
-      p5.className = 'report-page-a4';
-      
       let analysisText = '';
       if (r.type === 'singly') {
         analysisText = `
@@ -2143,8 +2232,7 @@ ${doublyInputText}
   Depth to neutral axis:
       c = a / beta1
         = ${r.a.toFixed(1)} / ${r.beta1.toFixed(3)}
-        = ${r.c.toFixed(1)} mm
-`;
+        = ${r.c.toFixed(1)} mm`;
       } else if (r.type === 'tbeam') {
         let tbeamActionText = '';
         if (r.isTBeamAction) {
@@ -2187,8 +2275,7 @@ ${doublyInputText}
       a_trial = As×fy / (0.85×f'c×bf)
               = ${As_prov} × ${fy} / (0.85 × ${fc} × ${r.bf})
               = ${r.a.toFixed(1)} mm
-${tbeamActionText}
-`;
+${tbeamActionText}`;
       } else if (r.type === 'doubly') {
         const As_prime_val = (r.As_prime_provided).toFixed(1);
         const d_prime_val = cc + ds + r.db_prime/2;
@@ -2216,13 +2303,10 @@ ${tbeamActionText}
       epsilon_y = ${eps_y}
 
   Status: ${Math.abs(r.f_s_prime_val) >= fy ? 'Compression steel yields ✅' : 'Compression steel does NOT yield ⚠️'}
-      f's = ${r.f_s_prime_val.toFixed(1)} MPa (assumption check)
-`;
+      f's = ${r.f_s_prime_val.toFixed(1)} MPa (assumption check)`;
       }
 
-      const checkProvOk = parseFloat(rho_prov) >= parseFloat(rho_min) && parseFloat(rho_prov) <= parseFloat(rho_max_004);
-
-      p5.innerHTML = `
+      const p5 = createReportPage(5, `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 4.0  FLEXURAL ANALYSIS — NOMINAL MOMENT CAPACITY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2234,74 +2318,43 @@ ${tbeamActionText}
          = pi/4 × ${db}²
          = ${(Math.PI * db * db / 4).toFixed(1)} mm²
 
-  Total tension steel area:
-      As = n × Ab
-         = ${n_bars} × ${(Math.PI * db * db / 4).toFixed(1)}
-         = ${As_prov} mm²
-
-  Provided reinforcement ratio:
-      rho = As / (b × d)
-        = ${As_prov} / (${b} × ${d.toFixed(1)})
-        = ${rho_prov}
-
-  Check:  rho_min = ${rho_min}  ≤  rho = ${rho_prov}  ≤  rho_max = ${rho_max_004}
-          [${checkProvOk ? 'PASS ✅' : 'FAIL ❌'}]
+  Provided tension reinforcement area:
+      As,prov = n × Ab
+              = ${n_bars} × ${(Math.PI * db * db / 4).toFixed(1)}
+              = ${As_prov} mm²
 ${analysisText}
-─────────────────────────────────────────────────────
-4.3  Net Tensile Strain and phi Factor
-─────────────────────────────────────────────────────
-  Distance to extreme tension steel:
-      dt = d = ${d.toFixed(1)} mm
-
-  Net tensile strain:
-      epsilon_t = epsilon_u × (dt − c) / c
-         = 0.003 × (${d.toFixed(1)} − ${r.c.toFixed(1)}) / ${r.c.toFixed(1)}
-         = 0.003 × ${((d - r.c)/r.c).toFixed(5)}
-         = ${r.eps_t.toFixed(5)}
-
-  Section classification (ACI 318 Table 21.2.2):
-      [epsilon_t >= 0.005]  → Tension-controlled:    phi = 0.90  ✅
-      [0.002<epsilon_t<0.005] → Transition zone:   phi = 0.483 + 83.3×epsilon_t
-      [epsilon_t <= 0.002]  → Compression-controlled: phi = 0.65  ⚠️
-
-      ∴  epsilon_t = ${r.eps_t.toFixed(5)}   →   phi = ${r.phi.toFixed(3)}
-
-─────────────────────────────────────────────────────
-4.4  Nominal and Design Moment Capacity
-─────────────────────────────────────────────────────
-  Nominal moment:
-      Mn = ${r.Mn.toFixed(1)} kN·m
-
-  Design moment capacity:
-      phiMn = phi × Mn
-          = ${r.phi.toFixed(3)} × ${r.Mn.toFixed(1)}
-          = ${r.phiMn.toFixed(1)} kN·m
-`;
+`);
       container.appendChild(p5);
 
       // Page 6
-      const p6 = document.createElement('div');
-      p6.className = 'report-page-a4';
-      
-      const pct_spare = r.phiMn >= r.Mu ? Math.round((r.phiMn - r.Mu)/r.phiMn * 100) : 0;
-      const pct_def = r.Mu > r.phiMn ? Math.round((r.Mu - r.phiMn)/r.Mu * 100) : 0;
+      const pct_spare = r.phiMn >= r.Mu ? ((r.phiMn - r.Mu) / r.Mu * 100).toFixed(1) : '0.0';
+      const pct_def = r.Mu > r.phiMn ? ((r.Mu - r.phiMn) / r.phiMn * 100).toFixed(1) : '0.0';
+      const checkProvOk = parseFloat(rho_prov) >= parseFloat(rho_min) && parseFloat(rho_prov) <= parseFloat(rho_max_004);
 
-      const checklist_rows = [
-        ['phiMn >= Mu', `${r.phiMn.toFixed(1)} >= ${r.Mu.toFixed(1)}`, r.phiMn >= r.Mu ? '✅ PASS' : '❌ FAIL'],
-        ['rho >= rho_min', `${rho_prov} >= ${rho_min}`, parseFloat(rho_prov) >= parseFloat(rho_min) ? '✅ PASS' : '❌ FAIL'],
-        ['rho <= rho_max', `${rho_prov} <= ${rho_max_004}`, parseFloat(rho_prov) <= parseFloat(rho_max_004) ? '✅ PASS' : '❌ FAIL'],
-        ['epsilon_t >= 0.004', `${r.eps_t.toFixed(5)} >= 0.004`, r.eps_t >= 0.004 ? '✅ PASS' : '❌ FAIL'],
-        ['epsilon_t >= 0.005', `${r.eps_t.toFixed(5)} >= 0.005`, r.eps_t >= 0.005 ? '✅ PASS' : '⚠️ NOTE'],
-        ['As,prov >= As,req', `${Math.round(r.As_provided)} >= ${Math.round(r.As_req)}`, r.As_provided >= r.As_req ? '✅ PASS' : '❌ FAIL']
+      // Checklist data
+      const checkItems = [
+        { name: "Flexural Strength", required: "Mu <= phiMn", provided: `DCR = ${r.dcr.toFixed(3)}`, pass: r.isSafe },
+        { name: "Min Steel Ratio", required: `rho_min = ${rho_min}`, provided: `rho = ${rho_prov}`, pass: parseFloat(rho_prov) >= parseFloat(rho_min) },
+        { name: "Max Steel Ratio", required: `rho_max = ${rho_max_004}`, provided: `rho = ${rho_prov}`, pass: parseFloat(rho_prov) <= parseFloat(rho_max_004) },
+        { name: "Tensile Strain", required: "et >= 0.004", provided: `et = ${r.eps_t.toFixed(5)}`, pass: r.eps_t >= 0.004 },
+        { name: "Clear Bar Spacing", required: `s_min = ${s_min} mm`, provided: `s = ${Math.round(s_clear)} mm`, pass: spacingOk },
+        { name: "Concrete Cover", required: `cc_min = ${min_cover} mm`, provided: `cc = ${cc} mm`, pass: coverOk },
+        { name: "Min Beam Depth", required: `h_min = ${min_h} mm`, provided: `h = ${h} mm`, pass: depthOk }
       ];
 
-      let checkListTable = '  ┌─────────────────────────────────────────────────┐\n  │  CHECK             RESULT        STATUS         │\n  ├─────────────────────────────────────────────────┤\n';
-      checklist_rows.forEach(([chk, res, sts]) => {
-        checkListTable += `  │  ${chk.padEnd(17)} ${res.padEnd(13)} ${sts.padEnd(14)} │\n`;
+      let checkListTable = '  ┌──────────────────────┬──────────────┬──────────────┬──────┐\n';
+      checkListTable += '  │ Design Parameter     │ Limit/Req    │ Calculated   │ Pass │\n';
+      checkListTable += '  ├──────────────────────┼──────────────┼──────────────┼──────┤\n';
+      checkItems.forEach(item => {
+        const chk = item.name;
+        const res = item.required;
+        const sts = item.provided;
+        const passIcon = item.pass ? 'PASS ✅' : 'FAIL ❌';
+        checkListTable += `  │ ${chk.padEnd(20)} │ ${res.padEnd(12)} │ ${sts.padEnd(12)} │ ${passIcon.padEnd(4)} │\n`;
       });
-      checkListTable += '  └─────────────────────────────────────────────────┘';
+      checkListTable += '  └──────────────────────┴──────────────┴──────────────┴──────┘';
 
-      p6.innerHTML = `
+      const p6 = createReportPage(6, `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 5.0  DESIGN ADEQUACY CHECK
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2362,13 +2415,11 @@ ${checkListTable}
   ══════════════════════════════════════════════════
     BEAM ${beamMark} IS ${r.isSafe ? 'ADEQUATE' : 'INADEQUATE'} FOR FLEXURE ${r.isSafe ? '✅' : '❌'}
   ══════════════════════════════════════════════════
-`;
+`);
       container.appendChild(p6);
 
       // Page 7: Detailing Diagrams (with SVGs)
-      const p7 = document.createElement('div');
-      p7.className = 'report-page-a4';
-      p7.innerHTML = `
+      const p7 = createReportPage(7, `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 5.0  BEAM DETAILING DIAGRAMS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2382,16 +2433,14 @@ Bar Spacing Detailing Check:
 
   Required min = max(db, 25mm) = ${s_min} mm
   Result spacing: [${spacingOk ? 'PASS ✅' : 'FAIL ❌'}]
-`;
+`);
       container.appendChild(p7);
       
       const svgHost = p7.querySelector('#report-diagram-svg-host');
       drawReportSVGs(svgHost, r);
 
       // Page 8
-      const p8 = document.createElement('div');
-      p8.className = 'report-page-a4';
-      p8.innerHTML = `
+      const p8 = createReportPage(8, `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 6.0  DETAILING REQUIREMENTS (ACI 318-19)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2445,13 +2494,11 @@ Bar Spacing Detailing Check:
   │ Min beam depth       │ ${min_h.toString().padEnd(8)} │ ${h.toString().padEnd(8)} │  ${depthOk ? '✅' : '❌'}  │
   │ Development length   │ ${ld_final.toFixed(0).toString().padEnd(8)} │ —        │  ℹ️  │
   └──────────────────────┴──────────┴──────────┴──────┘
-`;
+`);
       container.appendChild(p8);
 
       // Page 9
-      const p9 = document.createElement('div');
-      p9.className = 'report-page-a4';
-      p9.innerHTML = `
+      const p9 = createReportPage(9, `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 7.0  REFERENCES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2482,7 +2529,7 @@ Bar Spacing Detailing Check:
   ACI 318-19 and is valid for the stated loading and
   geometric conditions only.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-`;
+`);
       container.appendChild(p9);
 
       // Show modal preview
@@ -2490,6 +2537,7 @@ Bar Spacing Detailing Check:
         document.getElementById('report-modal').classList.add('active');
       }
     }
+
 
     function downloadBeamPDFDirect() {
       generateAndOpenReport(false);
