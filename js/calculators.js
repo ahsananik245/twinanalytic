@@ -5753,9 +5753,9 @@ function downloadColumnPDF() {
   doc.setFillColor(245, 245, 245);
   doc.rect(0.5, cy, 7.5, 0.22, 'F');
   doc.text('Check', 0.6, cy + 0.15);
-  doc.text('Required', 3.0, cy + 0.15);
-  doc.text('Provided', 4.8, cy + 0.15);
-  doc.text('Status', 6.8, cy + 0.15);
+  doc.text('Required', 2.8, cy + 0.15);
+  doc.text('Provided', 4.5, cy + 0.15);
+  doc.text('Status', 6.0, cy + 0.15);
 
   doc.setDrawColor(200, 200, 200);
   doc.line(0.5, cy, 8.0, cy);
@@ -5778,8 +5778,8 @@ function downloadColumnPDF() {
 
     summaryRows.forEach(([check, req, prov, stat]) => {
     doc.text(check, 0.6, cy + 0.15);
-    doc.text(req, 3.0, cy + 0.15);
-    doc.text(prov, 4.8, cy + 0.15);
+    doc.text(req, 2.8, cy + 0.15);
+    doc.text(prov, 4.5, cy + 0.15);
     if (stat.includes('PASS') || stat.includes('OK') || stat.includes('Short')) {
       doc.setTextColor(30, 150, 30);
     } else if (stat.includes('FAIL')) {
@@ -5998,16 +5998,16 @@ function downloadColumnPDF() {
     p_bar_x = cx + (Ds / 2) * Math.cos(-Math.PI / 4) * scale;
     p_bar_y = cy_draw + (Ds / 2) * Math.sin(-Math.PI / 4) * scale;
   }
-  const t_bar_x = cx - 1.1;
+  const t_bar_x = cx - 0.9;
   const t_bar_y = cy_draw - 0.7;
   doc.line(p_bar_x, p_bar_y, t_bar_x, t_bar_y);
-  doc.line(t_bar_x, t_bar_y, t_bar_x - 0.2, t_bar_y);
+  doc.line(t_bar_x, t_bar_y, t_bar_x + 0.15, t_bar_y);
   doc.setFillColor(100, 100, 100);
   doc.circle(p_bar_x, p_bar_y, 0.018, 'F');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(40, 40, 40);
-  doc.text(`${N_bars} - ${mainBarSize} Long. Bars`, t_bar_x - 0.25, t_bar_y + 0.03, { align: 'right' });
+  doc.text(`${N_bars} - ${mainBarSize} Long. Bars`, 0.5, t_bar_y + 0.03);
 
   // Leader line for Ties/Spiral
   let p_tie_x = cx + (Dim/2 - cover) * scale;
