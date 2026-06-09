@@ -7,6 +7,8 @@
   <meta name="description" content="Online structural engineering check for reinforced concrete beams. Singly, doubly, and T-beam calculators with live SVG drawings.">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- html2pdf Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     /* Google Fonts */
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
@@ -1116,6 +1118,14 @@
       if (btnTriggerPrint) {
         btnTriggerPrint.addEventListener('click', () => {
           window.print();
+        });
+      }
+
+      // Download PDF using html2pdf
+      const btnDownloadPdf = document.getElementById('btn-download-pdf');
+      if (btnDownloadPdf) {
+        btnDownloadPdf.addEventListener('click', () => {
+          downloadBeamPDF();
         });
       }
 
@@ -2466,6 +2476,61 @@ Bar Spacing Detailing Check:
       document.getElementById('report-modal').classList.add('active');
     }
 
+    function downloadBeamPDF() {
+      const original = document.getElementById('report-preview-container');
+      const pages = original.querySelectorAll('.report-page-a4');
+      
+      // Create a temporary hidden container for clean PDF rendering
+      const tempContainer = document.createElement('div');
+      tempContainer.style.background = 'white';
+      tempContainer.style.color = 'black';
+      tempContainer.style.width = '210mm';
+      tempContainer.style.padding = '0';
+      tempContainer.style.margin = '0';
+      
+      pages.forEach(page => {
+        const clonedPage = page.cloneNode(true);
+        // Ensure standard styles are applied on the clone
+        clonedPage.style.boxShadow = 'none';
+        clonedPage.style.margin = '0';
+        clonedPage.style.border = 'none';
+        tempContainer.appendChild(clonedPage);
+      });
+
+      const opt = {
+        margin:       0,
+        filename:     'twinanalytic_beam_report.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { 
+          scale: 2, 
+          useCORS: true, 
+          logging: false,
+          letterRendering: true
+        },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['css', 'legacy'] }
+      };
+
+      const btn = document.getElementById('btn-download-pdf');
+      if (btn) {
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating...`;
+        btn.disabled = true;
+
+        html2pdf().set(opt).from(tempContainer).save().then(() => {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }).catch(err => {
+          console.error('PDF Generation Error:', err);
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+          alert('Failed to generate PDF. Please try printing using the Print button instead.');
+        });
+      } else {
+        html2pdf().set(opt).from(tempContainer).save();
+      }
+    }
+
     function drawReportSVGs(containerEl, r) {
       const w_el = 600;
       const h_el = 110;
@@ -2681,7 +2746,8 @@ Bar Spacing Detailing Check:
       <div class="report-modal-header">
         <h3>Calculated Design Report Preview</h3>
         <div style="display: flex; gap: 1rem;">
-          <button class="btn btn-gold" id="btn-trigger-print" style="padding: 0.5rem 1rem; font-size: 0.85rem;"><i class="fa-solid fa-print"></i> Print / Save as PDF</button>
+          <button class="btn btn-gold" id="btn-download-pdf" style="padding: 0.5rem 1rem; font-size: 0.85rem;"><i class="fa-solid fa-download"></i> Download PDF</button>
+          <button class="btn btn-outline" id="btn-trigger-print" style="padding: 0.5rem 1rem; font-size: 0.85rem; border-color: rgba(255,255,255,0.2);"><i class="fa-solid fa-print"></i> Print / Save as PDF</button>
           <button class="btn btn-outline" id="btn-close-report" style="padding: 0.5rem 1rem; font-size: 0.85rem; border-color: rgba(255,255,255,0.2);">Close</button>
         </div>
       </div>
