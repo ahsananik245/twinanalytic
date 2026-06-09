@@ -2027,6 +2027,26 @@
       const ld_calc = (fy * 1.0 * 1.0) / (1.1 * 1.0 * Math.sqrt(fc)) * db;
       const ld_final = Math.max(ld_calc, 300);
 
+      // Reinforcement detailing calculations
+      const long_len = (L + 0.60).toFixed(2);
+      const s_stirrup = Math.max(100, Math.min(Math.floor(d / 2 / 25) * 25, 300));
+      const N_stirrups = Math.ceil(L * 1000 / s_stirrup) + 1;
+      const L_stirrup = (2 * (b - 2 * cc + h - 2 * cc) + 24 * ds) / 1000;
+      const L_stirrup_total = N_stirrups * L_stirrup;
+
+      const detailMark2 = r.type === 'doubly' ? `L2` : `H1`;
+      const detailSize2 = r.type === 'doubly' ? `${r.db_prime}` : `12`;
+      const detailQty2 = r.type === 'doubly' ? `${r.n_bars_prime}` : `2`;
+      const detailRem2 = r.type === 'doubly' ? `Top Compression Bars` : `Top Hanger Bars`;
+
+      let detailTable = '  ┌──────┬──────────┬──────────┬─────────────┬──────────────────────────┐\n';
+      detailTable += '  │ Mark │ Bar Size │ Quantity │ Length (m)  │ Remarks                  │\n';
+      detailTable += '  ├──────┼──────────┼──────────┼─────────────┼──────────────────────────┤\n';
+      detailTable += `  │ L1   │ #${db.toString().padEnd(8)} │ ${n_bars.toString().padEnd(8)} │ ${long_len.toString().padEnd(11)} │ Bottom Longitudinal Bars │\n`;
+      detailTable += `  │ ${detailMark2.padEnd(4)} │ #${detailSize2.padEnd(8)} │ ${detailQty2.padEnd(8)} │ ${long_len.toString().padEnd(11)} │ ${detailRem2.padEnd(24)} │\n`;
+      detailTable += `  │ T1   │ #${ds.toString().padEnd(8)} │ ${N_stirrups.toString().padEnd(8)} │ ${L_stirrup_total.toFixed(2).padEnd(11)} │ Stirrups @ ${s_stirrup}mm c/c       │\n`;
+      detailTable += '  └──────┴──────────┴──────────┴─────────────┴──────────────────────────┘';
+
       // Page 1
       const p1 = createReportPage(1, `
 <div class="report-section-header">STRUCTURAL DESIGN CALCULATION SHEET</div>
@@ -2458,15 +2478,19 @@ ${checkListTable}
   Provided h = ${h} mm
   Status: [${depthOk ? 'ADEQUATE ✅' : 'INADEQUATE ❌'}]
 
-<div class="report-subsection-header">6.5  Detailing Summary</div>
-  ┌──────────────────────┬──────────┬──────────┬──────┐
-  │ Requirement          │ Required │ Provided │ Pass │
-  ├──────────────────────┼──────────┼──────────┼──────┤
-  │ Clear cover          │ ${min_cover.toString().padEnd(8)} │ ${cc.toString().padEnd(8)} │  ${coverOk ? '✅' : '❌'}  │
-  │ Min bar spacing      │ ${s_min.toString().padEnd(8)} │ ${Math.round(s_clear).toString().padEnd(8)} │  ${spacingOk ? '✅' : '❌'}  │
-  │ Min beam depth       │ ${min_h.toString().padEnd(8)} │ ${h.toString().padEnd(8)} │  ${depthOk ? '✅' : '❌'}  │
-  │ Development length   │ ${ld_final.toFixed(0).toString().padEnd(8)} │ —        │  ℹ️  │
-  └──────────────────────┴──────────┴──────────┴──────┘
+<div class="report-subsection-header">6.5  Reinforcement Detailing Schedule</div>
+${detailTable}
+
+  Detailing Notes:
+  * Clear concrete cover to reinforcement: ${cc} mm (ACI 318-19 Table 20.6.1.3)
+  * Minimum bar clear spacing: ${s_min} mm (calculated spacing: ${s_clear.toFixed(1)} mm)
+  * Lap splice length for longitudinal bars: ${(1.3 * ld_final / 10).toFixed(0)} cm (Class B splice)
+  * Standard hook development length: ${(ld_final / 10).toFixed(0)} cm
+  * Stirrups length calculation:
+      L_stirrup = 2 × (b − 2×cc + h − 2×cc) + 24 × ds
+                = 2 × (${b} − 2×${cc} + ${h} − 2×${cc}) + 24 × ${ds}
+                = ${(L_stirrup * 1000).toFixed(0)} mm = ${L_stirrup.toFixed(2)} m
+  * All deformed reinforcement bars shall conform to ASTM A615 Grade 60 (fy = 420 MPa)
 `);
       container.appendChild(p8);
 
