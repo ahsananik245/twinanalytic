@@ -486,6 +486,214 @@
         background: transparent !important;
       }
     }
+
+    /* Modal Overlay & Card styling (Auth Modal) */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 10, 10, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 480px;
+      padding: 2.5rem;
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+      background: #131722;
+      border: 1px solid var(--color-gold);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      border-radius: 8px;
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-header h3 {
+      font-family: var(--font-serif);
+      font-size: 1.8rem;
+      font-weight: 400;
+      color: var(--color-gold);
+      margin-bottom: 0.5rem;
+      margin-top: 0;
+    }
+
+    .modal-header p {
+      color: #94a3b8;
+      font-size: 0.85rem;
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+
+    .modal-form .form-group {
+      margin-bottom: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      text-align: left;
+    }
+
+    .modal-form label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #94a3b8;
+    }
+
+    .modal-form input {
+      width: 100%;
+      background: rgba(10, 10, 10, 0.5);
+      border: 1px solid var(--color-gold);
+      border-radius: 4px;
+      padding: 0.8rem 1rem;
+      color: #fff;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+    }
+
+    .modal-form input:focus {
+      outline: none;
+      border-color: var(--color-gold);
+      box-shadow: 0 0 10px rgba(201, 168, 76, 0.15);
+    }
+
+    /* Report Preview Modal */
+    .report-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 10, 10, 0.9);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .report-modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .report-modal-card {
+      background-color: #0b0f19;
+      border: 1px solid var(--color-gold);
+      border-radius: 8px;
+      width: 95%;
+      max-width: 1000px;
+      height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+    .report-modal-header {
+      padding: 1.25rem 2rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .report-modal-header h3 {
+      margin: 0;
+      font-family: var(--font-serif);
+      color: var(--color-gold);
+      font-size: 1.5rem;
+    }
+    .report-modal-body {
+      flex-grow: 1;
+      overflow-y: auto;
+      background-color: #1e293b;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+    }
+    
+    /* A4 Page Styling */
+    .report-page-a4 {
+      background: white;
+      color: black;
+      width: 210mm;
+      min-height: 297mm;
+      padding: 20mm;
+      box-sizing: border-box;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.35);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      position: relative;
+      text-align: left;
+    }
+
+    /* Print Stylesheet Overrides */
+    @media print {
+      body > *:not(#report-modal) {
+        display: none !important;
+      }
+      #report-modal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: auto;
+        overflow: visible;
+        background: white !important;
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+      }
+      .report-modal-card {
+        border: none !important;
+        background: white !important;
+        box-shadow: none !important;
+        width: 100% !important;
+        height: auto !important;
+        display: block !important;
+      }
+      .report-modal-header, #btn-trigger-print, #btn-close-report {
+        display: none !important;
+      }
+      #report-preview-container {
+        padding: 0 !important;
+        background: white !important;
+        overflow: visible !important;
+        display: block !important;
+      }
+      .report-page-a4 {
+        box-shadow: none !important;
+        margin: 0 !important;
+        page-break-after: always;
+        page-break-inside: avoid;
+        width: 210mm;
+        height: 297mm;
+        padding: 20mm;
+        background: white !important;
+        color: black !important;
+        border: none !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -531,7 +739,32 @@
           <h3>Design Parameters</h3>
           <form id="beam-form" onsubmit="return false;">
             
-            <div class="form-group-title" style="margin-top:0;">Beam Cross-Section Type</div>
+            <div class="form-group-title" style="margin-top:0;">Project Information</div>
+            <div class="input-grid" style="margin-bottom: 1rem;">
+              <div class="input-field">
+                <label>Project Name</label>
+                <input type="text" id="beam-proj-name" value="TwinAnalytic Tower">
+              </div>
+              <div class="input-field">
+                <label>Beam Mark / Element</label>
+                <input type="text" id="beam-mark" value="B1">
+              </div>
+              <div class="input-field">
+                <label>Designer Name</label>
+                <input type="text" id="beam-designer" value="AH">
+              </div>
+              <div class="input-field">
+                <label>Support Condition</label>
+                <select id="beam-support">
+                  <option value="simply" selected>Simply Supported</option>
+                  <option value="one-continuous">One End Continuous</option>
+                  <option value="both-continuous">Both Ends Continuous</option>
+                  <option value="cantilever">Cantilever</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group-title">Beam Cross-Section Type</div>
             <div class="radio-group">
               <label class="radio-label">
                 <input type="radio" name="beam-type" value="singly" checked> Singly Reinforced
@@ -740,6 +973,10 @@
             </svg>
           </div>
 
+          <button class="btn btn-outline" id="btn-print-report" style="margin-top: 1.5rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background-color: rgba(201, 168, 76, 0.1); border-color: var(--color-gold); color: #fff;">
+            <i class="fa-solid fa-file-pdf"></i> Generate Printable PDF Report
+          </button>
+
         </section>
 
         <!-- Right Column: Step-by-Step Breakdown -->
@@ -851,6 +1088,43 @@
         });
       }
 
+      // Support Condition selector update
+      const beamSupport = document.getElementById('beam-support');
+      if (beamSupport) {
+        beamSupport.addEventListener('change', runAnalysis);
+      }
+
+      // Print/Generate Report Button
+      const btnPrint = document.getElementById('btn-print-report');
+      if (btnPrint) {
+        btnPrint.addEventListener('click', () => {
+          checkAuthAndRun(generateAndOpenReport, 'Beam Report Export');
+        });
+      }
+
+      // Close Report Modal
+      const btnCloseReport = document.getElementById('btn-close-report');
+      if (btnCloseReport) {
+        btnCloseReport.addEventListener('click', () => {
+          const reportModal = document.getElementById('report-modal');
+          if (reportModal) reportModal.classList.remove('active');
+        });
+      }
+
+      // Trigger Print
+      const btnTriggerPrint = document.getElementById('btn-trigger-print');
+      if (btnTriggerPrint) {
+        btnTriggerPrint.addEventListener('click', () => {
+          window.print();
+        });
+      }
+
+      // Auth modal submission
+      const authForm = document.getElementById('modal-auth-form');
+      if (authForm) {
+        authForm.addEventListener('submit', handleAuthSubmit);
+      }
+
       // Initial run
       runAnalysis();
     });
@@ -903,9 +1177,17 @@
       if (fc < 17 || fc > 70) warnings.push("Concrete strength f'c must be between 17 and 70 MPa.");
       if (fy < 280 || fy > 690) warnings.push("Steel yield strength fy must be between 280 and 690 MPa.");
 
-      // Step 1: Factored Moment
-      const wu = 1.2 * wD + 1.6 * wL;
-      const Mu = (wu * L * L) / 8; // kN-m
+      // Step 1: Factored Moment (including beam self weight)
+      const support = document.getElementById('beam-support').value || 'simply';
+      let L_denom = 8;
+      if (support === 'one-continuous') L_denom = 9;
+      else if (support === 'both-continuous') L_denom = 11;
+      else if (support === 'cantilever') L_denom = 2;
+
+      const wsw = 24.0 * (b / 1000.0) * (h / 1000.0); // self weight in kN/m
+      const wD_total = wD + wsw;
+      const wu = 1.2 * wD_total + 1.6 * wL;
+      const Mu = (wu * L * L) / L_denom; // kN-m
 
       // Step 2: Effective Depth
       const d = h - cc - ds - db / 2;
@@ -1104,6 +1386,14 @@
 
       // 6. Populate Accordion Steps
       populateSteps(type, fc, fy, wD, wL, L, wu, Mu, d, beta1, rho_b, rho_max, rho_min, a, c, eps_t, phi, Mn, phiMn, dcr, As_req, n_bars_suggested, isSafe, isTBeamAction, isCompSteelYielded, eps_s_prime_val, f_s_prime_val, As_prime_provided);
+
+      // 7. Store computed results globally for the print report generator
+      window.calcResults = {
+        type, fc, fy, Es, wD, wL, L, b, h, cc, ds, db, n_bars, bf, hf, db_prime, cc_prime, n_bars_prime,
+        support, wsw, wD_total, wu, Mu, d, dt, beta1, rho_b, rho_0005, rho_0004, rho_min, rho_max,
+        As_provided, rho_provided, a, c, Mn, isTBeamAction, isCompSteelYielded, f_s_prime_val,
+        eps_s_prime_val, As_prime_provided, eps_t, phi, zone, phiMn, dcr, isSafe, As_req, n_bars_suggested
+      };
     }
 
     function drawLiveSVG(type, b, h, cc, ds, db, n_bars, a, c, d, bf, hf, db_prime, cc_prime, n_bars_prime) {
@@ -1371,6 +1661,1034 @@
         icon.className = 'fa-solid fa-chevron-up';
       }
     }
+
+    // =========================================================================
+    // REPORT GENERATOR & AUTHENTICATION INTEGRATION
+    // =========================================================================
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOCu31hE-GRIvbTOH2HVb_PaAAFkDnyuqUZ1mRusZDll3NmeJ9JZ4ZBWxI_NRt1vCknQ/exec";
+    let pendingCallback = null;
+    let pendingType = '';
+
+    function checkAuthAndRun(callback, calcType) {
+      const isUnlocked = localStorage.getItem('tools_user_unlocked');
+      if (isUnlocked === 'true') {
+        callback();
+      } else {
+        openAuthModal(callback, calcType);
+      }
+    }
+
+    function openAuthModal(callback, calcType) {
+      pendingCallback = callback;
+      pendingType = calcType;
+      const modal = document.getElementById('auth-modal');
+      if (modal) {
+        modal.classList.add('active');
+      }
+    }
+
+    function handleAuthSubmit(event) {
+      event.preventDefault();
+      const name = document.getElementById('lead-name').value.trim();
+      const phone = document.getElementById('lead-phone').value.trim();
+      const email = document.getElementById('lead-email').value.trim();
+      const timestamp = new Date().toLocaleString();
+
+      if (!name) { alert("Please enter your full name."); return; }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) { alert("Please enter a valid business email address."); return; }
+      const digitCount = phone.replace(/\D/g, '').length;
+      if (digitCount < 7 || digitCount > 15) {
+        alert("Please enter a valid contact number (7 to 15 digits, e.g., +1 (555) 123-4567).");
+        return;
+      }
+
+      const submitBtn = event.target.querySelector('button[type="submit"]');
+      const originalBtnText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right: 0.5rem;"></i> Unlocking...';
+
+      const calculatedMetrics = calculateMetricsInternally();
+      const payload = {
+        name: name,
+        email: email,
+        phone: phone,
+        timestamp: timestamp,
+        calcType: pendingType,
+        geometry: calculatedMetrics.geometry,
+        reinforcement: calculatedMetrics.reinforcement,
+        status: calculatedMetrics.status,
+        concreteVol: calculatedMetrics.concreteVol,
+        steelWeight: calculatedMetrics.steelWeight
+      };
+
+      const completeUnlock = () => {
+        let leads = JSON.parse(localStorage.getItem('tools_leads') || '[]');
+        leads.push({ ...payload, timestamp });
+        localStorage.setItem('tools_leads', JSON.stringify(leads));
+        localStorage.setItem('tools_user_unlocked', 'true');
+
+        const modal = document.getElementById('auth-modal');
+        if (modal) modal.classList.remove('active');
+
+        if (pendingCallback) pendingCallback();
+
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+        event.target.reset();
+      };
+
+      if (!GOOGLE_SCRIPT_URL) {
+        setTimeout(completeUnlock, 1000);
+        return;
+      }
+
+      fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(payload)
+      })
+      .then(() => { completeUnlock(); })
+      .catch((error) => {
+        console.error("Database sync failed:", error);
+        completeUnlock();
+      });
+    }
+
+    function calculateMetricsInternally() {
+      const r = window.calcResults || {};
+      const b = r.b || 300;
+      const h = r.h || 600;
+      const n_bars = r.n_bars || 3;
+      const db = r.db || 25;
+      const dcrVal = r.dcr || 0;
+      const statusText = dcrVal <= 1.0 ? "PASS" : "FAIL";
+
+      return {
+        geometry: `${b}mm x ${h}mm`,
+        reinforcement: `${n_bars} Nos - #${db}mm`,
+        status: `${statusText} [D/C = ${dcrVal.toFixed(3)}]`,
+        concreteVol: `${(b * h * 1e-6 * (r.L || 6)).toFixed(3)} m³`,
+        steelWeight: `${(n_bars * (Math.PI/4) * db * db * 7850 * 1e-6 * (r.L || 6)).toFixed(1)} kg`
+      };
+    }
+
+    function generateAndOpenReport() {
+      const r = window.calcResults;
+      if (!r) {
+        alert("Please run analysis first.");
+        return;
+      }
+      
+      const projName = document.getElementById('beam-proj-name').value || "TwinAnalytic Tower";
+      const beamMark = document.getElementById('beam-mark').value || "B1";
+      const designer = document.getElementById('beam-designer').value || "AH";
+      const date = new Date().toLocaleDateString();
+
+      const container = document.getElementById('report-preview-container');
+      container.innerHTML = ''; // clear
+
+      // Modulus calculations
+      const Ec = Math.round(4700 * Math.sqrt(r.fc));
+      const fr = (0.62 * Math.sqrt(r.fc)).toFixed(2);
+      const eps_y = (r.fy / r.Es).toFixed(5);
+
+      // Section properties
+      const cc = r.cc;
+      const ds = r.ds;
+      const db = r.db;
+      const n_bars = r.n_bars;
+      const h = r.h;
+      const b = r.b;
+      const d = r.d;
+      const dt = r.dt;
+      const fc = r.fc;
+      const fy = r.fy;
+      
+      // Self weight and Loading
+      const wsw = (24.0 * (b/1000.0) * (h/1000.0)).toFixed(2);
+      const wD_total = (parseFloat(r.wD) + parseFloat(wsw)).toFixed(2);
+      const wu = r.wu.toFixed(2);
+      const L = r.L;
+
+      // Support details
+      let supportText = 'Simply Supported';
+      let supportEq = 'Mu = wu * L^2 / 8';
+      let supportSub = `${wu} * ${L}^2 / 8`;
+      let L_denom = 8;
+      if (r.support === 'one-continuous') {
+        supportText = 'One End Continuous';
+        supportEq = 'Mu = wu * L^2 / 9';
+        supportSub = `${wu} * ${L}^2 / 9`;
+        L_denom = 9;
+      } else if (r.support === 'both-continuous') {
+        supportText = 'Both Ends Continuous';
+        supportEq = 'Mu = wu * L^2 / 11';
+        supportSub = `${wu} * ${L}^2 / 11`;
+        L_denom = 11;
+      } else if (r.support === 'cantilever') {
+        supportText = 'Cantilever';
+        supportEq = 'Mu = wu * L^2 / 2';
+        supportSub = `${wu} * ${L}^2 / 2`;
+        L_denom = 2;
+      }
+
+      // Reinforcement Limits
+      const cb = (0.003 / (0.003 + parseFloat(eps_y)) * d).toFixed(1);
+      const rho_b = r.rho_b.toFixed(5);
+      const rho_max_004 = r.rho_0004.toFixed(5);
+      const rho_max_005 = r.rho_0005.toFixed(5);
+      const rho_min = r.rho_min.toFixed(5);
+      const rho_prov = r.rho_provided.toFixed(5);
+      const As_prov = r.As_provided.toFixed(1);
+      const As_req_val = r.As_req.toFixed(1);
+
+      // Economy range
+      const econ_lower = (0.50 * r.rho_0005).toFixed(5);
+      const econ_upper = (0.75 * r.rho_0005).toFixed(5);
+
+      // Spacing
+      const s_clear = n_bars > 1 ? (b - 2*cc - 2*ds - n_bars*db)/(n_bars - 1) : (b - 2*cc - 2*ds - db);
+      const s_min = Math.max(db, 25);
+      const spacingOk = s_clear >= s_min;
+
+      // Cover required minimum cover ACI Table 20.6.1.3 (38mm or 1.5 in)
+      const min_cover = 38;
+      const coverOk = cc >= min_cover;
+
+      // Depth check
+      let depth_factor = 16.0;
+      if (r.support === 'one-continuous') depth_factor = 18.5;
+      else if (r.support === 'both-continuous') depth_factor = 21.0;
+      else if (r.support === 'cantilever') depth_factor = 8.0;
+      const min_h = Math.round((L * 1000) / depth_factor);
+      const depthOk = h >= min_h;
+
+      // Development length
+      const ld_calc = (fy * 1.0 * 1.0) / (1.1 * 1.0 * Math.sqrt(fc)) * db;
+      const ld_final = Math.max(ld_calc, 300);
+
+      // Page 1
+      const p1 = document.createElement('div');
+      p1.className = 'report-page-a4';
+      p1.innerHTML = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        STRUCTURAL DESIGN CALCULATION SHEET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Project    : ${projName}
+Element    : ${beamMark} — Flexural Design
+Design by  : ${designer}
+Date       : ${date}
+Code       : ACI 318-19 / BNBC 2020
+Method     : Ultimate Strength Design (USD)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SCOPE OF CALCULATION:
+This calculation covers the flexural design of beam ${beamMark}
+including determination of factored moments, selection of
+cross-section dimensions, computation of tension (and
+compression) reinforcement, and verification of design
+adequacy per ACI 318-19.
+
+Design Summary Table:
+┌──────────────────────┬──────────────────────┐
+│ Parameter            │ Value                │
+├──────────────────────┼──────────────────────┤
+│ f'c                  │ ${fc} MPa               │
+│ fy                   │ ${fy} MPa               │
+│ Section b × h        │ ${b} × ${h} mm         │
+│ Effective depth d    │ ${d.toFixed(1)} mm               │
+│ Factored Moment Mu   │ ${r.Mu.toFixed(1)} kN·m            │
+│ Design Capacity phiMn│ ${r.phiMn.toFixed(1)} kN·m            │
+│ DCR (Mu/phiMn)       │ ${r.dcr.toFixed(3)}                 │
+│ Status               │ ${r.isSafe ? '✅ ADEQUATE' : '❌ REVISE'}│
+│ As required          │ ${Math.round(r.As_req)} mm²             │
+│ As provided          │ ${Math.round(r.As_provided)} mm² (${n_bars}-#${db}mm)    │
+│ Reinforcement ratio  │ ${rho_prov}            │
+│ Net tensile strain   │ ${r.eps_t.toFixed(5)}               │
+│ phi factor           │ ${r.phi.toFixed(3)}                 │
+└──────────────────────┴──────────────────────┘
+`;
+      container.appendChild(p1);
+
+      // Page 2
+      const p2 = document.createElement('div');
+      p2.className = 'report-page-a4';
+      
+      let doublyInputText = '';
+      if (r.type === 'doubly') {
+        const d_prime_val = cc + ds + r.db_prime/2;
+        doublyInputText = `
+  Compression bar diameter:  db' = ${r.db_prime} mm
+  Compression cover:         cc' = ${r.cc_prime} mm
+  Depth to compression steel:
+      d' = cc' + ds + db'/2
+         = ${r.cc_prime} + ${ds} + ${r.db_prime}/2
+         = ${d_prime_val.toFixed(1)} mm`;
+      }
+
+      p2.innerHTML = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1.0  GIVEN DATA AND DESIGN PARAMETERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1.1  Material Properties
+─────────────────────────────────────────────────────
+  Specified compressive strength of concrete:
+      f'c  = ${fc} MPa
+
+  Modulus of elasticity of concrete (ACI 318 Eq. 19.2.2.1):
+      Ec   = 4700 × √f'c
+           = 4700 × √${fc}
+           = ${Ec} MPa
+
+  Modulus of rupture (ACI 318 Eq. 19.2.3.1):
+      fr   = 0.62 × √f'c
+           = 0.62 × √${fc}
+           = ${fr} MPa
+
+  Whitney stress block factor beta1 (ACI 318 Table 22.2.2.4.3):
+      [if f'c <= 28 MPa]  beta1 = 0.85
+      [if f'c > 28 MPa]  beta1 = 0.85 − 0.05×(f'c−28)/7
+      ∴  beta1 = ${r.beta1.toFixed(3)}
+
+  Yield strength of steel:
+      fy   = ${fy} MPa
+
+  Modulus of elasticity of steel:
+      Es   = 200,000 MPa
+
+  Yield strain of steel:
+      epsilon_y   = fy / Es
+           = ${fy} / 200,000
+           = ${eps_y}
+
+─────────────────────────────────────────────────────
+1.2  Section Properties
+─────────────────────────────────────────────────────
+  Beam width:              b   = ${b} mm
+  Total depth:             h   = ${h} mm
+  Clear cover:             cc  = ${cc} mm
+  Stirrup diameter:        ds  = ${ds} mm
+  Main bar diameter:       db  = ${db} mm
+  Number of tension bars:  n   = ${n_bars}
+
+  Effective depth:
+      d = h − cc − ds − db/2
+        = ${h} − ${cc} − ${ds} − ${db}/2
+        = ${d.toFixed(1)} mm
+${doublyInputText}
+
+─────────────────────────────────────────────────────
+1.3  Loading
+─────────────────────────────────────────────────────
+  Superimposed dead load:    wD  = ${parseFloat(r.wD).toFixed(1)} kN/m
+  Live load:                 wL  = ${parseFloat(r.wL).toFixed(1)} kN/m
+  Self weight of beam:
+      wsw = gamma_c × b × h
+          = 24 × ${(b/1000).toFixed(3)} × ${(h/1000).toFixed(3)}
+          = ${wsw} kN/m
+
+  Total dead load:
+      wD,total = wD + wsw
+               = ${parseFloat(r.wD).toFixed(1)} + ${wsw}
+               = ${wD_total} kN/m
+
+─────────────────────────────────────────────────────
+1.4  Design Assumptions
+─────────────────────────────────────────────────────
+  • Plane sections remain plane (Bernoulli hypothesis)
+  • Maximum usable concrete strain epsilon_u = 0.003
+  • Tensile strength of concrete is neglected
+  • Whitney's equivalent rectangular stress block is used
+  • Steel is elastic-perfectly plastic
+  • Beam is adequately braced against lateral torsional buckling
+  • Design per ACI 318-19 USD method: Mu <= phiMn
+`;
+      container.appendChild(p2);
+
+      // Page 3
+      const p3 = document.createElement('div');
+      p3.className = 'report-page-a4';
+      p3.innerHTML = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2.0  FACTORED LOADS AND DESIGN MOMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Load combination per ACI 318-19 Section 5.3.1:
+      U = 1.2D + 1.6L
+
+  Factored UDL:
+      wu = 1.2 × wD,total + 1.6 × wL
+         = 1.2 × ${wD_total} + 1.6 × ${parseFloat(r.wL).toFixed(1)}
+         = ${(1.2 * wD_total).toFixed(2)} + ${(1.6 * r.wL).toFixed(2)}
+         = ${wu} kN/m
+
+  [Support Condition: ${supportText}]
+  Maximum factored moment:
+      ${supportEq}
+         = ${wu} × ${L}² / ${L_denom === 2 ? '2' : L_denom === 9 ? '9' : L_denom === 11 ? '11' : '8'}
+         = ${wu} × ${(L*L).toFixed(2)} / ${L_denom === 2 ? '2' : L_denom === 9 ? '9' : L_denom === 11 ? '11' : '8'}
+         = ${r.Mu.toFixed(1)} kN·m
+
+  ∴  Design moment:   Mu = ${r.Mu.toFixed(1)} kN·m
+`;
+      container.appendChild(p3);
+
+      // Page 4
+      const p4 = document.createElement('div');
+      p4.className = 'report-page-a4';
+      p4.innerHTML = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3.0  REINFORCEMENT RATIO LIMITS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+3.1  Balanced Reinforcement Ratio (ACI 318 R21.2.2)
+─────────────────────────────────────────────────────
+  At balanced condition: concrete reaches epsilon_u = 0.003
+  simultaneously as steel reaches epsilon_y = fy/Es
+
+  Balanced NA depth:
+      cb = [epsilon_u / (epsilon_u + epsilon_y)] × d
+         = [0.003 / (0.003 + ${eps_y})] × ${d.toFixed(1)}
+         = ${(0.003 / (0.003 + parseFloat(eps_y))).toFixed(5)} × ${d.toFixed(1)}
+         = ${cb} mm
+
+  Balanced reinforcement ratio:
+      rho_b = (0.85 × beta1 × f'c / fy) × [epsilon_u / (epsilon_u + epsilon_y)]
+         = (0.85 × ${r.beta1.toFixed(3)} × ${fc} / ${fy}) × [0.003 / (0.003 + ${eps_y})]
+         = ${(0.85 * r.beta1 * fc / fy).toFixed(5)} × ${(0.003 / (0.003 + parseFloat(eps_y))).toFixed(5)}
+         = ${rho_b}
+
+─────────────────────────────────────────────────────
+3.2  Maximum Reinforcement Ratio
+─────────────────────────────────────────────────────
+  ACI 318 requires net tensile strain epsilon_t >= 0.004:
+
+      rho_max(epsilon_t=0.004) = (0.85×beta1×f'c/fy) × [epsilon_u/(epsilon_u+0.004)]
+                      = (0.85×${r.beta1.toFixed(3)}×${fc}/${fy}) × [0.003/0.007]
+                      = ${rho_max_004}
+
+  For tension-controlled section (phi=0.90), epsilon_t >= 0.005:
+
+      rho_max(epsilon_t=0.005) = (0.85×beta1×f'c/fy) × [epsilon_u/(epsilon_u+0.005)]
+                      = (0.85×${r.beta1.toFixed(3)}×${fc}/${fy}) × [0.003/0.008]
+                      = ${rho_max_005}
+
+─────────────────────────────────────────────────────
+3.3  Minimum Reinforcement Ratio (ACI 318 Section 9.6.1.2)
+─────────────────────────────────────────────────────
+      rho_min = max [ 0.25×√f'c/fy  ,  1.4/fy ]
+            = max [ 0.25×√${fc}/${fy}  ,  1.4/${fy} ]
+            = max [ ${(0.25 * Math.sqrt(fc) / fy).toFixed(5)}  ,  ${(1.4 / fy).toFixed(5)} ]
+            = ${rho_min}
+
+─────────────────────────────────────────────────────
+3.4  Summary of Ratio Limits
+─────────────────────────────────────────────────────
+  rho_min              = ${rho_min}
+  rho_max (epsilon_t=0.004)   = ${rho_max_004}
+  rho_max (epsilon_t=0.005)   = ${rho_max_005}  ← recommended upper limit
+  rho_balanced         = ${rho_b}
+
+  Economic design range: 0.50×rho_0.005 to 0.75×rho_0.005
+      Lower bound = ${econ_lower}
+      Upper bound = ${econ_upper}
+`;
+      container.appendChild(p4);
+
+      // Page 5
+      const p5 = document.createElement('div');
+      p5.className = 'report-page-a4';
+      
+      let analysisText = '';
+      if (r.type === 'singly') {
+        analysisText = `
+─────────────────────────────────────────────────────
+4.2  Depth of Equivalent Stress Block
+─────────────────────────────────────────────────────
+  From equilibrium (C = T):
+      0.85 × f'c × a × b = As × fy
+
+      a = As × fy / (0.85 × f'c × b)
+        = ${As_prov} × ${fy} / (0.85 × ${fc} × ${b})
+        = ${(r.As_provided * fy).toFixed(0)} / ${(0.85 * fc * b).toFixed(0)}
+        = ${r.a.toFixed(1)} mm
+
+  Depth to neutral axis:
+      c = a / beta1
+        = ${r.a.toFixed(1)} / ${r.beta1.toFixed(3)}
+        = ${r.c.toFixed(1)} mm
+`;
+      } else if (r.type === 'tbeam') {
+        let tbeamActionText = '';
+        if (r.isTBeamAction) {
+          const Cf_val = (0.85 * fc * (r.bf - b) * r.hf);
+          const Tw_val = r.As_provided * fy - Cf_val;
+          const aw_val = Tw_val / (0.85 * fc * b);
+          tbeamActionText = `
+  Since a_trial [>] hf = ${r.hf} mm → T-beam action governs
+
+  Flange compression force:
+      Cf = 0.85 × f'c × (bf − b) × hf
+         = 0.85 × ${fc} × (${r.bf} − ${b}) × ${r.hf}
+         = ${Cf_val.toFixed(0)} N = ${(Cf_val*1e-3).toFixed(1)} kN
+
+  Remaining tension force for web:
+      Tw = As×fy − Cf
+         = ${(r.As_provided*fy).toFixed(0)} − ${Cf_val.toFixed(0)}
+         = ${Tw_val.toFixed(0)} N
+
+  Web stress block depth:
+      aw = Tw / (0.85 × f'c × b)
+         = ${Tw_val.toFixed(0)} / (0.85 × ${fc} × ${b})
+         = ${aw_val.toFixed(1)} mm
+
+  Neutral axis depth:
+      c  = aw / beta1 + hf / beta1
+         = ${aw_val.toFixed(1)} / ${r.beta1.toFixed(3)} + ${r.hf} / ${r.beta1.toFixed(3)}
+         = ${r.c.toFixed(1)} mm`;
+        } else {
+          tbeamActionText = `
+  Since a_trial [<=] hf = ${r.hf} mm → Flange behavior (rectangular action)
+  c = a_trial / beta1 = ${r.c.toFixed(1)} mm`;
+        }
+
+        analysisText = `
+─────────────────────────────────────────────────────
+4.2T  T-Beam Analysis (Flange in Compression)
+─────────────────────────────────────────────────────
+  Trial a assuming rectangular beam with b = bf:
+      a_trial = As×fy / (0.85×f'c×bf)
+              = ${As_prov} × ${fy} / (0.85 × ${fc} × ${r.bf})
+              = ${r.a.toFixed(1)} mm
+${tbeamActionText}
+`;
+      } else if (r.type === 'doubly') {
+        const As_prime_val = (r.As_prime_provided).toFixed(1);
+        const d_prime_val = cc + ds + r.db_prime/2;
+        analysisText = `
+─────────────────────────────────────────────────────
+4.2D  Doubly Reinforced Beam Analysis
+─────────────────────────────────────────────────────
+  Compression steel area:
+      A's = n' × pi/4 × db'²
+          = ${r.n_bars_prime} × pi/4 × ${r.db_prime}²
+          = ${As_prime_val} mm²
+
+  Initial assumption: assume compression steel yields.
+  Check after solving for c.
+
+  Equilibrium (iterative solution balanced at force equilibrium):
+      0.85×f'c×a×b + A's×f's = As×fy
+      Balanced depth c = ${r.c.toFixed(1)} mm, a = ${r.a.toFixed(1)} mm
+
+  Verify compression steel strain:
+      epsilon's = epsilon_u × (c − d') / c
+          = 0.003 × (${r.c.toFixed(1)} − ${d_prime_val.toFixed(1)}) / ${r.c.toFixed(1)}
+          = ${r.eps_s_prime_val.toFixed(5)}
+
+      epsilon_y = ${eps_y}
+
+  Status: ${Math.abs(r.f_s_prime_val) >= fy ? 'Compression steel yields ✅' : 'Compression steel does NOT yield ⚠️'}
+      f's = ${r.f_s_prime_val.toFixed(1)} MPa (assumption check)
+`;
+      }
+
+      const checkProvOk = parseFloat(rho_prov) >= parseFloat(rho_min) && parseFloat(rho_prov) <= parseFloat(rho_max_004);
+
+      p5.innerHTML = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.0  FLEXURAL ANALYSIS — NOMINAL MOMENT CAPACITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+4.1  Provided Steel Area
+─────────────────────────────────────────────────────
+  Area of single bar:
+      Ab = pi/4 × db²
+         = pi/4 × ${db}²
+         = ${(Math.PI * db * db / 4).toFixed(1)} mm²
+
+  Total tension steel area:
+      As = n × Ab
+         = ${n_bars} × ${(Math.PI * db * db / 4).toFixed(1)}
+         = ${As_prov} mm²
+
+  Provided reinforcement ratio:
+      rho = As / (b × d)
+        = ${As_prov} / (${b} × ${d.toFixed(1)})
+        = ${rho_prov}
+
+  Check:  rho_min = ${rho_min}  ≤  rho = ${rho_prov}  ≤  rho_max = ${rho_max_004}
+          [${checkProvOk ? 'PASS ✅' : 'FAIL ❌'}]
+${analysisText}
+─────────────────────────────────────────────────────
+4.3  Net Tensile Strain and phi Factor
+─────────────────────────────────────────────────────
+  Distance to extreme tension steel:
+      dt = d = ${d.toFixed(1)} mm
+
+  Net tensile strain:
+      epsilon_t = epsilon_u × (dt − c) / c
+         = 0.003 × (${d.toFixed(1)} − ${r.c.toFixed(1)}) / ${r.c.toFixed(1)}
+         = 0.003 × ${((d - r.c)/r.c).toFixed(5)}
+         = ${r.eps_t.toFixed(5)}
+
+  Section classification (ACI 318 Table 21.2.2):
+      [epsilon_t >= 0.005]  → Tension-controlled:    phi = 0.90  ✅
+      [0.002<epsilon_t<0.005] → Transition zone:   phi = 0.483 + 83.3×epsilon_t
+      [epsilon_t <= 0.002]  → Compression-controlled: phi = 0.65  ⚠️
+
+      ∴  epsilon_t = ${r.eps_t.toFixed(5)}   →   phi = ${r.phi.toFixed(3)}
+
+─────────────────────────────────────────────────────
+4.4  Nominal and Design Moment Capacity
+─────────────────────────────────────────────────────
+  Nominal moment:
+      Mn = ${r.Mn.toFixed(1)} kN·m
+
+  Design moment capacity:
+      phiMn = phi × Mn
+          = ${r.phi.toFixed(3)} × ${r.Mn.toFixed(1)}
+          = ${r.phiMn.toFixed(1)} kN·m
+`;
+      container.appendChild(p5);
+
+      // Page 6
+      const p6 = document.createElement('div');
+      p6.className = 'report-page-a4';
+      
+      const pct_spare = r.phiMn >= r.Mu ? Math.round((r.phiMn - r.Mu)/r.phiMn * 100) : 0;
+      const pct_def = r.Mu > r.phiMn ? Math.round((r.Mu - r.phiMn)/r.Mu * 100) : 0;
+
+      const checklist_rows = [
+        ['phiMn >= Mu', `${r.phiMn.toFixed(1)} >= ${r.Mu.toFixed(1)}`, r.phiMn >= r.Mu ? '✅ PASS' : '❌ FAIL'],
+        ['rho >= rho_min', `${rho_prov} >= ${rho_min}`, parseFloat(rho_prov) >= parseFloat(rho_min) ? '✅ PASS' : '❌ FAIL'],
+        ['rho <= rho_max', `${rho_prov} <= ${rho_max_004}`, parseFloat(rho_prov) <= parseFloat(rho_max_004) ? '✅ PASS' : '❌ FAIL'],
+        ['epsilon_t >= 0.004', `${r.eps_t.toFixed(5)} >= 0.004`, r.eps_t >= 0.004 ? '✅ PASS' : '❌ FAIL'],
+        ['epsilon_t >= 0.005', `${r.eps_t.toFixed(5)} >= 0.005`, r.eps_t >= 0.005 ? '✅ PASS' : '⚠️ NOTE'],
+        ['As,prov >= As,req', `${Math.round(r.As_provided)} >= ${Math.round(r.As_req)}`, r.As_provided >= r.As_req ? '✅ PASS' : '❌ FAIL']
+      ];
+
+      let checkListTable = '  ┌─────────────────────────────────────────────────┐\n  │  CHECK             RESULT        STATUS         │\n  ├─────────────────────────────────────────────────┤\n';
+      checklist_rows.forEach(([chk, res, sts]) => {
+        checkListTable += `  │  ${chk.padEnd(17)} ${res.padEnd(13)} ${sts.padEnd(14)} │\n`;
+      });
+      checkListTable += '  └─────────────────────────────────────────────────┘';
+
+      p6.innerHTML = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5.0  DESIGN ADEQUACY CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+5.1  Flexural Strength Check
+─────────────────────────────────────────────────────
+  Required:   Mu  = ${r.Mu.toFixed(1)} kN·m
+  Provided:   phiMn = ${r.phiMn.toFixed(1)} kN·m
+
+  Demand-Capacity Ratio:
+      DCR = Mu / phiMn
+          = ${r.Mu.toFixed(1)} / ${r.phiMn.toFixed(1)}
+          = ${r.dcr.toFixed(3)}
+
+  [DCR <= 1.0]  →  ${r.isSafe ? '✅ ADEQUATE   (Spare capacity = ' + pct_spare + '%)' : '❌ INADEQUATE (Deficient by ' + pct_def + '%)'}
+
+─────────────────────────────────────────────────────
+5.2  Reinforcement Ratio Check
+─────────────────────────────────────────────────────
+  rho_min   = ${rho_min}  [${parseFloat(rho_prov) >= parseFloat(rho_min) ? '✅' : '❌'}]
+  rho_prov  = ${rho_prov}
+  rho_max   = ${rho_max_004}  [${parseFloat(rho_prov) <= parseFloat(rho_max_004) ? '✅' : '❌'}]
+
+  rho_min <= rho_prov <= rho_max  →  [${checkProvOk ? 'PASS ✅' : 'FAIL ❌'}]
+
+─────────────────────────────────────────────────────
+5.3  Ductility Check
+─────────────────────────────────────────────────────
+  Net tensile strain epsilon_t = ${r.eps_t.toFixed(5)}
+
+  ACI 318 minimum:    epsilon_t >= 0.004   [${r.eps_t >= 0.004 ? 'PASS ✅' : 'FAIL ❌'}]
+  Tension-controlled: epsilon_t >= 0.005   [${r.eps_t >= 0.005 ? 'PASS ✅' : 'NOTE ⚠️'}]
+
+─────────────────────────────────────────────────────
+5.4  Required vs Provided Steel
+─────────────────────────────────────────────────────
+  Required As:
+      Rn  = Mu / (phi × b × d²)
+          = ${r.Mu.toFixed(1)}×10⁶ / (${r.phi.toFixed(3)} × ${b} × ${d.toFixed(0)}²)
+          = ${(r.Mu * 1e6 / (r.phi * b * d * d)).toFixed(3)} MPa
+
+      rho_req = ${(r.As_req / (b * d)).toFixed(5)}
+
+      As,req = rho_req × b × d
+             = ${As_req_val} mm²
+
+  Provided:
+      As,prov = ${n_bars} bars × ${(Math.PI * db * db / 4).toFixed(1)} mm² = ${As_prov} mm²
+
+  As,prov / As,req = ${(r.As_provided / r.As_req).toFixed(2)}  →  [${r.As_provided >= r.As_req ? 'ADEQUATE ✅' : 'INADEQUATE ❌'}]
+
+─────────────────────────────────────────────────────
+5.5  Overall Result Summary
+─────────────────────────────────────────────────────
+
+${checkListTable}
+
+  ══════════════════════════════════════════════════
+    BEAM ${beamMark} IS ${r.isSafe ? 'ADEQUATE' : 'INADEQUATE'} FOR FLEXURE ${r.isSafe ? '✅' : '❌'}
+  ══════════════════════════════════════════════════
+`;
+      container.appendChild(p6);
+
+      // Page 7: Detailing Diagrams (with SVGs)
+      const p7 = document.createElement('div');
+      p7.className = 'report-page-a4';
+      p7.innerHTML = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5.0  BEAM DETAILING DIAGRAMS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<div id="report-diagram-svg-host" style="display:flex; flex-direction:column; align-items:center; gap:1.25rem; margin-top:1rem;"></div>
+─────────────────────────────────────────────────────
+Bar Spacing Detailing Check:
+─────────────────────────────────────────────────────
+  Clear spacing = (b − 2×cc − 2×ds − n×db) / (n−1)
+               = (${b} − 2×${cc} − 2×${ds} − ${n_bars}×${db}) / (${n_bars}−1)
+               = ${s_clear.toFixed(1)} mm
+
+  Required min = max(db, 25mm) = ${s_min} mm
+  Result spacing: [${spacingOk ? 'PASS ✅' : 'FAIL ❌'}]
+`;
+      container.appendChild(p7);
+      
+      const svgHost = p7.querySelector('#report-diagram-svg-host');
+      drawReportSVGs(svgHost, r);
+
+      // Page 8
+      const p8 = document.createElement('div');
+      p8.className = 'report-page-a4';
+      p8.innerHTML = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6.0  DETAILING REQUIREMENTS (ACI 318-19)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+6.1  Concrete Cover (ACI 318 Table 20.6.1.3)
+─────────────────────────────────────────────────────
+  Provided clear cover     cc = ${cc} mm
+  Required minimum cover      = ${min_cover} mm
+  Status: [${coverOk ? 'ADEQUATE ✅' : 'INADEQUATE ❌'}]
+
+6.2  Bar Spacing (ACI 318 Section 25.2)
+─────────────────────────────────────────────────────
+  Clear spacing between bars:
+      s_clear = (b − 2cc − 2ds − n×db) / (n−1)
+              = ${s_clear.toFixed(1)} mm
+
+  Minimum required:
+      s_min = max(db, 25 mm, 1.33×agg_size)
+            = ${s_min} mm  (assuming 20mm max aggregate)
+
+  Status: [${spacingOk ? 'PASS ✅' : 'FAIL ❌'}]
+
+6.3  Development Length (ACI 318 Section 25.5)
+─────────────────────────────────────────────────────
+  Basic development length for tension bars:
+      ld = (fy × psi_t × psi_e) / (1.1 × lambda × √f'c) × db
+         = (${fy} × 1.0 × 1.0) / (1.1 × 1.0 × √${fc}) × ${db}
+         = ${ld_calc.toFixed(0)} mm
+
+  where:  psi_t = 1.0 (bottom bars)
+          psi_e = 1.0 (uncoated)
+          lambda  = 1.0 (normal weight concrete)
+
+  Minimum: 300 mm
+  Required ld = max(calculated, 300mm) = ${ld_final.toFixed(0)} mm
+
+6.4  Minimum Beam Depth (ACI 318 Table 9.3.1.1)
+─────────────────────────────────────────────────────
+  [Support condition dependent: ${supportText}]
+  Minimum h = L/${depth_factor} = ${(L*1000).toFixed(0)}/${depth_factor} = ${min_h} mm
+  Provided h = ${h} mm
+  Status: [${depthOk ? 'ADEQUATE ✅' : 'INADEQUATE ❌'}]
+
+6.5  Detailing Summary
+─────────────────────────────────────────────────────
+  ┌──────────────────────┬──────────┬──────────┬──────┐
+  │ Requirement          │ Required │ Provided │ Pass │
+  ├──────────────────────┼──────────┼──────────┼──────┤
+  │ Clear cover          │ ${min_cover.toString().padEnd(8)} │ ${cc.toString().padEnd(8)} │  ${coverOk ? '✅' : '❌'}  │
+  │ Min bar spacing      │ ${s_min.toString().padEnd(8)} │ ${Math.round(s_clear).toString().padEnd(8)} │  ${spacingOk ? '✅' : '❌'}  │
+  │ Min beam depth       │ ${min_h.toString().padEnd(8)} │ ${h.toString().padEnd(8)} │  ${depthOk ? '✅' : '❌'}  │
+  │ Development length   │ ${ld_final.toFixed(0).toString().padEnd(8)} │ —        │  ℹ️  │
+  └──────────────────────┴──────────┴──────────┴──────┘
+`;
+      container.appendChild(p8);
+
+      // Page 9
+      const p9 = document.createElement('div');
+      p9.className = 'report-page-a4';
+      p9.innerHTML = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7.0  REFERENCES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [1]  ACI Committee 318. Building Code Requirements for
+       Structural Concrete (ACI 318-19) and Commentary.
+       American Concrete Institute, Farmington Hills, MI.
+
+  [2]  Bangladesh National Building Code (BNBC) 2020.
+       Housing and Building Research Institute, Dhaka.
+
+  [3]  Wight, J.K. Reinforced Concrete: Mechanics and
+       Design, 7th Ed. Pearson, 2016.
+
+  [4]  McCormac, J.C. Design of Reinforced Concrete,
+       9th Ed. Wiley, 2014.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8.0  SIGN-OFF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Prepared by:  ___________________   Date: __________
+                ${designer}
+
+  Checked by:   ___________________   Date: __________
+
+  This calculation has been prepared in accordance with
+  ACI 318-19 and is valid for the stated loading and
+  geometric conditions only.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+      container.appendChild(p9);
+
+      // Show modal preview
+      document.getElementById('report-modal').classList.add('active');
+    }
+
+    function drawReportSVGs(containerEl, r) {
+      const w_el = 600;
+      const h_el = 110;
+      
+      const fc = r.fc;
+      const fy = r.fy;
+      const cc = r.cc;
+      const ds = r.ds;
+      const db = r.db;
+      const n_bars = r.n_bars;
+      const h = r.h;
+      const b = r.b;
+      const d = r.d;
+      const dt = r.dt;
+
+      // 1. Elevation and BMD SVG
+      let svgHtml = `
+<svg width="${w_el}" height="${h_el}" viewBox="0 0 ${w_el} ${h_el}" xmlns="http://www.w3.org/2000/svg" style="border: 1px solid #e2e8f0; margin-bottom: 0.5rem; background: #fff;">
+  <!-- Support Beam Elevation -->
+  <rect x="100" y="25" width="400" height="20" fill="rgba(0,0,0,0.03)" stroke="#000" stroke-width="1.2" />
+  
+  <!-- Left Support (pin) -->
+  <polygon points="100,45 92,58 108,58" fill="none" stroke="#000" stroke-width="1.2" />
+  <line x1="85" y1="58" x2="115" y2="58" stroke="#000" stroke-width="1.2" />
+  
+  <!-- Right Support (roller) -->
+  <polygon points="500,45 492,58 508,58" fill="none" stroke="#000" stroke-width="1.2" />
+  <circle cx="500" cy="63" r="3" fill="none" stroke="#000" stroke-width="1.2" />
+  <line x1="485" y1="67" x2="515" y2="67" stroke="#000" stroke-width="1.2" />
+  
+  <!-- UDL Load line & arrows -->
+  <line x1="100" y1="12" x2="500" y2="12" stroke="#000" stroke-width="0.8" />
+  <!-- Arrows -->
+  <path d="M100,12 L100,23 M100,23 L97,19 M100,23 L103,19" stroke="#000" stroke-width="0.8" />
+  <path d="M200,12 L200,23 M200,23 L197,19 M200,23 L203,19" stroke="#000" stroke-width="0.8" />
+  <path d="M300,12 L300,23 M300,23 L297,19 M300,23 L303,19" stroke="#000" stroke-width="0.8" />
+  <path d="M400,12 L400,23 M400,23 L397,19 M400,23 L403,19" stroke="#000" stroke-width="0.8" />
+  <path d="M500,12 L500,23 M500,23 L497,19 M500,23 L503,19" stroke="#000" stroke-width="0.8" />
+  <text x="300" y="8" font-family="Courier New, monospace" font-size="8" text-anchor="middle" fill="#000">wu = ${r.wu.toFixed(1)} kN/m</text>
+  
+  <!-- Span dimension -->
+  <line x1="100" y1="80" x2="500" y2="80" stroke="#777" stroke-width="0.8" />
+  <line x1="100" y1="75" x2="100" y2="85" stroke="#777" stroke-width="0.8" />
+  <line x1="500" y1="75" x2="500" y2="85" stroke="#777" stroke-width="0.8" />
+  <text x="300" y="77" font-family="Courier New, monospace" font-size="8.5" text-anchor="middle" fill="#777">L = ${r.L} m</text>
+  
+  <!-- BMD Curve -->
+  <path d="M100,45 Q300,98 500,45" fill="none" stroke="#dc2626" stroke-width="1" stroke-dasharray="3,3" />
+  <text x="300" y="103" font-family="Courier New, monospace" font-size="9" text-anchor="middle" fill="#dc2626">Max Mu = ${r.Mu.toFixed(1)} kN-m</text>
+</svg>
+
+<svg width="${w_el}" height="170" viewBox="0 0 ${w_el} 170" xmlns="http://www.w3.org/2000/svg" style="border: 1px solid #e2e8f0; background: #fff;">
+  <defs>
+    <pattern id="diagHatchPrint" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="0" y2="8" stroke="#3b82f6" stroke-width="1" />
+    </pattern>
+  </defs>
+`;
+
+      const scale = Math.min(100 / (r.type === 'tbeam' ? r.bf : r.b), 120 / r.h);
+      const w_draw = r.b * scale;
+      const h_draw = r.h * scale;
+      const y_f = 85 - h_draw/2;
+      const x_w = 80 - w_draw/2;
+
+      // Draw Concrete boundary in section
+      let shapeHtml = '';
+      if (r.type === 'tbeam') {
+        const wf_draw = r.bf * scale;
+        const tf_draw = r.hf * scale;
+        const x_f = 80 - wf_draw/2;
+        const y_w = y_f + tf_draw;
+        const pts = `${x_f},${y_f} ${x_f+wf_draw},${y_f} ${x_f+wf_draw},${y_w} ${80+w_draw/2},${y_w} ${80+w_draw/2},${y_f+h_draw} ${80-w_draw/2},${y_f+h_draw} ${80-w_draw/2},${y_w} ${x_f},${y_w}`;
+        shapeHtml = `<polygon points="${pts}" stroke="#000" stroke-width="1.2" fill="rgba(0,0,0,0.01)" />`;
+      } else {
+        shapeHtml = `<rect x="${x_w}" y="${y_f}" width="${w_draw}" height="${h_draw}" stroke="#000" stroke-width="1.2" fill="rgba(0,0,0,0.01)" />`;
+      }
+      svgHtml += shapeHtml;
+
+      // Draw Whitney stress block hatched
+      let hatchHtml = '';
+      const stressBlockH = r.a * scale;
+      if (r.type === 'tbeam') {
+        const wf_draw = r.bf * scale;
+        const tf_draw = r.hf * scale;
+        const x_f = 80 - wf_draw/2;
+        if (r.a <= r.hf) {
+          hatchHtml = `<rect x="${x_f}" y="${y_f}" width="${wf_draw}" height="${stressBlockH}" fill="url(#diagHatchPrint)" opacity="0.25" />`;
+        } else {
+          const y_w = y_f + tf_draw;
+          const pts = `${x_f},${y_f} ${x_f+wf_draw},${y_f} ${x_f+wf_draw},${y_w} ${80+w_draw/2},${y_w} ${80+w_draw/2},${y_f+stressBlockH} ${80-w_draw/2},${y_f+stressBlockH} ${80-w_draw/2},${y_w} ${x_f},${y_w}`;
+          hatchHtml = `<polygon points="${pts}" fill="url(#diagHatchPrint)" opacity="0.25" />`;
+        }
+      } else {
+        hatchHtml = `<rect x="${x_w}" y="${y_f}" width="${w_draw}" height="${stressBlockH}" fill="url(#diagHatchPrint)" opacity="0.25" />`;
+      }
+      svgHtml += hatchHtml;
+
+      // Draw N.A. dashed line
+      const y_c = y_f + r.c * scale;
+      const limL = 80 - (r.type === 'tbeam' ? r.bf*scale/2 : w_draw/2) - 8;
+      const limR = 80 + (r.type === 'tbeam' ? r.bf*scale/2 : w_draw/2) + 8;
+      svgHtml += `<line x1="${limL}" y1="${y_c}" x2="${limR}" y2="${y_c}" stroke="#dc2626" stroke-width="0.8" stroke-dasharray="2,2" />`;
+      svgHtml += `<text x="${limR + 2}" y="${y_c + 2.5}" font-family="Courier New, monospace" font-size="7.5" fill="#dc2626">N.A. c=${r.c.toFixed(0)}</text>`;
+
+      // Draw Effective Depth Line
+      const y_d = y_f + r.d * scale;
+      svgHtml += `<line x1="${limL}" y1="${y_d}" x2="${limR}" y2="${y_d}" stroke="#666" stroke-width="0.7" stroke-dasharray="1,1" />`;
+      svgHtml += `<text x="${limR + 2}" y="${y_d + 2.5}" font-family="Courier New, monospace" font-size="7.5" fill="#666">d=${r.d.toFixed(0)}</text>`;
+
+      // Tension rebars
+      const r_bar = Math.max(2, (r.db / 2) * scale);
+      const innerW = w_draw - 2 * (r.cc + r.ds + r.db / 2) * scale;
+      const tensionY = y_f + r.d * scale;
+      if (r.n_bars > 0) {
+        const x_start = 80 - w_draw/2 + (r.cc + r.ds + r.db/2) * scale;
+        const spacing = r.n_bars > 1 ? innerW / (r.n_bars - 1) : 0;
+        for (let i = 0; i < r.n_bars; i++) {
+          const barX = x_start + i * spacing;
+          svgHtml += `<circle cx="${barX}" cy="${tensionY}" r="${r_bar}" fill="#d97706" stroke="#000" stroke-width="0.6" />`;
+        }
+      }
+
+      // Compression rebars (if doubly)
+      if (r.type === 'doubly') {
+        const r_bar_prime = Math.max(1.8, (r.db_prime / 2) * scale);
+        const compY = y_f + r.cc_prime * scale;
+        const innerW_prime = w_draw - 2 * (r.cc_prime) * scale;
+        if (r.n_bars_prime > 0) {
+          const x_start_prime = 80 - w_draw/2 + r.cc_prime * scale;
+          const spacing_prime = r.n_bars_prime > 1 ? innerW_prime / (r.n_bars_prime - 1) : 0;
+          for (let i = 0; i < r.n_bars_prime; i++) {
+            const barX_prime = x_start_prime + i * spacing_prime;
+            svgHtml += `<circle cx="${barX_prime}" cy="${compY}" r="${r_bar_prime}" fill="#3b82f6" stroke="#000" stroke-width="0.6" />`;
+          }
+        }
+      }
+
+      // Section labels
+      svgHtml += `<text x="80" y="${y_f + h_draw + 10}" font-family="Courier New, monospace" font-size="7.5" text-anchor="middle" fill="#000">b = ${r.b}mm</text>`;
+      svgHtml += `<text x="${limL - 8}" y="85" font-family="Courier New, monospace" font-size="7.5" text-anchor="middle" fill="#000" transform="rotate(-90, ${limL - 8}, 85)">h = ${r.h}mm</text>`;
+
+      // STRAIN DIAGRAM (x offset: 260)
+      const NA_y = y_c;
+      svgHtml += `
+        <!-- Strain boundary lines -->
+        <line x1="260" y1="${y_f}" x2="260" y2="${y_f + h_draw}" stroke="#000" stroke-width="1.2" />
+        <!-- Strain triangles -->
+        <polygon points="260,${NA_y} 245,${y_f} 260,${y_f}" fill="none" stroke="#000" stroke-width="0.8" />
+        <polygon points="260,${NA_y} 280,${y_d} 260,${y_d}" fill="none" stroke="#000" stroke-width="0.8" />
+        <!-- Labels -->
+        <text x="240" y="${y_f - 2}" font-family="Courier New, monospace" font-size="7.5" text-anchor="middle" fill="#000">0.003</text>
+        <text x="282" y="${y_d + 3}" font-family="Courier New, monospace" font-size="7.5" fill="#000">et=${r.eps_t.toFixed(5)}</text>
+        <text x="260" y="${NA_y - 2}" font-family="Courier New, monospace" font-size="7.5" text-anchor="middle" fill="#000">c</text>
+      `;
+
+      // STRESS DIAGRAM (x offset: 400)
+      svgHtml += `
+        <!-- Stress vertical axis -->
+        <line x1="400" y1="${y_f}" x2="400" y2="${y_f + h_draw}" stroke="#000" stroke-width="1.2" />
+        <!-- Whitney stress block -->
+        <rect x="400" y="${y_f}" width="40" height="${stressBlockH}" fill="none" stroke="#000" stroke-width="1" />
+        <!-- Resultant compression force arrow C -->
+        <path d="M465,${y_f + stressBlockH/2} L405,${y_f + stressBlockH/2} M412,${y_f + stressBlockH/2 - 3} L405,${y_f + stressBlockH/2} L412,${y_f + stressBlockH/2 + 3}" fill="none" stroke="#3b82f6" stroke-width="1.2" />
+        <text x="470" y="${y_f + stressBlockH/2 + 2.5}" font-family="Courier New, monospace" font-size="7.5" fill="#3b82f6">C</text>
+        <text x="420" y="${y_f + 9}" font-family="Courier New, monospace" font-size="7.5" fill="#000">0.85f'c</text>
+        <text x="390" y="${y_f + stressBlockH + 7}" font-family="Courier New, monospace" font-size="7.5" fill="#000">a = ${r.a.toFixed(0)}</text>
+        
+        <!-- Tension force arrow T -->
+        <path d="M370,${y_d} L395,${y_d} M388,${y_d - 3} L395,${y_d} L388,${y_d + 3}" fill="none" stroke="#d97706" stroke-width="1.2" />
+        <text x="358" y="${y_d + 2.5}" font-family="Courier New, monospace" font-size="7.5" fill="#d97706">T</text>
+        
+        <!-- Moment arm dimension -->
+        <line x1="500" y1="${y_f + stressBlockH/2}" x2="500" y2="${y_d}" stroke="#777" stroke-width="0.6" />
+        <line x1="496" y1="${y_f + stressBlockH/2}" x2="504" y2="${y_f + stressBlockH/2}" stroke="#777" stroke-width="0.6" />
+        <line x1="496" y1="${y_d}" x2="504" y2="${y_d}" stroke="#777" stroke-width="0.6" />
+        <text x="506" y="${(y_f + stressBlockH/2 + y_d)/2 + 2.5}" font-family="Courier New, monospace" font-size="7.5" fill="#777">d - a/2</text>
+      `;
+
+      svgHtml += `</svg>`;
+      containerEl.innerHTML = svgHtml;
+    }
   </script>
+
+  <!-- LEAD CAPTURE MODAL -->
+  <div class="modal-overlay" id="auth-modal">
+    <div class="modal-card glass-card">
+      <div class="modal-header">
+        <h3>Unlock Engineering Suite</h3>
+        <p>Enter your professional credentials to run limit-state design checks and download coordinate schematics.</p>
+      </div>
+      <form class="modal-form" id="modal-auth-form">
+        <div class="form-group">
+          <label for="lead-name">Full Name</label>
+          <input type="text" id="lead-name" placeholder="E.g., MD. AHSAN HABIB ANIK" required>
+        </div>
+        <div class="form-group">
+          <label for="lead-phone">Contact Number</label>
+          <input type="tel" id="lead-phone" placeholder="E.g., +1 (555) 123-4567" required>
+        </div>
+        <div class="form-group">
+          <label for="lead-email">Business Email</label>
+          <input type="email" id="lead-email" placeholder="anik@twinanalytic.com" required>
+        </div>
+        <button type="submit" class="btn btn-gold" style="width: 100%; margin-top: 1rem;">Unlock Calculators</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- REPORT PREVIEW MODAL -->
+  <div class="report-modal-overlay" id="report-modal">
+    <div class="report-modal-card">
+      <div class="report-modal-header">
+        <h3>Calculated Design Report Preview</h3>
+        <div style="display: flex; gap: 1rem;">
+          <button class="btn btn-gold" id="btn-trigger-print" style="padding: 0.5rem 1rem; font-size: 0.85rem;"><i class="fa-solid fa-print"></i> Print / Save as PDF</button>
+          <button class="btn btn-outline" id="btn-close-report" style="padding: 0.5rem 1rem; font-size: 0.85rem; border-color: rgba(255,255,255,0.2);">Close</button>
+        </div>
+      </div>
+      <div class="report-modal-body" id="report-preview-container">
+        <!-- 9 Pages will be dynamically loaded here in white A4 containers -->
+      </div>
+    </div>
+  </div>
 </body>
 </html>
