@@ -5591,93 +5591,249 @@ function downloadColumnPDF() {
   }
   cy += 0.30;
 
-  // SECTION 15 (Correction 5 - ASCII Detailing Drawings)
-  checkPageBreak(doc, 3.2);
+  // SECTION 15 — REINFORCEMENT DETAILING DRAWINGS
+  checkPageBreak(doc, 3.5);
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   doc.setTextColor(201, 168, 76);
-  doc.text('SECTION 15 — REINFORCEMENT DETAILING DRAWING (Schematic)', 0.5, cy);
+  doc.text('SECTION 15 — REINFORCEMENT DETAILING DRAWINGS', 0.5, cy);
   cy += 0.20;
 
-  const bar_size = mainBarSize;
-  const tie_size = tieBarSize;
-  const n_total = N_bars;
-  const spacing = s_final.toFixed(2);
-  const b_dim = Dim.toFixed(1);
-  const h_dim = Dim.toFixed(1);
-  const lu_val = colHeight.toFixed(1);
-  const k_val = "1.00";
-  const slenderness_ratio = klu_r.toFixed(2);
-  const dia_val = mainBarDia.toFixed(3);
-  const area_val = Ab.toFixed(2);
-  const tie_dia_val = d_tie.toFixed(3);
+  // Let's set draw colors and styles
+  doc.setDrawColor(50, 50, 50);
+  doc.setLineWidth(0.015);
 
-  const asciiCS = [
-    `CROSS-SECTION (${b_dim}" x ${h_dim}"):`,
-    `  +-----------------------------+`,
-    `  |  o      o      o      o     |  <- ${bar_size} long. bars`,
-    `  |                             |     ${n_total} total`,
-    `  |  o                    o     |     Cover = 1.5 in`,
-    `  |                             |`,
-    `  |  o                    o     |`,
-    `  |                             |`,
-    `  |  o      o      o      o     |`,
-    `  +-----------------------------+`,
-    type === 'TIED' 
-      ? `    Ties: ${tie_size} @ ${spacing}" c/c (ACI 25.7.2.1)`
-      : `    Spiral: ${tie_size} @ ${spacing}" pitch (ACI 25.7.3)`,
-    `    b = ${b_dim}"   h = ${h_dim}"`
-  ];
+  const cx = 2.2;
+  const cy_draw = cy + 1.2;
+  const cx_el = 5.6;
+  const scale = 1.6 / Dim;
 
-  const asciiEV = [
-    `ELEVATION VIEW:`,
-    `  |==============================|  <- Top`,
-    `  | |   |   |   |   |   |   | |  `,
-    type === 'TIED'
-      ? `  |-+---+---+---+---+---+---+-|  <- Tie @ ${spacing}" c/c`
-      : `  |-+---+---+---+---+---+---+-|  <- Spiral @ ${spacing}" pitch`,
-    `  | |   |   |   |   |   |   | |  `,
-    `  |-+---+---+---+---+---+---+-|`,
-    `  | |   |   |   |   |   |   | |  `,
-    `  |-+---+---+---+---+---+---+-|`,
-    `  | |   |   |   |   |   |   | |  `,
-    `  |==============================|  <- Base`,
-    `  lu = ${lu_val} ft    k = ${k_val}`,
-    `  klu/r = ${slenderness_ratio}`
-  ];
+  // 1. Draw Cross Section on the left
+  if (type === 'TIED') {
+    // Tied Rectangular Column
+    const w_c = Dim * scale;
+    const x = cx - w_c / 2;
+    const y = cy_draw - w_c / 2;
 
-  const asciiLegend = type === 'TIED' ? [
-    `LEGEND:`,
-    `  o  = ${bar_size} bar  (db = ${dia_val}",  Ab = ${area_val} in2)`,
-    `  -- = ${tie_size} tie  (db = ${tie_dia_val}")`
-  ] : [
-    `LEGEND:`,
-    `  o  = ${bar_size} bar  (db = ${dia_val}",  Ab = ${area_val} in2)`,
-    `  ~  = ${tie_size} spiral  (db = ${tie_dia_val}",  Asp = ${A_tie.toFixed(2)} in2)`
-  ];
+    // Outer Concrete Shape
+    doc.setFillColor(245, 245, 245);
+    doc.setDrawColor(60, 60, 60);
+    doc.setLineWidth(0.015);
+    doc.rect(x, y, w_c, w_c, 'FD');
 
-  doc.setFont('courier', 'normal');
-  doc.setFontSize(7.5);
-  doc.setTextColor(35, 35, 35);
+    // Inner Tie line
+    const w_tie = (Dim - 2 * cover) * scale;
+    const xt = cx - w_tie / 2;
+    const yt = cy_draw - w_tie / 2;
+    doc.setDrawColor(180, 50, 50);
+    doc.setLineWidth(0.012);
+    doc.rect(xt, yt, w_tie, w_tie, 'S');
 
-  let draw_y = cy;
-  for (let i = 0; i < asciiCS.length; i++) {
-    doc.text(asciiCS[i], 0.6, draw_y);
-    if (i < asciiEV.length) {
-      doc.text(asciiEV[i], 4.4, draw_y);
-    }
-    draw_y += 0.14;
+    // Longitudinal bars
+    bars.forEach(bar => {
+      const bx = cx + bar.x * scale;
+      const by = cy_draw + bar.y * scale;
+      const r_bar = Math.max(0.035, (mainBarDia / 2) * scale);
+      doc.setFillColor(30, 30, 30);
+      doc.circle(bx, by, r_bar, 'F');
+    });
+
+    // Horizontal Dimension (Width)
+    doc.setDrawColor(120, 120, 120);
+    doc.setLineWidth(0.006);
+    doc.line(x, y + w_c + 0.15, x + w_c, y + w_c + 0.15);
+    doc.line(x, y + w_c + 0.1, x, y + w_c + 0.2);
+    doc.line(x + w_c, y + w_c + 0.1, x + w_c, y + w_c + 0.2);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(60, 60, 60);
+    doc.text(`${Dim.toFixed(0)}"`, cx, y + w_c + 0.28, { align: 'center' });
+
+    // Vertical Dimension (Height)
+    doc.line(x - 0.15, y, x - 0.15, y + w_c);
+    doc.line(x - 0.2, y, x - 0.1, y);
+    doc.line(x - 0.2, y + w_c, x - 0.1, y + w_c);
+    doc.text(`${Dim.toFixed(0)}"`, x - 0.23, cy_draw + 0.03, { align: 'right' });
+
+    // Title label below cross-section
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(30, 30, 30);
+    doc.text('CROSS-SECTION VIEW', cx, y + w_c + 0.45, { align: 'center' });
+
+  } else {
+    // Spiral Circular Column
+    const R_c = (Dim / 2) * scale;
+
+    // Outer Concrete Shape (Circle)
+    doc.setFillColor(245, 245, 245);
+    doc.setDrawColor(60, 60, 60);
+    doc.setLineWidth(0.015);
+    doc.circle(cx, cy_draw, R_c, 'FD');
+
+    // Inner Spiral line
+    const R_spiral = (Dim / 2 - cover) * scale;
+    doc.setDrawColor(180, 50, 50);
+    doc.setLineWidth(0.012);
+    doc.circle(cx, cy_draw, R_spiral, 'S');
+
+    // Longitudinal bars
+    bars.forEach(bar => {
+      const bx = cx + bar.x * scale;
+      const by = cy_draw + bar.y * scale;
+      const r_bar = Math.max(0.035, (mainBarDia / 2) * scale);
+      doc.setFillColor(30, 30, 30);
+      doc.circle(bx, by, r_bar, 'F');
+    });
+
+    // Horizontal Dimension (Diameter)
+    doc.setDrawColor(120, 120, 120);
+    doc.setLineWidth(0.006);
+    doc.line(cx - R_c, cy_draw + R_c + 0.15, cx + R_c, cy_draw + R_c + 0.15);
+    doc.line(cx - R_c, cy_draw + R_c + 0.1, cx - R_c, cy_draw + R_c + 0.2);
+    doc.line(cx + R_c, cy_draw + R_c + 0.1, cx + R_c, cy_draw + R_c + 0.2);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(60, 60, 60);
+    doc.text(`D = ${Dim.toFixed(0)}"`, cx, cy_draw + R_c + 0.28, { align: 'center' });
+
+    // Title label below cross-section
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(30, 30, 30);
+    doc.text('CROSS-SECTION VIEW', cx, cy_draw + R_c + 0.45, { align: 'center' });
   }
 
-  draw_y += 0.05;
-  asciiLegend.forEach(line => {
-    doc.text(line, 0.6, draw_y);
-    draw_y += 0.14;
-  });
+  // 2. Draw Elevation View on the right
+  const w_el = 1.1;
+  const h_el = 2.2;
+  const x_el = cx_el - w_el / 2;
+  const y_el = cy_draw - h_el / 2;
 
-  cy = draw_y + 0.15;
+  // Outer Concrete
+  doc.setFillColor(245, 245, 245);
+  doc.setDrawColor(60, 60, 60);
+  doc.setLineWidth(0.015);
+  doc.rect(x_el, y_el, w_el, h_el, 'FD');
 
-    // SECTION 16
+  // Longitudinal steel (Vertical lines)
+  const scale_el = w_el / Dim;
+  const x_l = x_el + (cover + d_tie + mainBarDia / 2) * scale_el;
+  const x_r = x_el + w_el - (cover + d_tie + mainBarDia / 2) * scale_el;
+  doc.setDrawColor(80, 80, 80);
+  doc.setLineWidth(0.02);
+  doc.line(x_l, y_el, x_l, y_el + h_el);
+  doc.line(x_r, y_el, x_r, y_el + h_el);
+
+  // Ties or Spirals (Horizontal lines or spiral turns)
+  doc.setDrawColor(180, 50, 50);
+  doc.setLineWidth(0.008);
+  if (type === 'TIED') {
+    const s_draw = s_final * (h_el / (colHeight * 12));
+    const num_ties = Math.floor((colHeight * 12) / s_final);
+    for (let i = 0; i <= num_ties; i++) {
+      const tie_y = y_el + i * s_draw;
+      if (tie_y <= y_el + h_el) {
+        doc.line(x_el + cover * scale_el, tie_y, x_el + w_el - cover * scale_el, tie_y);
+      }
+    }
+  } else {
+    // Spiral
+    const pitch_draw = s_final * (h_el / (colHeight * 12));
+    const num_coils = Math.floor((colHeight * 12) / s_final);
+    let curr_y = y_el;
+    for (let i = 0; i < num_coils; i++) {
+      const next_y = curr_y + pitch_draw;
+      if (next_y <= y_el + h_el) {
+        doc.line(x_l, curr_y, x_r, curr_y + pitch_draw / 2);
+        doc.line(x_r, curr_y + pitch_draw / 2, x_l, next_y);
+      }
+      curr_y = next_y;
+    }
+  }
+
+  // Elevation dimensions
+  doc.setDrawColor(120, 120, 120);
+  doc.setLineWidth(0.006);
+  doc.line(cx_el + w_el / 2 + 0.15, y_el, cx_el + w_el / 2 + 0.15, y_el + h_el);
+  doc.line(cx_el + w_el / 2 + 0.1, y_el, cx_el + w_el / 2 + 0.2, y_el);
+  doc.line(cx_el + w_el / 2 + 0.1, y_el + h_el, cx_el + w_el / 2 + 0.2, y_el + h_el);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(60, 60, 60);
+  doc.text(`Height = ${colHeight.toFixed(1)} ft`, cx_el + w_el / 2 + 0.28, cy_draw, { align: 'center', angle: 90 });
+
+  // Elevation Title
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(30, 30, 30);
+  doc.text('ELEVATION VIEW', cx_el, y_el + h_el + 0.45, { align: 'center' });
+
+  // 3. Detailing Leader Lines and Callouts (drawn on top)
+  doc.setDrawColor(100, 100, 100);
+  doc.setLineWidth(0.006);
+
+  // Leader line for Longitudinal Bars
+  let p_bar_x = cx + (Dim/2 - (cover + d_tie + mainBarDia/2)) * scale;
+  let p_bar_y = cy_draw - (Dim/2 - (cover + d_tie + mainBarDia/2)) * scale;
+  if (type === 'SPIRAL') {
+    const Ds = Dim - 2 * (cover + d_tie + mainBarDia/2);
+    p_bar_x = cx + (Ds / 2) * Math.cos(-Math.PI / 4) * scale;
+    p_bar_y = cy_draw + (Ds / 2) * Math.sin(-Math.PI / 4) * scale;
+  }
+  const t_bar_x = cx - 1.1;
+  const t_bar_y = cy_draw - 0.7;
+  doc.line(p_bar_x, p_bar_y, t_bar_x, t_bar_y);
+  doc.line(t_bar_x, t_bar_y, t_bar_x - 0.2, t_bar_y);
+  doc.setFillColor(100, 100, 100);
+  doc.circle(p_bar_x, p_bar_y, 0.018, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(40, 40, 40);
+  doc.text(`${N_bars} - ${mainBarSize} Long. Bars`, t_bar_x - 0.25, t_bar_y + 0.03, { align: 'right' });
+
+  // Leader line for Ties/Spiral
+  let p_tie_x = cx + (Dim/2 - cover) * scale;
+  let p_tie_y = cy_draw + (Dim/2 - cover) * scale * 0.2;
+  if (type === 'SPIRAL') {
+    const R_spiral = Dim/2 - cover;
+    p_tie_x = cx + R_spiral * Math.cos(Math.PI / 6) * scale;
+    p_tie_y = cy_draw + R_spiral * Math.sin(Math.PI / 6) * scale;
+  }
+  const t_tie_x = cx + 1.1;
+  const t_tie_y = cy_draw + 0.7;
+  doc.line(p_tie_x, p_tie_y, t_tie_x, t_tie_y);
+  doc.line(t_tie_x, t_tie_y, t_tie_x + 0.2, t_tie_y);
+  doc.circle(p_tie_x, p_tie_y, 0.018, 'F');
+  if (type === 'TIED') {
+    doc.text(`Ties: ${tieBarSize} @ ${s_final.toFixed(1)}" c/c`, t_tie_x + 0.25, t_tie_y + 0.03);
+  } else {
+    doc.text(`Spiral: ${tieBarSize} @ ${s_final.toFixed(1)}" pitch`, t_tie_x + 0.25, t_tie_y + 0.03);
+  }
+
+  // 4. Detailing Legend/Notes at the bottom
+  const notes_y = cy_draw + 1.45;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(30, 30, 30);
+  doc.text('DETAILING NOTES & LEGEND:', 0.5, notes_y);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(60, 60, 60);
+  doc.text(`• Concrete Cover: ${cover.toFixed(1)} inches (clear cover to outer lateral reinforcement)`, 0.6, notes_y + 0.16);
+  doc.text(`• Main reinforcement: ${N_bars} deformed ASTM A615 Grade 60 bars (db = ${mainBarDia.toFixed(3)}", Ab = ${Ab.toFixed(2)} in2)`, 0.6, notes_y + 0.30);
+  if (type === 'TIED') {
+    doc.text(`• Lateral ties: ${tieBarSize} ties (db = ${d_tie.toFixed(3)}", As = ${A_tie.toFixed(2)} in2) spaced at ${s_final.toFixed(1)}" c/c`, 0.6, notes_y + 0.44);
+  } else {
+    const rho_s_pct = (rho_s * 100).toFixed(2);
+    doc.text(`• Lateral spiral: ${tieBarSize} spiral (db = ${d_tie.toFixed(3)}", As = ${A_tie.toFixed(2)} in2) at ${s_final.toFixed(1)}" pitch (ratio rho_s = ${rho_s_pct}%)`, 0.6, notes_y + 0.44);
+  }
+  doc.text(`• Structural specs: fc' = ${fc.toFixed(1)} ksi, fy = ${fy.toFixed(0)} ksi, fyt = ${fyt.toFixed(0)} ksi. Slenderness ratio klu/r = ${klu_r.toFixed(2)}.`, 0.6, notes_y + 0.58);
+
+  cy = notes_y + 0.75;
+
+      // SECTION 16
   checkPageBreak(doc, 2.2);
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
