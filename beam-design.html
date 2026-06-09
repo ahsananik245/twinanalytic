@@ -7,7 +7,8 @@
   <meta name="description" content="Online structural engineering check for reinforced concrete beams. Singly, doubly, and T-beam calculators with live SVG drawings.">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- html2pdf Library -->
+  <!-- jsPDF & html2pdf Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     /* Google Fonts */
@@ -2507,87 +2508,518 @@ ${checkListTable}
     }
 
     function downloadBeamPDF(triggerBtnId = 'btn-download-pdf') {
-      const original = document.getElementById('report-preview-container');
-      const pages = original.querySelectorAll('.report-page-a4');
+      const r = window.calcResults;
+      if (!r) {
+        alert("Please run analysis first.");
+        return;
+      }
+
+      // Query generated report content
+      let original = document.getElementById('report-preview-container');
+      let pages = original.querySelectorAll('.report-page-a4');
       
-      // Create a temporary hidden container for clean PDF rendering
-      const tempContainer = document.createElement('div');
-      tempContainer.style.background = 'white';
-      tempContainer.style.color = 'black';
-      tempContainer.style.width = '210mm';
-      tempContainer.style.padding = '0';
-      tempContainer.style.margin = '0';
-      
-      pages.forEach(page => {
-        const clonedPage = page.cloneNode(true);
-        // Ensure standard styles are applied on the clone
-        clonedPage.style.boxShadow = 'none';
-        clonedPage.style.margin = '0';
-        clonedPage.style.border = 'none';
-        clonedPage.style.display = 'block';
-        clonedPage.style.pageBreakAfter = 'always';
-        clonedPage.style.pageBreakInside = 'avoid';
-        tempContainer.appendChild(clonedPage);
+      if (pages.length === 0) {
+        generateAndOpenReport(false);
+        original = document.getElementById('report-preview-container');
+        pages = original.querySelectorAll('.report-page-a4');
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
       });
 
-      // Crucial: Append temporary container to body so styles and Courier fonts resolve properly!
-      tempContainer.style.position = 'absolute';
-      tempContainer.style.left = '0';
-      tempContainer.style.top = '0';
-      tempContainer.style.zIndex = '-9999';
-      document.body.appendChild(tempContainer);
-
-      const opt = {
-        margin:       0,
-        filename:     'twinanalytic_beam_report.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { 
-          scale: 2, 
-          useCORS: true, 
-          logging: false,
-          letterRendering: true,
-          scrollY: 0,
-          scrollX: 0
-        },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['css', 'legacy'] }
-      };
-
       const btn = document.getElementById(triggerBtnId);
+      let originalText = "";
       if (btn) {
-        const originalText = btn.innerHTML;
+        originalText = btn.innerHTML;
         btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating...`;
         btn.disabled = true;
+      }
 
-        setTimeout(() => {
-          html2pdf().set(opt).from(tempContainer).save().then(() => {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-            if (tempContainer.parentNode) {
-              tempContainer.parentNode.removeChild(tempContainer);
-            }
-          }).catch(err => {
-            console.error('PDF Generation Error:', err);
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-            if (tempContainer.parentNode) {
-              tempContainer.parentNode.removeChild(tempContainer);
-            }
-            alert('Failed to generate PDF. Please try printing using the Print button instead.');
+      // Helper functions
+      function drawPageBorderAndHeader(doc, pageNum) {
+        // Gold border
+        doc.setDrawColor(201, 168, 76);
+        doc.setLineWidth(0.4);
+        doc.rect(10, 10, 190, 277);
+
+        // Header border
+        doc.setDrawColor(26, 32, 44);
+        doc.setLineWidth(0.25);
+        doc.rect(10, 10, 190, 20);
+
+        // Header column dividers
+        doc.line(70, 10, 70, 30);
+        doc.line(152, 10, 152, 30);
+
+        // Brand
+        doc.setTextColor(201, 168, 76);
+        doc.setFont('times', 'bold');
+        doc.setFontSize(14);
+        doc.text('TwinAnalytic', 13, 16);
+        
+        doc.setTextColor(74, 85, 104);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(5.5);
+        doc.text('STRUCTURAL DESIGN GROUP', 13, 21);
+        doc.text('ACI 318-19 COMPLIANCE', 13, 24.5);
+        doc.text('CE 315 CALCULATION SHEET', 13, 28);
+
+        // Project
+        doc.setTextColor(26, 32, 44);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7);
+        const projName = document.getElementById('beam-proj-name').value || "TwinAnalytic Tower";
+        const beamMark = document.getElementById('beam-mark').value || "B1";
+        const designer = document.getElementById('beam-designer').value || "AH";
+
+        const splitProj = doc.splitTextToSize(`PROJECT: ${projName}`, 78);
+        doc.text(splitProj, 73, 14.5);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`ELEMENT: Beam ${beamMark} - Flexural Design`, 73, 21);
+        doc.text('CODE: ACI 318-19 / BNBC 2020', 73, 26);
+
+        // Metadata
+        doc.setFont('helvetica', 'bold');
+        doc.text('DESIGN BY:', 155, 15);
+        doc.setFont('helvetica', 'normal');
+        doc.text(designer, 175, 15);
+
+        doc.setFont('helvetica', 'bold');
+        doc.text('CHECKED BY:', 155, 20);
+        doc.setFont('helvetica', 'normal');
+        doc.text('MB', 178, 20);
+
+        doc.setFont('helvetica', 'bold');
+        doc.text('DATE:', 155, 25);
+        doc.setFont('helvetica', 'normal');
+        doc.text(new Date().toLocaleDateString(), 168, 25);
+
+        // Footer
+        doc.setDrawColor(201, 168, 76);
+        doc.setLineWidth(0.25);
+        doc.line(10, 280, 200, 280);
+
+        doc.setTextColor(113, 128, 150);
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(7.5);
+        doc.text('Calculated via TwinAnalytic — www.twinanalytic.com', 13, 284);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Page ${pageNum} of 9`, 175, 284);
+      }
+
+      let cy = 35;
+      function printText(doc, text, x = 13) {
+        const lines = text.split('\n');
+        lines.forEach(line => {
+          if (line.includes('class="report-section-header"')) {
+            const title = line.replace(/<div.*?>|<\/div>/g, '');
+            cy += 2;
+            doc.setDrawColor(26, 32, 44);
+            doc.setLineWidth(0.35);
+            doc.line(10, cy, 200, cy);
+            
+            doc.setFont('times', 'bold');
+            doc.setFontSize(11);
+            doc.setTextColor(201, 168, 76);
+            doc.text(title, x, cy + 4);
+            
+            cy += 5.5;
+            doc.line(10, cy, 200, cy);
+            cy += 6;
+          } else if (line.includes('class="report-subsection-header"')) {
+            const title = line.replace(/<div.*?>|<\/div>/g, '');
+            cy += 2;
+            doc.setFont('times', 'bold');
+            doc.setFontSize(9.5);
+            doc.setTextColor(26, 32, 44);
+            doc.text(title, x, cy + 3.5);
+            
+            cy += 4.5;
+            doc.setDrawColor(26, 32, 44);
+            doc.setLineWidth(0.2);
+            doc.line(10, cy, 200, cy);
+            cy += 5.5;
+          } else {
+            doc.setFont('courier', 'normal');
+            doc.setFontSize(8.5);
+            doc.setTextColor(26, 32, 44);
+            
+            let cleanLine = line
+              .replace(/&times;/g, 'x')
+              .replace(/&le;/g, '<=')
+              .replace(/&ge;/g, '>=')
+              .replace(/&pi;/g, 'pi')
+              .replace(/&radic;/g, 'sqrt')
+              .replace(/&there4;/g, '...')
+              .replace(/&alpha;/g, 'alpha')
+              .replace(/&beta;/g, 'beta')
+              .replace(/&epsilon;/g, 'epsilon')
+              .replace(/&phi;/g, 'phi')
+              .replace(/&rho;/g, 'rho')
+              .replace(/&psi;/g, 'psi')
+              .replace(/&lambda;/g, 'lambda')
+              .replace(/×/g, 'x')
+              .replace(/√/g, 'sqrt')
+              .replace(/∴/g, '...')
+              .replace(/π/g, 'pi')
+              .replace(/α/g, 'alpha')
+              .replace(/β/g, 'beta')
+              .replace(/ε/g, 'epsilon')
+              .replace(/φ/g, 'phi')
+              .replace(/ρ/g, 'rho')
+              .replace(/ψ/g, 'psi')
+              .replace(/λ/g, 'lambda')
+              .replace(/−/g, '-')
+              .replace(/┌/g, '+')
+              .replace(/┐/g, '+')
+              .replace(/└/g, '+')
+              .replace(/┘/g, '+')
+              .replace(/├/g, '+')
+              .replace(/┤/g, '+')
+              .replace(/┬/g, '+')
+              .replace(/┴/g, '+')
+              .replace(/┼/g, '+')
+              .replace(/─/g, '-')
+              .replace(/│/g, '|')
+              .replace(/═/g, '=')
+              .replace(/✅/g, '[PASS]')
+              .replace(/❌/g, '[FAIL]')
+              .replace(/ℹ️/g, '[INFO]')
+              .replace(/⚠️/g, '[WARN]');
+            
+            doc.text(cleanLine, x, cy);
+            cy += 4.5;
+          }
+        });
+      }
+
+      // Page 1: Cover Page
+      drawPageBorderAndHeader(doc, 1);
+      doc.setFillColor(245, 247, 250);
+      doc.rect(10.5, 30.5, 189, 249.2, 'F');
+      
+      doc.setFillColor(30, 30, 30);
+      doc.rect(10.5, 30.5, 189, 30, 'F');
+
+      doc.setTextColor(201, 168, 76);
+      doc.setFont('times', 'bold');
+      doc.setFontSize(20);
+      doc.text('TWINANALYTIC CALCULATIONS', 20, 48);
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.text('ENGINEERING CALCULATIONS & COMPLIANCE REPORTS', 20, 56);
+
+      doc.setTextColor(30, 30, 30);
+      doc.setFont('times', 'bold');
+      doc.setFontSize(20);
+      const projName = document.getElementById('beam-proj-name').value || "TwinAnalytic Tower";
+      const beamMark = document.getElementById('beam-mark').value || "B1";
+      const designer = document.getElementById('beam-designer').value || "AH";
+
+      const tLines = doc.splitTextToSize("Reinforced Concrete Beam Flexural Design Report", 160);
+      doc.text(tLines, 20, 85);
+
+      doc.setDrawColor(201, 168, 76);
+      doc.setLineWidth(0.8);
+      doc.line(20, 105, 180, 105);
+
+      doc.setTextColor(70, 70, 70);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10.5);
+      doc.text('PROJECT DATA:', 20, 120);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.text(`Project Name:     ${projName}`, 20, 128);
+      doc.text(`Beam Mark:        ${beamMark}`, 20, 134);
+      doc.text(`Design Code:      ACI 318-19 / BNBC 2020`, 20, 140);
+      doc.text(`Section Sizing:   ${r.b} mm x ${r.h} mm`, 20, 146);
+
+      doc.setFont('helvetica', 'bold');
+      doc.text('METADATA:', 20, 162);
+
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Designed By:      ${designer}`, 20, 170);
+      doc.text(`Reviewed By:      MB`, 20, 176);
+      doc.text(`Date:             ${new Date().toLocaleDateString()}`, 20, 182);
+
+      doc.setDrawColor(201, 168, 76);
+      doc.setLineWidth(0.4);
+      doc.rect(20, 195, 160, 48);
+      doc.setFillColor(255, 255, 255);
+      doc.rect(20.2, 195.2, 159.6, 47.6, 'F');
+
+      doc.setTextColor(30, 30, 30);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9.5);
+      doc.text('Key Design Metrics:', 24, 202);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.text(`Factored Moment Mu:     ${r.Mu.toFixed(1)} kN-m`, 24, 210);
+      doc.text(`Design Capacity phiMn:  ${r.phiMn.toFixed(1)} kN-m`, 24, 216);
+      doc.text(`Demand-Capacity DCR:    ${r.dcr.toFixed(3)}`, 24, 222);
+      doc.text(`Reinforcement Ratio:    ${r.rho_provided.toFixed(5)}`, 24, 228);
+
+      doc.setFont('helvetica', 'bold');
+      const dcrVerdict = r.isSafe ? 'ADEQUATE ✅' : 'INADEQUATE ❌';
+      doc.text(`Design Status:          ${dcrVerdict}`, 24, 236);
+
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(8);
+      doc.setTextColor(120, 120, 120);
+      doc.text('Software Reference: TwinAnalytic — www.twinanalytic.com', 20, 260);
+
+      // Loop through pages 2 to 9
+      for (let i = 1; i < 9; i++) {
+        doc.addPage();
+        drawPageBorderAndHeader(doc, i + 1);
+        cy = 36;
+        
+        if (i === 6) {
+          // Page 7: Detailing Diagrams
+          doc.setDrawColor(26, 32, 44);
+          doc.setLineWidth(0.35);
+          doc.line(10, cy, 200, cy);
+          doc.setFont('times', 'bold');
+          doc.setFontSize(11);
+          doc.setTextColor(201, 168, 76);
+          doc.text('5.0  BEAM DETAILING DIAGRAMS', 13, cy + 4);
+          cy += 5.5;
+          doc.line(10, cy, 200, cy);
+          
+          // Draw Diagrams
+          // 1. Elevation & BMD
+          doc.setDrawColor(0, 0, 0);
+          doc.setLineWidth(0.4);
+          doc.rect(40, 52, 130, 8); // Beam rect
+          
+          // pin support
+          doc.polygon([[40, 60], [37, 65], [43, 65]], 'S');
+          doc.line(33, 65, 47, 65);
+          // roller support
+          doc.polygon([[170, 60], [167, 65], [173, 65]], 'S');
+          doc.circle(170, 67, 0.9, 'S');
+          doc.line(163, 68.5, 177, 68.5);
+
+          // UDL load line
+          doc.line(40, 47, 170, 47);
+          // 5 load arrows
+          const arrowX = [40, 72.5, 105, 137.5, 170];
+          arrowX.forEach(ax => {
+            doc.line(ax, 47, ax, 52);
+            doc.line(ax - 0.8, 50.5, ax, 52);
+            doc.line(ax + 0.8, 50.5, ax, 52);
           });
-        }, 150);
-      } else {
-        setTimeout(() => {
-          html2pdf().set(opt).from(tempContainer).save().then(() => {
-            if (tempContainer.parentNode) {
-              tempContainer.parentNode.removeChild(tempContainer);
+          doc.setFont('courier', 'bold');
+          doc.setFontSize(7.5);
+          doc.text("wu = " + r.wu.toFixed(1) + " kN/m", 105, 45, { align: 'center' });
+
+          // Span dimensions
+          doc.setDrawColor(100, 100, 100);
+          doc.line(40, 73, 170, 73);
+          doc.line(40, 71, 40, 75);
+          doc.line(170, 71, 170, 75);
+          doc.setFont('courier', 'normal');
+          doc.setFontSize(7.5);
+          doc.text("L = " + r.L + " m", 105, 72, { align: 'center' });
+
+          // Parabolic BMD Curve
+          doc.setDrawColor(220, 38, 38);
+          doc.setLineWidth(0.3);
+          let prevX = 40, prevY = 60;
+          for (let px = 40; px <= 170; px += 2) {
+            let py = 60 + (px - 40) * (170 - px) * 0.0016; // deflection
+            doc.line(prevX, prevY, px, py);
+            prevX = px;
+            prevY = py;
+          }
+          doc.setTextColor(220, 38, 38);
+          doc.setFont('courier', 'bold');
+          doc.text("Max Mu = " + r.Mu.toFixed(1) + " kN-m", 105, 79, { align: 'center' });
+
+          // 2. Cross section, Strain & Stress Block
+          const b = r.b;
+          const h = r.h;
+          const scale = Math.min(38 / (r.type === 'tbeam' ? r.bf : r.b), 55 / h);
+          const w_draw = b * scale;
+          const h_draw = h * scale;
+          const y_f = 125 - h_draw/2;
+          const x_w = 50 - w_draw/2;
+
+          // concrete boundary
+          doc.setDrawColor(0, 0, 0);
+          doc.setLineWidth(0.45);
+          if (r.type === 'tbeam') {
+            const wf_draw = r.bf * scale;
+            const tf_draw = r.hf * scale;
+            const x_f = 50 - wf_draw/2;
+            const y_w = y_f + tf_draw;
+            doc.line(x_f, y_f, x_f + wf_draw, y_f);
+            doc.line(x_f + wf_draw, y_f, x_f + wf_draw, y_w);
+            doc.line(x_f + wf_draw, y_w, 50 + w_draw/2, y_w);
+            doc.line(50 + w_draw/2, y_w, 50 + w_draw/2, y_f + h_draw);
+            doc.line(50 + w_draw/2, y_f + h_draw, 50 - w_draw/2, y_f + h_draw);
+            doc.line(50 - w_draw/2, y_f + h_draw, 50 - w_draw/2, y_w);
+            doc.line(50 - w_draw/2, y_w, x_f, y_w);
+            doc.line(x_f, y_w, x_f, y_f);
+          } else {
+            doc.rect(x_w, y_f, w_draw, h_draw);
+          }
+
+          // Whitney stress block (light gray fill)
+          const stressBlockH = r.a * scale;
+          doc.setFillColor(230, 230, 230);
+          if (r.type === 'tbeam') {
+            const wf_draw = r.bf * scale;
+            const tf_draw = r.hf * scale;
+            const x_f = 50 - wf_draw/2;
+            if (r.a <= r.hf) {
+              doc.rect(x_f, y_f, wf_draw, stressBlockH, 'F');
+              doc.rect(x_f, y_f, wf_draw, stressBlockH, 'S');
+            } else {
+              const y_w = y_f + tf_draw;
+              doc.polygon([
+                [x_f, y_f], [x_f + wf_draw, y_f], [x_f + wf_draw, y_w],
+                [50 + w_draw/2, y_w], [50 + w_draw/2, y_f + stressBlockH],
+                [50 - w_draw/2, y_f + stressBlockH], [50 - w_draw/2, y_w],
+                [x_f, y_w]
+              ], 'FD');
             }
-          }).catch(err => {
-            if (tempContainer.parentNode) {
-              tempContainer.parentNode.removeChild(tempContainer);
+          } else {
+            doc.rect(x_w, y_f, w_draw, stressBlockH, 'FD');
+          }
+
+          // N.A. line
+          const y_c = y_f + r.c * scale;
+          const limL = 50 - (r.type === 'tbeam' ? r.bf*scale/2 : w_draw/2) - 4;
+          const limR = 50 + (r.type === 'tbeam' ? r.bf*scale/2 : w_draw/2) + 4;
+          doc.setDrawColor(220, 38, 38);
+          doc.setLineWidth(0.25);
+          doc.line(limL, y_c, limR, y_c);
+          doc.setTextColor(220, 38, 38);
+          doc.setFontSize(6);
+          doc.setFont('courier', 'bold');
+          doc.text(`N.A. c=${r.c.toFixed(0)}`, limR + 1, y_c + 0.8);
+
+          // Effective Depth Line
+          const y_d = y_f + r.d * scale;
+          doc.setDrawColor(100, 100, 100);
+          doc.line(limL, y_d, limR, y_d);
+          doc.setTextColor(100, 100, 100);
+          doc.text(`d=${r.d.toFixed(0)}`, limR + 1, y_d + 0.8);
+
+          // Tension rebars (gold circles)
+          const r_bar = Math.max(0.7, (r.db / 2) * scale);
+          const innerW = w_draw - 2 * (r.cc + r.ds + r.db/2) * scale;
+          const tensionY = y_f + r.d * scale;
+          if (r.n_bars > 0) {
+            const x_start = 50 - w_draw/2 + (r.cc + r.ds + r.db/2) * scale;
+            const spacing = r.n_bars > 1 ? innerW / (r.n_bars - 1) : 0;
+            doc.setFillColor(217, 119, 6);
+            doc.setDrawColor(0, 0, 0);
+            doc.setLineWidth(0.15);
+            for (let k = 0; k < r.n_bars; k++) {
+              doc.circle(x_start + k * spacing, tensionY, r_bar, 'FD');
             }
-          });
-        }, 150);
+          }
+
+          // Compression rebars (blue circles)
+          if (r.type === 'doubly') {
+            const r_bar_prime = Math.max(0.6, (r.db_prime / 2) * scale);
+            const compY = y_f + r.cc_prime * scale;
+            const innerW_prime = w_draw - 2 * (r.cc_prime) * scale;
+            if (r.n_bars_prime > 0) {
+              const x_start_prime = 50 - w_draw/2 + r.cc_prime * scale;
+              const spacing_prime = r.n_bars_prime > 1 ? innerW_prime / (r.n_bars_prime - 1) : 0;
+              doc.setFillColor(59, 130, 246);
+              for (let k = 0; k < r.n_bars_prime; k++) {
+                doc.circle(x_start_prime + k * spacing_prime, compY, r_bar_prime, 'FD');
+              }
+            }
+          }
+
+          // Section labels
+          doc.setTextColor(0, 0, 0);
+          doc.setFont('courier', 'normal');
+          doc.setFontSize(6.5);
+          doc.text(`b = ${r.b}mm`, 50, y_f + h_draw + 3.5, { align: 'center' });
+          doc.text(`h = ${r.h}mm`, limL - 6, 125, { angle: 90, align: 'center' });
+
+          // Strain Diagram (center at x = 110)
+          doc.setDrawColor(0, 0, 0);
+          doc.setLineWidth(0.4);
+          doc.line(110, y_f, 110, y_f + h_draw);
+          doc.polygon([[110, y_c], [102, y_f], [110, y_f]], 'S');
+          doc.polygon([[110, y_c], [120, y_d], [110, y_d]], 'S');
+          doc.setFontSize(6);
+          doc.text('0.003', 96, y_f + 1);
+          doc.text(`et=${r.eps_t.toFixed(5)}`, 121, y_d + 1);
+          doc.text('c', 111, y_c - 1);
+
+          // Stress Diagram (center at x = 160)
+          doc.line(160, y_f, 160, y_f + h_draw);
+          doc.rect(160, y_f, 10, stressBlockH);
+          // C arrow
+          doc.setDrawColor(59, 130, 246);
+          doc.line(174, y_f + stressBlockH/2, 161, y_f + stressBlockH/2);
+          doc.polygon([[161, y_f + stressBlockH/2], [163, y_f + stressBlockH/2 - 0.8], [163, y_f + stressBlockH/2 + 0.8]], 'DF');
+          doc.setTextColor(59, 130, 246);
+          doc.text('C', 176, y_f + stressBlockH/2 + 0.8);
+          // Labels
+          doc.setTextColor(0, 0, 0);
+          doc.text("0.85f'c", 161.5, y_f + 2.5);
+          doc.text(`a = ${r.a.toFixed(0)}`, 158, y_f + stressBlockH + 3.5, { align: 'right' });
+          // T arrow
+          doc.setDrawColor(217, 119, 6);
+          doc.line(151, y_d, 159, y_d);
+          doc.polygon([[159, y_d], [157, y_d - 0.8], [157, y_d + 0.8]], 'DF');
+          doc.setTextColor(217, 119, 6);
+          doc.text('T', 147, y_d + 0.8);
+          // Moment arm
+          doc.setDrawColor(100, 100, 100);
+          doc.setLineWidth(0.2);
+          doc.line(183, y_f + stressBlockH/2, 183, y_d);
+          doc.line(181.5, y_f + stressBlockH/2, 184.5, y_f + stressBlockH/2);
+          doc.line(181.5, y_d, 184.5, y_d);
+          doc.setTextColor(100, 100, 100);
+          doc.text('d - a/2', 185, (y_f + stressBlockH/2 + y_d)/2 + 0.8);
+
+          // Clear spacing text below
+          cy = 160;
+          const pageContent = pages[i].querySelector('.report-content').innerHTML;
+          // Extract text below the SVG host
+          const subText = pageContent.split('</div>').pop();
+          printText(doc, subText, 13);
+        } else {
+          // All other pages: extract and render text content
+          const pageContent = pages[i].querySelector('.report-content').innerHTML;
+          
+          // Replace <br> and other tags for splitting
+          let text = pageContent
+            .replace(/<br\s*\/?>/gi, '\n')
+            .replace(/<\/div>/gi, '</div>\n')
+            .replace(/<\/p>/gi, '</p>\n');
+          
+          // Strip out HTML tags except section headers
+          text = text.replace(/<(?!div|\/div).*?>/g, '');
+          
+          printText(doc, text, 13);
+        }
+      }
+
+      // Save PDF
+      doc.save(`twinanalytic_beam_report_${new Date().toISOString().split('T')[0]}.pdf`);
+
+      if (btn) {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
       }
     }
 
