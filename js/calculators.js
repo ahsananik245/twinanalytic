@@ -4349,11 +4349,11 @@ function downloadColumnPDF() {
     ['fc\' (concrete compressive strength)', `${fc.toFixed(2)} ksi`, ref_fc],
     ['fy (steel yield strength)', `${fy.toFixed(2)} ksi`, ref_fy],
     ['Es (modulus of elasticity, steel)', '29,000.00 ksi', ref_es],
-    ['εcu (ultimate concrete strain)', '0.00300', ref_ecu],
-    ['εy (steel yield strain = fy/Es)', `${(fy/29000).toFixed(5)}`, '—'],
-    ['β1 (stress block factor)', `${beta1.toFixed(3)}`, ref_beta1],
-    ['ϕ (strength reduction factor)', `${phi_axial.toFixed(2)}`, ref_phi],
-    ['α (additional reduction factor)', `${alpha.toFixed(2)}`, ref_alpha]
+    ['epsilon_cu (ultimate concrete strain)', '0.00300', ref_ecu],
+    ['epsilon_y (steel yield strain = fy/Es)', `${(fy/29000).toFixed(5)}`, '—'],
+    ['beta1 (stress block factor)', `${beta1.toFixed(3)}`, ref_beta1],
+    ['phi (strength reduction factor)', `${phi_axial.toFixed(2)}`, ref_phi],
+    ['alpha (additional reduction factor)', `${alpha.toFixed(2)}`, ref_alpha]
   ];
 
   doc.setFont('helvetica', 'normal');
@@ -4395,7 +4395,7 @@ function downloadColumnPDF() {
 
   doc.text('Formula:', 0.6, cy);
   doc.setFont('courier', 'normal');
-  doc.text('Ag = Pu / [α * ϕ * (0.85 * fc\' * (1 - ρg) + ρg * fy)]', 2.0, cy);
+  doc.text('Ag = Pu / [alpha * phi * (0.85 * fc\' * (1 - rho_g) + rho_g * fy)]', 2.0, cy);
   cy += 0.18;
 
   doc.setFont('helvetica', 'normal');
@@ -4407,7 +4407,7 @@ function downloadColumnPDF() {
   doc.setFont('helvetica', 'normal');
   doc.text('Result:', 0.6, cy);
   doc.setFont('helvetica', 'bold');
-  doc.text(`Ag,required = ${Ag_req.toFixed(2)} in²`, 2.0, cy);
+  doc.text(`Ag,required = ${Ag_req.toFixed(2)} in2`, 2.0, cy);
   cy += 0.25;
 
   doc.setFont('helvetica', 'bold');
@@ -4431,7 +4431,7 @@ function downloadColumnPDF() {
     doc.text(`Ag,provided = ${Dim.toFixed(1)} * ${Dim.toFixed(1)}`, 2.0, cy);
     cy += 0.16;
     doc.setFont('helvetica', 'bold');
-    doc.text(`Ag,provided = ${Ag.toFixed(2)} in²`, 2.0, cy);
+    doc.text(`Ag,provided = ${Ag.toFixed(2)} in2`, 2.0, cy);
     cy += 0.25;
   } else {
     doc.text(`Selected shape: Circular Section`, 0.6, cy);
@@ -4440,15 +4440,15 @@ function downloadColumnPDF() {
     cy += 0.16;
     doc.text('Formula:', 0.6, cy);
     doc.setFont('courier', 'normal');
-    doc.text('Ag,provided = π * D² / 4', 2.0, cy);
+    doc.text('Ag,provided = pi * D² / 4', 2.0, cy);
     cy += 0.16;
     doc.setFont('helvetica', 'normal');
     doc.text('Substitution:', 0.6, cy);
     doc.setFont('courier', 'normal');
-    doc.text(`Ag,provided = π * (${Dim.toFixed(1)})² / 4`, 2.0, cy);
+    doc.text(`Ag,provided = pi * (${Dim.toFixed(1)})² / 4`, 2.0, cy);
     cy += 0.16;
     doc.setFont('helvetica', 'bold');
-    doc.text(`Ag,provided = ${Ag.toFixed(2)} in²`, 2.0, cy);
+    doc.text(`Ag,provided = ${Ag.toFixed(2)} in2`, 2.0, cy);
     cy += 0.25;
   }
 
@@ -4470,7 +4470,7 @@ function downloadColumnPDF() {
   doc.setTextColor(60, 60, 60);
   doc.text('Formula:', 0.6, cy);
   doc.setFont('courier', 'normal');
-  doc.text('Ast,required = ρg,target * Ag,provided', 2.0, cy);
+  doc.text('Ast,required = rho_g,target * Ag,provided', 2.0, cy);
   cy += 0.16;
   doc.setFont('helvetica', 'normal');
   doc.text('Substitution:', 0.6, cy);
@@ -4478,7 +4478,7 @@ function downloadColumnPDF() {
   doc.text(`Ast,required = ${p.toFixed(3)} * ${Ag.toFixed(2)}`, 2.0, cy);
   cy += 0.16;
   doc.setFont('helvetica', 'bold');
-  doc.text(`Ast,required = ${Ast_req.toFixed(2)} in²`, 2.0, cy);
+  doc.text(`Ast,required = ${Ast_req.toFixed(2)} in2`, 2.0, cy);
   cy += 0.25;
 
   doc.setFont('helvetica', 'bold');
@@ -4486,7 +4486,7 @@ function downloadColumnPDF() {
   cy += 0.16;
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(60, 60, 60);
-  doc.text(`Try ${N_bars} bars of ${mainBarSize} (area per bar Ab = ${Ab.toFixed(2)} in², dia db = ${mainBarDia.toFixed(3)} in)`, 0.6, cy);
+  doc.text(`Try ${N_bars} bars of ${mainBarSize} (area per bar Ab = ${Ab.toFixed(2)} in2, dia db = ${mainBarDia.toFixed(3)} in)`, 0.6, cy);
   cy += 0.16;
   doc.text('Formula:', 0.6, cy);
   doc.setFont('courier', 'normal');
@@ -4498,7 +4498,7 @@ function downloadColumnPDF() {
   doc.text(`Ast,provided = ${N_bars} * ${Ab.toFixed(2)}`, 2.0, cy);
   cy += 0.16;
   doc.setFont('helvetica', 'bold');
-  doc.text(`Ast,provided = ${Ast_actual.toFixed(2)} in²`, 2.0, cy);
+  doc.text(`Ast,provided = ${Ast_actual.toFixed(2)} in2`, 2.0, cy);
   cy += 0.25;
 
   doc.setFont('helvetica', 'bold');
@@ -4508,20 +4508,20 @@ function downloadColumnPDF() {
   doc.setTextColor(60, 60, 60);
   doc.text('Formula:', 0.6, cy);
   doc.setFont('courier', 'normal');
-  doc.text('ρg,actual = Ast,provided / Ag,provided', 2.0, cy);
+  doc.text('rho_g,actual = Ast,provided / Ag,provided', 2.0, cy);
   cy += 0.16;
   doc.setFont('helvetica', 'normal');
   doc.text('Substitution:', 0.6, cy);
   doc.setFont('courier', 'normal');
-  doc.text(`ρg,actual = ${Ast_actual.toFixed(2)} / ${Ag.toFixed(2)}`, 2.0, cy);
+  doc.text(`rho_g,actual = ${Ast_actual.toFixed(2)} / ${Ag.toFixed(2)}`, 2.0, cy);
   cy += 0.16;
   doc.setFont('helvetica', 'bold');
-  doc.text(`ρg,actual = ${p_actual.toFixed(5)}`, 2.0, cy);
+  doc.text(`rho_g,actual = ${p_actual.toFixed(5)}`, 2.0, cy);
   cy += 0.16;
 
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(isRatioOk ? 30 : 200, isRatioOk ? 150 : 30, 30);
-  doc.text(`Limits Check: 0.01 <= ρg <= 0.08 -> ${isRatioOk ? 'PASS ✓' : 'FAIL ✗'}`, 0.6, cy);
+  doc.text(`Limits Check: 0.01 <= rho_g <= 0.08 -> ${isRatioOk ? 'PASS ✓' : 'FAIL ✗'}`, 0.6, cy);
   cy += 0.25;
 
   doc.setFont('helvetica', 'bold');
@@ -4545,13 +4545,13 @@ function downloadColumnPDF() {
   } else {
     doc.text('Formula:', 0.6, cy);
     doc.setFont('courier', 'normal');
-    doc.text('s_clear = [π * (D - 2*cover - 2*d_tie - db) / N_bars] - db', 2.0, cy);
+    doc.text('s_clear = [pi * (D - 2*cover - 2*d_tie - db) / N_bars] - db', 2.0, cy);
     cy += 0.16;
     doc.setFont('helvetica', 'normal');
     doc.text('Substitution:', 0.6, cy);
     doc.setFont('courier', 'normal');
     const Ds = Dim - 2 * cover - 2 * d_tie - mainBarDia;
-    doc.text(`s_clear = [π * ${Ds.toFixed(2)} / ${N_bars}] - ${mainBarDia.toFixed(3)}`, 2.0, cy);
+    doc.text(`s_clear = [pi * ${Ds.toFixed(2)} / ${N_bars}] - ${mainBarDia.toFixed(3)}`, 2.0, cy);
     cy += 0.16;
   }
   doc.setFont('helvetica', 'bold');
@@ -4594,7 +4594,7 @@ function downloadColumnPDF() {
   doc.setFont('helvetica', 'normal');
   doc.text('Factored capacity:', 0.6, cy);
   doc.setFont('courier', 'normal');
-  doc.text('α * ϕ * Pn', 2.0, cy);
+  doc.text('alpha * phi * Pn', 2.0, cy);
   cy += 0.16;
   doc.setFont('helvetica', 'normal');
   doc.text('Substitution:', 0.6, cy);
@@ -4603,15 +4603,15 @@ function downloadColumnPDF() {
   cy += 0.16;
 
   doc.setFont('helvetica', 'bold');
-  doc.text(`α * ϕ * Pn = ${alpha_phi_Pn.toFixed(1)} kips`, 2.0, cy);
+  doc.text(`alpha * phi * Pn = ${alpha_phi_Pn.toFixed(1)} kips`, 2.0, cy);
   cy += 0.18;
 
   doc.setTextColor(isAxialOk ? 30 : 200, isAxialOk ? 150 : 30, 30);
-  doc.text(`Check: Pu <= α * ϕ * Pn -> ${Pu.toFixed(1)} kips <= ${alpha_phi_Pn.toFixed(1)} kips -> ${isAxialOk ? 'PASS ✓' : 'FAIL ✗'}`, 0.6, cy);
+  doc.text(`Check: Pu <= alpha * phi * Pn -> ${Pu.toFixed(1)} kips <= ${alpha_phi_Pn.toFixed(1)} kips -> ${isAxialOk ? 'PASS ✓' : 'FAIL ✗'}`, 0.6, cy);
   cy += 0.18;
 
   doc.setTextColor(axialDcr <= 1.0 ? 30 : 200, axialDcr <= 1.0 ? 150 : 30, 30);
-  doc.text(`DCR = Pu / (α * ϕ * Pn) = ${axialDcr.toFixed(3)}`, 0.6, cy);
+  doc.text(`DCR = Pu / (alpha * phi * Pn) = ${axialDcr.toFixed(3)}`, 0.6, cy);
   cy += 0.25;
 
   // ==========================================
@@ -4674,26 +4674,26 @@ function downloadColumnPDF() {
     doc.setFont('helvetica', 'normal');
     doc.text(`Core diameter: dc = Dim - 2*cover = ${Dim.toFixed(1)} - 2*${cover.toFixed(1)} = ${dc.toFixed(2)} in`, 0.6, cy);
     cy += 0.16;
-    doc.text(`Core area: Ac = π/4 * dc² = π/4 * (${dc.toFixed(2)})² = ${Ac.toFixed(2)} in²`, 0.6, cy);
+    doc.text(`Core area: Ac = pi/4 * dc² = pi/4 * (${dc.toFixed(2)})² = ${Ac.toFixed(2)} in2`, 0.6, cy);
     cy += 0.16;
 
     doc.text('Formula for min spiral ratio:', 0.6, cy);
     doc.setFont('courier', 'normal');
-    doc.text('ρs,min = 0.45 * (Ag/Ac - 1) * (fc\'/fyt)', 2.0, cy);
+    doc.text('rho_s,min = 0.45 * (Ag/Ac - 1) * (fc\'/fyt)', 2.0, cy);
     cy += 0.16;
     doc.setFont('helvetica', 'normal');
     doc.text('Substitution:', 0.6, cy);
     doc.setFont('courier', 'normal');
-    doc.text(`ρs,min = 0.45 * (${Ag.toFixed(2)}/${Ac.toFixed(2)} - 1) * (${fc.toFixed(2)}/${fyt.toFixed(2)})`, 2.0, cy);
+    doc.text(`rho_s,min = 0.45 * (${Ag.toFixed(2)}/${Ac.toFixed(2)} - 1) * (${fc.toFixed(2)}/${fyt.toFixed(2)})`, 2.0, cy);
     cy += 0.16;
     doc.setFont('helvetica', 'bold');
-    doc.text(`ρs,min = ${rho_s_min.toFixed(5)}`, 2.0, cy);
+    doc.text(`rho_s,min = ${rho_s_min.toFixed(5)}`, 2.0, cy);
     cy += 0.20;
 
     doc.setFont('helvetica', 'normal');
     doc.text('Required spiral pitch:', 0.6, cy);
     doc.setFont('courier', 'normal');
-    doc.text('s = 4 * Asp / (ρs,min * dc)', 2.0, cy);
+    doc.text('s = 4 * Asp / (rho_s,min * dc)', 2.0, cy);
     cy += 0.16;
     doc.setFont('helvetica', 'normal');
     doc.text('Substitution:', 0.6, cy);
@@ -4762,7 +4762,7 @@ function downloadColumnPDF() {
     doc.setTextColor(60, 60, 60);
     doc.text('Formula:', 0.6, cy);
     doc.setFont('courier', 'normal');
-    doc.text('cb = [0.003 / (0.003 + εy)] * d', 2.0, cy);
+    doc.text('cb = [0.003 / (0.003 + epsilon_y)] * d', 2.0, cy);
     cy += 0.16;
     doc.setFont('helvetica', 'normal');
     doc.text('Substitution:', 0.6, cy);
@@ -4773,7 +4773,7 @@ function downloadColumnPDF() {
     doc.text(`cb = ${cb.toFixed(2)} in`, 2.0, cy);
     cy += 0.18;
     doc.setFont('helvetica', 'normal');
-    doc.text(`ab = β1 * cb = ${beta1.toFixed(3)} * ${cb.toFixed(2)} = ${ab.toFixed(2)} in`, 0.6, cy);
+    doc.text(`ab = beta1 * cb = ${beta1.toFixed(3)} * ${cb.toFixed(2)} = ${ab.toFixed(2)} in`, 0.6, cy);
     cy += 0.25;
 
     // 9.3 Balanced eccentricity
@@ -4847,13 +4847,13 @@ function downloadColumnPDF() {
     doc.setTextColor(60, 60, 60);
     doc.text(`Neutral axis depth c = ${c_solved.toFixed(2)} in`, 0.6, cy);
     cy += 0.16;
-    doc.text(`Compression steel strain ε's = 0.003 * (c - d') / c = ${eps_prime.toFixed(5)}`, 0.6, cy);
+    doc.text(`Compression steel strain epsilon_prime_s = 0.003 * (c - d') / c = ${eps_prime.toFixed(5)}`, 0.6, cy);
     cy += 0.16;
-    doc.text(`Tension steel strain εs = 0.003 * (d - c) / c = ${eps_t.toFixed(5)}`, 0.6, cy);
+    doc.text(`Tension steel strain epsilon_s = 0.003 * (d - c) / c = ${eps_t.toFixed(5)}`, 0.6, cy);
     cy += 0.16;
-    doc.text(`Compression steel stress f's = Es * ε's = ${f_prime_s.toFixed(2)} ksi`, 0.6, cy);
+    doc.text(`Compression steel stress f's = Es * epsilon_prime_s = ${f_prime_s.toFixed(2)} ksi`, 0.6, cy);
     cy += 0.16;
-    doc.text(`Tension steel stress fs = Es * εs = ${f_s.toFixed(2)} ksi`, 0.6, cy);
+    doc.text(`Tension steel stress fs = Es * epsilon_s = ${f_s.toFixed(2)} ksi`, 0.6, cy);
     cy += 0.16;
     doc.text(`Concrete compression force C = ${Cc.toFixed(1)} kips`, 0.6, cy);
     cy += 0.18;
@@ -4864,12 +4864,12 @@ function downloadColumnPDF() {
     doc.setFont('helvetica', 'bold');
     const isP_ok = phiPn_sol >= Pu;
     doc.setTextColor(isP_ok ? 30 : 200, isP_ok ? 150 : 30, 30);
-    doc.text(`Check: ϕPn >= Pu -> ${phiPn_sol.toFixed(1)} kips >= ${Pu.toFixed(1)} kips -> ${isP_ok ? 'PASS ✓' : 'FAIL ✗'}`, 0.6, cy);
+    doc.text(`Check: phiPn >= Pu -> ${phiPn_sol.toFixed(1)} kips >= ${Pu.toFixed(1)} kips -> ${isP_ok ? 'PASS ✓' : 'FAIL ✗'}`, 0.6, cy);
     cy += 0.16;
 
     const isM_ok = phiMn_sol >= Mu;
     doc.setTextColor(isM_ok ? 30 : 200, isM_ok ? 150 : 30, 30);
-    doc.text(`Check: ϕMn >= Mu -> ${phiMn_sol.toFixed(1)} kip-ft >= ${Mu.toFixed(1)} kip-ft -> ${isM_ok ? 'PASS ✓' : 'FAIL ✗'}`, 0.6, cy);
+    doc.text(`Check: phiMn >= Mu -> ${phiMn_sol.toFixed(1)} kip-ft >= ${Mu.toFixed(1)} kip-ft -> ${isM_ok ? 'PASS ✓' : 'FAIL ✗'}`, 0.6, cy);
     cy += 0.25;
   } else {
     doc.setFont('helvetica', 'italic');
@@ -4939,7 +4939,7 @@ function downloadColumnPDF() {
     const isBiaxialOk = Pu <= phiPni;
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(isBiaxialOk ? 30 : 200, isBiaxialOk ? 150 : 30, 30);
-    doc.text(`Check: Pu <= ϕ * Pni -> ${Pu.toFixed(1)} kips <= ${phiPni.toFixed(1)} kips -> ${isBiaxialOk ? 'PASS ✓' : 'FAIL ✗'}`, 0.6, cy);
+    doc.text(`Check: Pu <= phi * Pni -> ${Pu.toFixed(1)} kips <= ${phiPni.toFixed(1)} kips -> ${isBiaxialOk ? 'PASS ✓' : 'FAIL ✗'}`, 0.6, cy);
     cy += 0.25;
   } else {
     doc.setFont('helvetica', 'italic');
@@ -4967,23 +4967,81 @@ function downloadColumnPDF() {
   doc.setFontSize(8.5);
   doc.setTextColor(60, 60, 60);
 
-  doc.text('Formula:', 0.6, cy);
-  doc.setFont('courier', 'normal');
-  doc.text('Vc = 2 * [1 + Nu/(2000*Ag)] * √fc\' * b * d', 2.0, cy);
-  cy += 0.16;
+  let Vc_val = Vc;
+  let d_shear_val = d_eff;
 
-  doc.setFont('helvetica', 'normal');
-  doc.text('Substitution:', 0.6, cy);
-  doc.setFont('courier', 'normal');
-  doc.text(`Vc = 2 * [1 + ${Pu_lbs.toFixed(0)}/(2000*${Ag.toFixed(1)})] * √${(fc*1000).toFixed(0)} * ${Dim.toFixed(1)} * ${d_eff.toFixed(2)} / 1000`, 2.0, cy);
-  cy += 0.16;
+  if (type === 'TIED') {
+    doc.text('Formula:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('Vc = 2 * [1 + Nu/(2000*Ag)] * sqrt(fc\') * b * d / 1000', 2.0, cy);
+    cy += 0.16;
+
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`Vc = 2 * [1 + ${Pu_lbs.toFixed(0)}/(2000*${Ag.toFixed(1)})] * sqrt(${(fc*1000).toFixed(0)}) * ${Dim.toFixed(1)} * ${d_eff.toFixed(2)} / 1000`, 2.0, cy);
+    cy += 0.16;
+  } else {
+    // Spiral circular column (Correction 2)
+    const d_circ = Dim - cover - d_tie - mainBarDia / 2;
+    const bw_circ = 0.8 * Dim;
+    d_shear_val = d_circ;
+    
+    // Recalculate Vc for spiral column using exact bw and d
+    Vc_val = 2 * (1 + Pu_lbs / (2000 * Ag)) * Math.sqrt(fc * 1000) * bw_circ * d_circ / 1000;
+
+    doc.text('Effective depth:', 0.6, cy);
+    cy += 0.16;
+    doc.text('Formula:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('d = D - cover - d_spiral - db_long/2', 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`d = ${Dim.toFixed(1)} - 1.5 - ${d_tie.toFixed(3)} - ${(mainBarDia/2).toFixed(3)}`, 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`d = ${d_circ.toFixed(2)} in`, 2.0, cy);
+    cy += 0.20;
+
+    doc.setFont('helvetica', 'normal');
+    doc.text('Effective web width (circular approximation):', 0.6, cy);
+    cy += 0.16;
+    doc.text('Formula:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('bw = 0.8 * D', 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`bw = 0.8 * ${Dim.toFixed(1)}`, 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`bw = ${bw_circ.toFixed(2)} in`, 2.0, cy);
+    cy += 0.20;
+
+    doc.setFont('helvetica', 'normal');
+    doc.text('Formula:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('Vc = 2 * [1 + Nu/(2000*Ag)] * sqrt(fc\'*1000) * bw * d / 1000', 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`Vc = 2 * [1 + ${Pu_lbs.toFixed(0)}/(2000*${Ag.toFixed(1)})] * sqrt(${(fc*1000).toFixed(0)}) * ${bw_circ.toFixed(2)} * ${d_circ.toFixed(2)} / 1000`, 2.0, cy);
+    cy += 0.16;
+  }
+
+  // Update outer Vc if circular
+  const Vc_final = type === 'TIED' ? Vc : Vc_val;
 
   doc.setFont('helvetica', 'bold');
-  doc.text(`Vc = ${Vc.toFixed(1)} kips`, 2.0, cy);
+  doc.text(`Vc = ${Vc_final.toFixed(1)} kips`, 2.0, cy);
   cy += 0.18;
 
   doc.setFont('helvetica', 'normal');
-  doc.text(`ϕVc = 0.75 * ${Vc.toFixed(1)} = ${(0.75*Vc).toFixed(1)} kips`, 0.6, cy);
+  doc.text(`phi * Vc = 0.75 * ${Vc_final.toFixed(1)} = ${(0.75*Vc_final).toFixed(1)} kips`, 0.6, cy);
   cy += 0.20;
 
   doc.setFont('helvetica', 'bold');
@@ -4992,12 +5050,23 @@ function downloadColumnPDF() {
 
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(60, 60, 60);
-  doc.text(`Case A: Vu <= ϕVc/2 = ${(0.375*Vc).toFixed(1)} kips (No shear steel needed)`, 0.6, cy);
+  doc.text(`Case A: Vu <= phi * Vc/2 = ${(0.375*Vc_final).toFixed(1)} kips (No shear steel needed)`, 0.6, cy);
   cy += 0.16;
-  doc.text(`Case B: ϕVc/2 < Vu <= ϕVc = ${(0.75*Vc).toFixed(1)} kips (Minimum shear steel required)`, 0.6, cy);
+  doc.text(`Case B: phi * Vc/2 < Vu <= phi * Vc = ${(0.75*Vc_final).toFixed(1)} kips (Minimum shear steel required)`, 0.6, cy);
   cy += 0.16;
-  doc.text(`Case C: Vu > ϕVc = ${(0.75*Vc).toFixed(1)} kips (Shear reinforcement required)`, 0.6, cy);
+  doc.text(`Case C: Vu > phi * Vc = ${(0.75*Vc_final).toFixed(1)} kips (Shear reinforcement required)`, 0.6, cy);
   cy += 0.18;
+
+  // Re-evaluate shear spacing for spiral/circular with the new Vc and d values
+  let vs_req_final = Vs_req;
+  let s_shear_final = s_shear;
+  if (shearCase === 'C') {
+    vs_req_final = (vu / phi_v) - Vc_final;
+    s_shear_final = (2 * A_tie * fyt * d_shear_val) / vs_req_final;
+    const av_s_min = Math.max(0.75 * Math.sqrt(fc * 1000) * Dim / (fyt * 1000), 50 * Dim / (fyt * 1000));
+    const s_min_shear = (2 * A_tie) / av_s_min;
+    s_shear_final = Math.min(s_shear_final, s_min_shear);
+  }
 
   doc.setFont('helvetica', 'bold');
   doc.text(`Governing Case: Case ${shearCase}`, 0.6, cy);
@@ -5007,15 +5076,15 @@ function downloadColumnPDF() {
     doc.setFont('helvetica', 'normal');
     doc.text('Formula for required shear strength Vs:', 0.6, cy);
     doc.setFont('courier', 'normal');
-    doc.text('Vs = (Vu - ϕVc) / ϕ', 2.0, cy);
+    doc.text('Vs = (Vu - phi * Vc) / phi', 2.0, cy);
     cy += 0.16;
     doc.setFont('helvetica', 'normal');
     doc.text('Substitution:', 0.6, cy);
     doc.setFont('courier', 'normal');
-    doc.text(`Vs = (${vu.toFixed(1)} - ${(0.75*Vc).toFixed(1)}) / 0.75`, 2.0, cy);
+    doc.text(`Vs = (${vu.toFixed(1)} - ${(0.75*Vc_final).toFixed(1)}) / 0.75`, 2.0, cy);
     cy += 0.16;
     doc.setFont('helvetica', 'bold');
-    doc.text(`Vs = ${Vs_req.toFixed(1)} kips`, 2.0, cy);
+    doc.text(`Vs = ${vs_req_final.toFixed(1)} kips`, 2.0, cy);
     cy += 0.20;
 
     doc.setFont('helvetica', 'normal');
@@ -5026,15 +5095,15 @@ function downloadColumnPDF() {
     doc.setFont('helvetica', 'normal');
     doc.text('Substitution:', 0.6, cy);
     doc.setFont('courier', 'normal');
-    doc.text(`Av/s = ${Vs_req.toFixed(1)} / (${fyt.toFixed(1)} * ${d_eff.toFixed(2)})`, 2.0, cy);
+    doc.text(`Av/s = ${vs_req_final.toFixed(1)} / (${fyt.toFixed(1)} * ${d_shear_val.toFixed(2)})`, 2.0, cy);
     cy += 0.16;
-    const avs_val = Vs_req / (fyt * d_eff);
+    const avs_val = vs_req_final / (fyt * d_shear_val);
     doc.setFont('helvetica', 'bold');
-    doc.text(`Av/s = ${avs_val.toFixed(4)} in²/in`, 2.0, cy);
+    doc.text(`Av/s = ${avs_val.toFixed(4)} in2/in`, 2.0, cy);
     cy += 0.20;
 
     doc.setFont('helvetica', 'normal');
-    doc.text(`Using tie size ${tieBarSize} (Av = ${(2*A_tie).toFixed(2)} in²):`, 0.6, cy);
+    doc.text(`Using tie size ${tieBarSize} (Av = ${(2*A_tie).toFixed(2)} in2):`, 0.6, cy);
     cy += 0.16;
     doc.text('Required spacing:', 0.6, cy);
     doc.setFont('courier', 'normal');
@@ -5046,10 +5115,10 @@ function downloadColumnPDF() {
     doc.text(`s = ${(2*A_tie).toFixed(2)} / ${avs_val.toFixed(4)}`, 2.0, cy);
     cy += 0.16;
     doc.setFont('helvetica', 'bold');
-    doc.text(`s = ${s_shear.toFixed(2)} in`, 2.0, cy);
+    doc.text(`s = ${s_shear_final.toFixed(2)} in`, 2.0, cy);
     cy += 0.20;
   }
-
+  
   // ==========================================
   // PAGE 6: SLENDERNESS, DETAILING NOTES
   // ==========================================
@@ -5235,12 +5304,159 @@ function downloadColumnPDF() {
   }
   cy += 0.15;
 
+  // SECTION 12.6 (Correction 3)
+  const d_eff_min = Dim - cover - d_tie - mainBarDia / 2;
+  const a_est = 0.2 * d_eff_min;
+  const c_est = a_est / beta1;
+  const C_est = 0.85 * fc * a_est * Dim;
+  const Mn_est = C_est * (d_eff_min - a_est / 2) / 12;
+  const phiMn_est = 0.9 * Mn_est;
+
+  checkPageBreak(doc, 2.5);
+  doc.setFont('times', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(201, 168, 76);
+  doc.text('12.6 Moment Capacity for Minimum Eccentricity Check:', 0.5, cy);
+  cy += 0.16;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(60, 60, 60);
+
+  if (type === 'SPIRAL') {
+    doc.text('Effective depth (circular):', 0.6, cy);
+    cy += 0.15;
+    doc.text('Formula:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('d = D - cover - d_spiral - db/2', 2.0, cy);
+    cy += 0.15;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`d = ${Dim.toFixed(1)} - ${cover.toFixed(1)} - ${d_tie.toFixed(3)} - ${(mainBarDia/2).toFixed(3)}`, 2.0, cy);
+  } else {
+    doc.text('Effective depth (rectangular):', 0.6, cy);
+    cy += 0.15;
+    doc.text('Formula:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('d = h - cover - d_tie - db/2', 2.0, cy);
+    cy += 0.15;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`d = ${Dim.toFixed(1)} - ${cover.toFixed(1)} - ${d_tie.toFixed(3)} - ${(mainBarDia/2).toFixed(3)}`, 2.0, cy);
+  }
+  cy += 0.15;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`d = ${d_eff_min.toFixed(2)} in`, 2.0, cy);
+  cy += 0.20;
+
+  doc.setFont('helvetica', 'normal');
+  doc.text('Neutral axis depth (approximate for pure moment):', 0.6, cy);
+  cy += 0.15;
+  doc.text(`Assume a = 0.2 * d = 0.2 * ${d_eff_min.toFixed(2)} = ${a_est.toFixed(2)} in`, 0.6, cy);
+  cy += 0.15;
+  doc.text(`c = a / beta1 = ${a_est.toFixed(2)} / ${beta1.toFixed(3)} = ${c_est.toFixed(2)} in`, 0.6, cy);
+  cy += 0.20;
+
+  doc.text('Compression force:', 0.6, cy);
+  cy += 0.15;
+  doc.text('Formula:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text('C = 0.85 * fc\' * a * b', 2.0, cy);
+  cy += 0.15;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Substitution:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`C = 0.85 * ${fc.toFixed(2)} * ${a_est.toFixed(2)} * ${Dim.toFixed(1)}`, 2.0, cy);
+  cy += 0.15;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`C = ${C_est.toFixed(1)} kips`, 2.0, cy);
+  cy += 0.20;
+
+  doc.setFont('helvetica', 'normal');
+  doc.text('Moment capacity:', 0.6, cy);
+  cy += 0.15;
+  doc.text('Formula:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text('Mn = C * (d - a/2) / 12', 2.0, cy);
+  cy += 0.15;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Substitution:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`Mn = ${C_est.toFixed(1)} * (${d_eff_min.toFixed(2)} - ${(a_est/2).toFixed(2)}) / 12`, 2.0, cy);
+  cy += 0.15;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Mn = ${Mn_est.toFixed(2)} kip-ft`, 2.0, cy);
+  cy += 0.20;
+
+  doc.setFont('helvetica', 'normal');
+  doc.text('Factored moment capacity:', 0.6, cy);
+  cy += 0.15;
+  doc.text('Formula:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text('phi * Mn = 0.9 * Mn', 2.0, cy);
+  cy += 0.15;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Substitution:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`phi * Mn = 0.9 * ${Mn_est.toFixed(2)}`, 2.0, cy);
+  cy += 0.15;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`phi * Mn = ${phiMn_est.toFixed(2)} kip-ft`, 2.0, cy);
+  cy += 0.20;
+
+  const isMinMnOk = phiMn_est >= Mc_min;
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(isMinMnOk ? 30 : 200, isMinMnOk ? 150 : 30, 30);
+  doc.text(`Check: phi * Mn >= Mc -> ${phiMn_est.toFixed(2)} kip-ft >= ${Mc_min.toFixed(2)} kip-ft -> ${isMinMnOk ? 'PASS ✓' : 'FAIL ✗'}`, 0.6, cy);
+  cy += 0.25;
+  doc.setTextColor(60, 60, 60);
+
   // SECTION 13
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   doc.setTextColor(201, 168, 76);
   doc.text('SECTION 13 — REINFORCEMENT DETAILING SCHEDULE', 0.5, cy);
   cy += 0.15;
+
+  let transQty = 0;
+  let transLen = 0;
+  let L_spiral = 0;
+  const lu_in = colHeight * 12;
+  const dc = Dim - 2 * cover;
+  if (type === 'TIED') {
+    transQty = Math.floor(colHeight * 12 / s_final) + 1;
+    const L_tie = 4 * (Dim - 2 * cover) + 2 * hookExtension;
+    transLen = L_tie / 12;
+  } else {
+    L_spiral = (lu_in / s_final) * Math.PI * dc / 12;
+    transLen = L_spiral; // for compatibility
+  }
+
+  const ld_comp_ft = Math.max((20 * fy * mainBarDia) / Math.sqrt(fc * 1000), 0.3 * fy * mainBarDia, 8.0) / 12;
+  const l_splice_ft = Math.max(1.0, 1.3 * ld_comp_ft);
+  const longBarLen = colHeight + l_splice_ft;
+
+  if (type === 'SPIRAL') {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(60, 60, 60);
+    doc.text('Spiral Length Calculation:', 0.6, cy);
+    cy += 0.16;
+    doc.text('Formula:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('L_spiral = (lu_in / s_pitch) * pi * dc / 12', 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`L_spiral = (${lu_in.toFixed(1)} / ${s_final.toFixed(2)}) * 3.1416 * ${dc.toFixed(2)} / 12`, 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`L_spiral = ${L_spiral.toFixed(2)} ft`, 2.0, cy);
+    cy += 0.25;
+  }
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8.5);
@@ -5249,8 +5465,13 @@ function downloadColumnPDF() {
   doc.rect(0.5, cy, 7.5, 0.22, 'F');
   doc.text('Mark', 0.6, cy + 0.15);
   doc.text('Bar Size', 1.5, cy + 0.15);
-  doc.text('No. of Bars', 2.8, cy + 0.15);
-  doc.text('Length (ft)', 4.2, cy + 0.15);
+  if (type === 'TIED') {
+    doc.text('No. of Bars', 2.8, cy + 0.15);
+    doc.text('Length (ft)', 4.2, cy + 0.15);
+  } else {
+    doc.text('Pitch (in)', 2.8, cy + 0.15);
+    doc.text('Spiral Length (ft)', 4.2, cy + 0.15);
+  }
   doc.text('Remarks', 5.5, cy + 0.15);
 
   doc.setDrawColor(200, 200, 200);
@@ -5258,29 +5479,14 @@ function downloadColumnPDF() {
   doc.line(0.5, cy + 0.22, 8.0, cy + 0.22);
   cy += 0.22;
 
-  let transQty = 0;
-  let transLen = 0;
-  if (type === 'TIED') {
-    transQty = Math.floor(colHeight * 12 / s_final) + 1;
-    const L_tie = 4 * (Dim - 2 * cover) + 2 * hookExtension;
-    transLen = L_tie / 12;
-  } else {
-    const Dc = Dim - 2 * cover;
-    const Ds = Dc - d_tie;
-    const L_turn = Math.sqrt(Math.PI * Math.PI * Ds * Ds + s_final * s_final);
-    transQty = (colHeight * 12 / s_final) + 3.0; // turns
-    transLen = L_turn / 12;
-  }
-
-  const ld_comp_ft = Math.max((20 * fy * mainBarDia) / Math.sqrt(fc * 1000), 0.3 * fy * mainBarDia, 8.0) / 12;
-  const l_splice_ft = Math.max(1.0, 1.3 * ld_comp_ft);
-  const longBarLen = colHeight + l_splice_ft;
-
-  const detailingRows = [
+  const detailingRows = type === 'TIED' ? [
     ['L1', mainBarSize, `${N_bars}`, `${longBarLen.toFixed(2)} ft`, 'Longitudinal Bars'],
-    [type === 'TIED' ? 'T1' : 'S1', tieBarSize, `${type === 'TIED' ? transQty : transQty.toFixed(1) + ' turns'}`, `${transLen.toFixed(2)} ft`, type === 'TIED' ? 'Ties / Stirrups' : 'Spiral']
+    ['T1', tieBarSize, `${transQty}`, `${transLen.toFixed(2)} ft`, 'Ties / Stirrups']
+  ] : [
+    ['L1', mainBarSize, '—', `${longBarLen.toFixed(2)} ft`, 'Longitudinal Bars'],
+    ['S1', tieBarSize, `${s_final.toFixed(2)} in`, `${L_spiral.toFixed(2)} ft`, 'Spiral reinf.']
   ];
-
+  
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(60, 60, 60);
@@ -5308,7 +5514,7 @@ function downloadColumnPDF() {
   cy += 0.14;
   doc.text('* All deformed bars to ASTM A615 Grade 60', 0.6, cy);
   cy += 0.25;
-
+  
   // ==========================================
   // PAGE 7: SUMMARY, DRAWINGS, REFERENCES
   // ==========================================
@@ -5339,28 +5545,21 @@ function downloadColumnPDF() {
   doc.line(0.5, cy + 0.22, 8.0, cy + 0.22);
   cy += 0.22;
 
-  const res_min_e = solveUniaxial(isSlender ? delta_ns * e_min : e_min, 'x');
-  const phiMn_min = res_min_e.phi * res_min_e.Mn;
-
   const Mu_d = Math.sqrt(mux * mux + muy * muy);
   const phiMn_d = mux > 0 || muy > 0 ? (res_sol.phi * res_sol.Mn) : 0;
 
   const summaryRows = [
-    ['Axial capacity Pu <= α·ϕ·Pn', `${Pu.toFixed(1)} kips`, `${(res_sol.Pn * res_sol.phi).toFixed(1)} kips`, (Pu <= res_sol.Pn * res_sol.phi) ? '✓ PASS' : '✗ FAIL'],
-    ['Moment capacity Mu <= ϕ·Mn', `${Mu_d.toFixed(1)} kip-ft`, `${phiMn_d.toFixed(1)} kip-ft`, (mux === 0 && muy === 0) ? 'N/A' : (Mu_d <= phiMn_d) ? '✓ PASS' : '✗ FAIL'],
-    ['Min eccentricity Mc', `${Mc_min.toFixed(2)} kip-ft`, `${phiMn_min.toFixed(2)} kip-ft`, (phiMn_min >= Mc_min) ? '✓ PASS' : '✗ FAIL'],
-    ['Shear capacity Vu <= ϕ·Vc', `${vu.toFixed(1)} kips`, `${(0.75 * Vc).toFixed(1)} kips`, (vu <= 0.75 * Vc) ? '✓ PASS' : '✗ FAIL'],
-    ['Steel ratio 0.01 <= ρg <= 0.08', '0.010 to 0.080', `${p_actual.toFixed(4)}`, isRatioOk ? '✓ PASS' : '✗ FAIL'],
+    ['Axial capacity Pu <= alpha * phi * Pn', `${Pu.toFixed(1)} kips`, `${(res_sol.Pn * res_sol.phi).toFixed(1)} kips`, (Pu <= res_sol.Pn * res_sol.phi) ? '✓ PASS' : '✗ FAIL'],
+    ['Moment capacity Mu <= phi * Mn', `${Mu_d.toFixed(1)} kip-ft`, `${phiMn_d.toFixed(1)} kip-ft`, (mux === 0 && muy === 0) ? 'N/A' : (Mu_d <= phiMn_d) ? '✓ PASS' : '✗ FAIL'],
+    ['Min eccentricity Mc', `${Mc_min.toFixed(2)} kip-ft`, `${phiMn_est.toFixed(2)} kip-ft`, (phiMn_est >= Mc_min) ? '✓ PASS' : '✗ FAIL'],
+    ['Shear capacity Vu <= phi * Vc', `${vu.toFixed(1)} kips`, `${(0.75 * Vc_final).toFixed(1)} kips`, (vu <= 0.75 * Vc_final) ? '✓ PASS' : '✗ FAIL'],
+    ['Steel ratio 0.01 <= rho_g <= 0.08', '0.010 to 0.080', `${p_actual.toFixed(4)}`, isRatioOk ? '✓ PASS' : '✗ FAIL'],
     ['Tie spacing (ACI limits)', `${s_limit.toFixed(2)} in`, `${s_final.toFixed(2)} in`, (s_final <= s_limit) ? '✓ PASS' : '✗ FAIL'],
-    ['DCR (Pu / α·ϕ·Pn)', '<= 1.00', `${dcRatio.toFixed(3)}`, dcRatio <= 1.00 ? '✓ PASS' : '✗ FAIL'],
-    ['Slenderness', 'Short/Slender', isSlender ? 'Slender' : 'Short', isSlender ? ('Slender — delta_ns = ' + delta_ns.toFixed(3) + ' applied') : 'Short — no magnification']
+    ['DCR (Pu / (alpha * phi * Pn))', '<= 1.00', `${dcRatio.toFixed(3)}`, dcRatio <= 1.00 ? '✓ PASS' : '✗ FAIL'],
+    ['Slenderness', 'Short/Slender', isSlender ? 'Slender' : 'Short', isSlender ? ('Slender, delta_ns=' + delta_ns.toFixed(3)) : 'Short — no magnification']
   ];
 
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.setTextColor(60, 60, 60);
-
-  summaryRows.forEach(([check, req, prov, stat]) => {
+    summaryRows.forEach(([check, req, prov, stat]) => {
     doc.text(check, 0.6, cy + 0.15);
     doc.text(req, 3.0, cy + 0.15);
     doc.text(prov, 4.8, cy + 0.15);
@@ -5380,7 +5579,7 @@ function downloadColumnPDF() {
   });
 
   cy += 0.10;
-  const overallVerdict = dcRatio <= 1.0 && isRatioOk && isSpacingOk && (vu <= 0.75 * Vc) && (phiMn_min >= Mc_min);
+  const overallVerdict = dcRatio <= 1.0 && isRatioOk && isSpacingOk && (vu <= 0.75 * Vc_final) && (phiMn_est >= Mc_min);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9.5);
   if (overallVerdict) {
@@ -5424,7 +5623,9 @@ function downloadColumnPDF() {
     `  |                             |`,
     `  |  o      o      o      o     |`,
     `  +-----------------------------+`,
-    `    Ties: ${tie_size} @ ${spacing}" c/c (ACI 25.7.2.1)`,
+    type === 'TIED' 
+      ? `    Ties: ${tie_size} @ ${spacing}" c/c (ACI 25.7.2.1)`
+      : `    Spiral: ${tie_size} @ ${spacing}" pitch (ACI 25.7.3)`,
     `    b = ${b_dim}"   h = ${h_dim}"`
   ];
 
@@ -5432,7 +5633,9 @@ function downloadColumnPDF() {
     `ELEVATION VIEW:`,
     `  |==============================|  <- Top`,
     `  | |   |   |   |   |   |   | |  `,
-    `  |-+---+---+---+---+---+---+-|  <- Tie @ ${spacing}" c/c`,
+    type === 'TIED'
+      ? `  |-+---+---+---+---+---+---+-|  <- Tie @ ${spacing}" c/c`
+      : `  |-+---+---+---+---+---+---+-|  <- Spiral @ ${spacing}" pitch`,
     `  | |   |   |   |   |   |   | |  `,
     `  |-+---+---+---+---+---+---+-|`,
     `  | |   |   |   |   |   |   | |  `,
@@ -5443,10 +5646,14 @@ function downloadColumnPDF() {
     `  klu/r = ${slenderness_ratio}`
   ];
 
-  const asciiLegend = [
+  const asciiLegend = type === 'TIED' ? [
     `LEGEND:`,
     `  o  = ${bar_size} bar  (db = ${dia_val}",  Ab = ${area_val} in2)`,
     `  -- = ${tie_size} tie  (db = ${tie_dia_val}")`
+  ] : [
+    `LEGEND:`,
+    `  o  = ${bar_size} bar  (db = ${dia_val}",  Ab = ${area_val} in2)`,
+    `  ~  = ${tie_size} spiral  (db = ${tie_dia_val}",  Asp = ${A_tie.toFixed(2)} in2)`
   ];
 
   doc.setFont('courier', 'normal');
@@ -5470,7 +5677,7 @@ function downloadColumnPDF() {
 
   cy = draw_y + 0.15;
 
-  // SECTION 16
+    // SECTION 16
   checkPageBreak(doc, 2.2);
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
@@ -5487,7 +5694,7 @@ function downloadColumnPDF() {
     '- ACI 318-14 §4.3.2 — Design loads and combinations',
     '- ACI 318-14 §20.2 — Steel material properties',
     '- ACI 318-14 §20.6.1 — Concrete cover requirements',
-    '- ACI 318-14 §21.2 — Strength reduction factors (ϕ)',
+    '- ACI 318-14 §21.2 — Strength reduction factors (phi)',
     '- ACI 318-14 §22.2 — Assumptions for flexure and axial',
     '- ACI 318-14 §22.4 — Axial strength: tied and spiral columns',
     '- ACI 318-14 §22.5 — One-way shear strength',
@@ -5499,7 +5706,7 @@ function downloadColumnPDF() {
     '- BNBC 2020 Part 6 Ch 6 — Design loads and combinations',
     '- BNBC 2020 Part 6 Ch 5 — Concrete and steel material properties',
     '- BNBC 2020 Part 6 Ch 6 — Concrete cover requirements',
-    '- BNBC 2020 Part 6 Ch 6 — Strength reduction factors (ϕ)',
+    '- BNBC 2020 Part 6 Ch 6 — Strength reduction factors (phi)',
     '- BNBC 2020 Part 6 Ch 6 — Assumptions for flexure and axial',
     '- BNBC 2020 Part 6 Ch 6 — Axial strength: tied and spiral columns',
     '- BNBC 2020 Part 6 Ch 6 — One-way shear strength',
@@ -5522,4 +5729,5 @@ function downloadColumnPDF() {
 
   doc.save(`twinanalytic_column_report_${new Date().toISOString().split('T')[0]}.pdf`);
 }
+
 
