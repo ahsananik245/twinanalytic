@@ -1927,48 +1927,6 @@
       return page;
     }
 
-    function createReportPage(pageNum, contentHtml) {
-      const projName = document.getElementById('beam-proj-name').value || "TwinAnalytic Tower";
-      const beamMark = document.getElementById('beam-mark').value || "B1";
-      const designer = document.getElementById('beam-designer').value || "AH";
-      const date = new Date().toLocaleDateString();
-
-      const page = document.createElement('div');
-      page.className = 'report-page-a4';
-      page.innerHTML = `
-        <div class="report-page-inner">
-          <!-- Header Grid -->
-          <div class="report-header-grid">
-            <div class="header-col col-brand">
-              <div class="brand-name">Twin<span>Analytic</span></div>
-              <div class="brand-sub">STRUCTURAL DESIGN GROUP</div>
-              <div class="brand-sub">ACI 318-19 COMPLIANCE</div>
-            </div>
-            <div class="header-col col-project">
-              <div><strong>PROJECT:</strong> ${projName}</div>
-              <div><strong>ELEMENT:</strong> ${beamMark} — Flexural Design</div>
-              <div><strong>CODE:</strong> ACI 318-19 / BNBC 2020</div>
-            </div>
-            <div class="header-col col-meta">
-              <div><strong>DESIGN BY:</strong> ${designer}</div>
-              <div><strong>CHECKED BY:</strong> MB</div>
-              <div><strong>DATE:</strong> ${date}</div>
-            </div>
-          </div>
-          
-          <!-- Content Area -->
-          <div class="report-content">${contentHtml}</div>
-          
-          <!-- Footer -->
-          <div class="report-footer">
-            <div class="footer-left">Calculated via TwinAnalytic — www.twinanalytic.com</div>
-            <div class="footer-right">Page ${pageNum} of 9</div>
-          </div>
-        </div>
-      `;
-      return page;
-    }
-
     function generateAndOpenReport(showModal = true) {
       const r = window.calcResults;
       if (!r) {
@@ -2566,13 +2524,17 @@ ${checkListTable}
         clonedPage.style.boxShadow = 'none';
         clonedPage.style.margin = '0';
         clonedPage.style.border = 'none';
+        clonedPage.style.display = 'block';
+        clonedPage.style.pageBreakAfter = 'always';
+        clonedPage.style.pageBreakInside = 'avoid';
         tempContainer.appendChild(clonedPage);
       });
 
       // Crucial: Append temporary container to body so styles and Courier fonts resolve properly!
-      tempContainer.style.position = 'absolute';
-      tempContainer.style.left = '-9999px';
-      tempContainer.style.top = '0';
+      tempContainer.style.position = 'fixed';
+      tempContainer.style.left = '0';
+      tempContainer.style.top = '100vh';
+      tempContainer.style.zIndex = '-9999';
       document.body.appendChild(tempContainer);
 
       const opt = {
@@ -2595,31 +2557,35 @@ ${checkListTable}
         btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating...`;
         btn.disabled = true;
 
-        html2pdf().set(opt).from(tempContainer).save().then(() => {
-          btn.innerHTML = originalText;
-          btn.disabled = false;
-          if (tempContainer.parentNode) {
-            tempContainer.parentNode.removeChild(tempContainer);
-          }
-        }).catch(err => {
-          console.error('PDF Generation Error:', err);
-          btn.innerHTML = originalText;
-          btn.disabled = false;
-          if (tempContainer.parentNode) {
-            tempContainer.parentNode.removeChild(tempContainer);
-          }
-          alert('Failed to generate PDF. Please try printing using the Print button instead.');
-        });
+        setTimeout(() => {
+          html2pdf().set(opt).from(tempContainer).save().then(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            if (tempContainer.parentNode) {
+              tempContainer.parentNode.removeChild(tempContainer);
+            }
+          }).catch(err => {
+            console.error('PDF Generation Error:', err);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            if (tempContainer.parentNode) {
+              tempContainer.parentNode.removeChild(tempContainer);
+            }
+            alert('Failed to generate PDF. Please try printing using the Print button instead.');
+          });
+        }, 150);
       } else {
-        html2pdf().set(opt).from(tempContainer).save().then(() => {
-          if (tempContainer.parentNode) {
-            tempContainer.parentNode.removeChild(tempContainer);
-          }
-        }).catch(err => {
-          if (tempContainer.parentNode) {
-            tempContainer.parentNode.removeChild(tempContainer);
-          }
-        });
+        setTimeout(() => {
+          html2pdf().set(opt).from(tempContainer).save().then(() => {
+            if (tempContainer.parentNode) {
+              tempContainer.parentNode.removeChild(tempContainer);
+            }
+          }).catch(err => {
+            if (tempContainer.parentNode) {
+              tempContainer.parentNode.removeChild(tempContainer);
+            }
+          });
+        }, 150);
       }
     }
 
