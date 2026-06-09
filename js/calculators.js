@@ -3804,17 +3804,18 @@ function downloadColumnPDF() {
   const minAllowedSpacing = Math.max(1.5, 1.5 * mainBarDia);
   const isSpacingOk = s_clear >= minAllowedSpacing;
 
-  let s_detail = 0;
+  let s_limit = 0; // Function scope for Correction 2
   let s_spiral_req = 0;
   let rho_s = 0;
   let rho_s_min = 0;
   if (type === 'TIED') {
-    s_detail = Math.min(16 * mainBarDia, 48 * d_tie, Dim);
+    s_limit = Math.min(16 * mainBarDia, 48 * d_tie, Dim);
   } else {
     const Ach = Math.PI * Math.pow(Dim - 2 * cover, 2) / 4;
     rho_s_min = 0.45 * (Ag / Ach - 1) * fc / fyt;
     const Dc = Dim - 2 * cover;
     s_spiral_req = (4 * A_tie) / (Dc * rho_s_min);
+    s_limit = s_spiral_req;
     rho_s = (4 * A_tie) / (Dc * s_final);
   }
 
@@ -3982,6 +3983,13 @@ function downloadColumnPDF() {
     const phi_val = getPhi(epsilon_t);
     return { Pn, Mn, phi: phi_val, epsilon_t, c: c_sol };
   }
+
+  // Function scoped variables for Corrections 3 & 4
+  let delta_ns = 1.0;
+  let isSlender = false;
+  let klu_val = 0;
+  let klu_r = 0;
+  let r_val = 0;
 
   let res_sol;
   if (mux > 0 && muy > 0) {
@@ -4338,7 +4346,7 @@ function downloadColumnPDF() {
   const ref_alpha = isACI ? 'ACI 318-14 §22.4' : 'BNBC 2020 Part 6 Ch 6';
 
   const section4Rows = [
-    ['fc\' (concrete strength)', `${fc.toFixed(2)} ksi`, ref_fc],
+    ['fc\' (concrete compressive strength)', `${fc.toFixed(2)} ksi`, ref_fc],
     ['fy (steel yield strength)', `${fy.toFixed(2)} ksi`, ref_fy],
     ['Es (modulus of elasticity, steel)', '29,000.00 ksi', ref_es],
     ['εcu (ultimate concrete strain)', '0.00300', ref_ecu],
@@ -4633,7 +4641,6 @@ function downloadColumnPDF() {
     const sa = 16 * mainBarDia;
     const sb = 48 * d_tie;
     const sc = Dim;
-    const s_limit = Math.min(sa, sb, sc);
 
     doc.setFont('helvetica', 'normal');
     doc.text(`(a) 16 * db,long = 16 * ${mainBarDia.toFixed(3)} in = ${sa.toFixed(2)} in`, 0.6, cy);
@@ -4663,7 +4670,6 @@ function downloadColumnPDF() {
 
     const dc = Dim - 2 * cover;
     const Ac = Math.PI * dc * dc / 4;
-    const rho_s_min = 0.45 * (Ag / Ac - 1) * (fc / fyt);
 
     doc.setFont('helvetica', 'normal');
     doc.text(`Core diameter: dc = Dim - 2*cover = ${Dim.toFixed(1)} - 2*${cover.toFixed(1)} = ${dc.toFixed(2)} in`, 0.6, cy);
@@ -4685,7 +4691,6 @@ function downloadColumnPDF() {
     cy += 0.20;
 
     doc.setFont('helvetica', 'normal');
-    const s_req = (4 * A_tie) / (dc * rho_s_min);
     doc.text('Required spiral pitch:', 0.6, cy);
     doc.setFont('courier', 'normal');
     doc.text('s = 4 * Asp / (ρs,min * dc)', 2.0, cy);
@@ -4696,11 +4701,11 @@ function downloadColumnPDF() {
     doc.text(`s = 4 * ${A_tie.toFixed(3)} / (${rho_s_min.toFixed(5)} * ${dc.toFixed(2)})`, 2.0, cy);
     cy += 0.16;
     doc.setFont('helvetica', 'bold');
-    doc.text(`s_req = ${s_req.toFixed(2)} in`, 2.0, cy);
+    doc.text(`s_req = ${s_limit.toFixed(2)} in`, 2.0, cy);
     cy += 0.20;
 
     const s_clear_spiral = s_final - d_tie;
-    const isSpiralPitchOk = s_clear_spiral >= 1.0 && s_clear_spiral <= 3.0 && s_final <= s_req;
+    const isSpiralPitchOk = s_clear_spiral >= 1.0 && s_clear_spiral <= 3.0 && s_final <= s_limit;
     doc.setFont('helvetica', 'normal');
     doc.text(`Provided spiral pitch s_final = ${s_final.toFixed(2)} in (clear pitch = ${s_clear_spiral.toFixed(2)} in)`, 0.6, cy);
     cy += 0.16;
@@ -5060,8 +5065,6 @@ function downloadColumnPDF() {
   doc.text('SECTION 12 — SLENDERNESS CHECK', 0.5, cy);
   cy += 0.15;
 
-  const r_val = type === 'TIED' ? 0.30 * Dim : 0.25 * Dim;
-
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(40, 40, 40);
@@ -5073,6 +5076,7 @@ function downloadColumnPDF() {
   doc.setTextColor(60, 60, 60);
   doc.text('Formula:', 0.6, cy);
   doc.setFont('courier', 'normal');
+  r_val = type === 'TIED' ? 0.30 * Dim : 0.25 * Dim;
   if (type === 'TIED') {
     doc.text('r = 0.30 * h', 2.0, cy);
     cy += 0.16;
@@ -5093,9 +5097,6 @@ function downloadColumnPDF() {
   doc.text(`r = ${r_val.toFixed(2)} in`, 2.0, cy);
   cy += 0.25;
 
-  const klu_val = 1.0 * colHeight * 12;
-  const klu_r = klu_val / r_val;
-
   doc.setFont('helvetica', 'bold');
   doc.text('12.2 Slenderness Ratio:', 0.5, cy);
   cy += 0.16;
@@ -5110,6 +5111,10 @@ function downloadColumnPDF() {
   doc.setFont('courier', 'normal');
   doc.text(`klu/r = 1.0 * (${colHeight.toFixed(1)} * 12) / ${r_val.toFixed(2)}`, 2.0, cy);
   cy += 0.16;
+  
+  klu_val = 1.0 * colHeight * 12;
+  klu_r = klu_val / r_val;
+  
   doc.setFont('helvetica', 'bold');
   doc.text(`klu/r = ${klu_r.toFixed(2)}`, 2.0, cy);
   cy += 0.25;
@@ -5132,45 +5137,103 @@ function downloadColumnPDF() {
   doc.text('Limit = 22.00', 2.0, cy);
   cy += 0.20;
 
-  const isSlender = klu_r > 22.0;
+  isSlender = klu_r > 22.0;
+
+  // Wording corrections per Correction 4
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(isSlender ? 200 : 30, isSlender ? 30 : 150, 30);
-  doc.text(`Verdict: klu/r vs Limit -> ${klu_r.toFixed(2)} vs 22.00 -> Column is ${isSlender ? 'SLENDER' : 'SHORT'}`, 0.6, cy);
-  cy += 0.25;
-
   if (isSlender) {
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(40, 40, 40);
-    doc.text('12.4 Moment Magnification (ACI 318-14 §6.6):', 0.5, cy);
-    cy += 0.16;
+    const Ec_temp = 57000 * Math.sqrt(fc * 1000) / 1000;
+    const Ig_temp = type === 'TIED' ? Math.pow(Dim, 4) / 12 : Math.PI * Math.pow(Dim, 4) / 64;
+    const beta_dns_temp = 1.2 * pdl / Pu;
+    const EI_temp = 0.4 * Ec_temp * Ig_temp / (1 + beta_dns_temp);
+    const Pc_temp = Math.PI * Math.PI * EI_temp / Math.pow(1.0 * colHeight * 12, 2);
+    delta_ns = Math.max(1.0, 1.0 / (1 - Pu / (0.75 * Pc_temp)));
 
-    const Ec = 57000 * Math.sqrt(fc * 1000) / 1000;
-    const Ig = type === 'TIED' ? Math.pow(Dim, 4) / 12 : Math.PI * Math.pow(Dim, 4) / 64;
-    const beta_dns = 1.2 * pdl / Pu;
-    const EI = 0.4 * Ec * Ig / (1 + beta_dns);
-    const Pc = Math.PI * Math.PI * EI / Math.pow(1.0 * colHeight * 12, 2);
-    const delta_ns = Math.max(1.0, 1.0 / (1 - Pu / (0.75 * Pc)));
-    const Mu = Math.sqrt(mux * mux + muy * muy);
-    const Mc = delta_ns * Mu;
-
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(60, 60, 60);
-    doc.text(`Ec = 57000 * √fc\' = 57000 * √${fc.toFixed(2)} = ${Ec.toFixed(1)} ksi`, 0.6, cy);
+    doc.text(`Verdict: klu/r vs Limit -> ${klu_r.toFixed(2)} vs 22.00`, 0.6, cy);
     cy += 0.16;
-    doc.text(`Ig = ${Ig.toFixed(1)} in^4`, 0.6, cy);
+    doc.text(`Column is SLENDER — moment magnification applied`, 0.6, cy);
     cy += 0.16;
-    doc.text(`βdns = 1.2*PDL / Pu = ${beta_dns.toFixed(3)}`, 0.6, cy);
+    doc.text(`per ACI 318-14 Section 6.6. delta_ns = ${delta_ns.toFixed(3)}`, 0.6, cy);
+    cy += 0.25;
+  } else {
+    delta_ns = 1.0;
+    doc.text(`Verdict: klu/r vs Limit -> ${klu_r.toFixed(2)} vs 22.00`, 0.6, cy);
     cy += 0.16;
-    doc.text(`EI = 0.4*Ec*Ig / (1 + βdns) = ${EI.toFixed(1)} EI`, 0.6, cy);
-    cy += 0.16;
-    doc.text(`Pc = π²*EI / (k*lu)² = ${Pc.toFixed(1)} kips`, 0.6, cy);
-    cy += 0.16;
-    doc.text(`δns = Cm / (1 - Pu/(0.75*Pc)) = ${delta_ns.toFixed(3)}`, 0.6, cy);
-    cy += 0.18;
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Magnified Moment Mc = δns * Mu = ${Mc.toFixed(1)} kip-ft`, 0.6, cy);
+    doc.text(`Column is SHORT — no moment magnification required.`, 0.6, cy);
     cy += 0.25;
   }
+
+  // Minimum Eccentricity Calculation (Correction 3)
+  const e_min = 0.6 + 0.03 * Dim;
+  const M_min = Pu * e_min / 12;
+  const Mc_min = delta_ns * M_min;
+
+  doc.setFont('times', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(201, 168, 76);
+  doc.text('12.4 Minimum Eccentricity Check (ACI 318-14 §6.6.4.5):', 0.5, cy);
+  cy += 0.16;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(60, 60, 60);
+  doc.text('Formula:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text('e_min = 0.6 + 0.03 * h', 2.0, cy);
+  cy += 0.15;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Substitution:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`e_min = 0.6 + 0.03 * ${Dim.toFixed(1)}`, 2.0, cy);
+  cy += 0.15;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`e_min = ${e_min.toFixed(2)} in`, 2.0, cy);
+  cy += 0.20;
+
+  doc.setFont('helvetica', 'normal');
+  doc.text('Formula:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text('M_min = Pu * e_min / 12', 2.0, cy);
+  cy += 0.15;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Substitution:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`M_min = ${Pu.toFixed(1)} * ${e_min.toFixed(2)} / 12`, 2.0, cy);
+  cy += 0.15;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`M_min = ${M_min.toFixed(2)} kip-ft`, 2.0, cy);
+  cy += 0.20;
+
+  const Mu_total = Math.sqrt(mux * mux + muy * muy);
+  if (Mu_total === 0) {
+    doc.setFont('helvetica', 'normal');
+    doc.text('No applied moment. ACI 318-14 minimum eccentricity governs.', 0.6, cy);
+    cy += 0.15;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Design moment = M_min = ${M_min.toFixed(2)} kip-ft`, 0.6, cy);
+    cy += 0.20;
+  }
+
+  if (isSlender) {
+    doc.setFont('helvetica', 'normal');
+    doc.text('Formula:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('Mc = delta_ns * M_min', 2.0, cy);
+    cy += 0.15;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`Mc = ${delta_ns.toFixed(3)} * ${M_min.toFixed(2)}`, 2.0, cy);
+    cy += 0.15;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Mc = ${Mc_min.toFixed(2)} kip-ft`, 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text(`State: Final design moment Mc = ${Mc_min.toFixed(2)} kip-ft`, 0.6, cy);
+    cy += 0.20;
+  }
+  cy += 0.15;
 
   // SECTION 13
   doc.setFont('times', 'bold');
@@ -5205,7 +5268,7 @@ function downloadColumnPDF() {
     const Dc = Dim - 2 * cover;
     const Ds = Dc - d_tie;
     const L_turn = Math.sqrt(Math.PI * Math.PI * Ds * Ds + s_final * s_final);
-    transQty = (colHeight * 12 / s_final) + 3.0;
+    transQty = (colHeight * 12 / s_final) + 3.0; // turns
     transLen = L_turn / 12;
   }
 
@@ -5276,17 +5339,21 @@ function downloadColumnPDF() {
   doc.line(0.5, cy + 0.22, 8.0, cy + 0.22);
   cy += 0.22;
 
+  const res_min_e = solveUniaxial(isSlender ? delta_ns * e_min : e_min, 'x');
+  const phiMn_min = res_min_e.phi * res_min_e.Mn;
+
   const Mu_d = Math.sqrt(mux * mux + muy * muy);
   const phiMn_d = mux > 0 || muy > 0 ? (res_sol.phi * res_sol.Mn) : 0;
 
   const summaryRows = [
     ['Axial capacity Pu <= α·ϕ·Pn', `${Pu.toFixed(1)} kips`, `${(res_sol.Pn * res_sol.phi).toFixed(1)} kips`, (Pu <= res_sol.Pn * res_sol.phi) ? '✓ PASS' : '✗ FAIL'],
     ['Moment capacity Mu <= ϕ·Mn', `${Mu_d.toFixed(1)} kip-ft`, `${phiMn_d.toFixed(1)} kip-ft`, (mux === 0 && muy === 0) ? 'N/A' : (Mu_d <= phiMn_d) ? '✓ PASS' : '✗ FAIL'],
+    ['Min eccentricity Mc', `${Mc_min.toFixed(2)} kip-ft`, `${phiMn_min.toFixed(2)} kip-ft`, (phiMn_min >= Mc_min) ? '✓ PASS' : '✗ FAIL'],
     ['Shear capacity Vu <= ϕ·Vc', `${vu.toFixed(1)} kips`, `${(0.75 * Vc).toFixed(1)} kips`, (vu <= 0.75 * Vc) ? '✓ PASS' : '✗ FAIL'],
     ['Steel ratio 0.01 <= ρg <= 0.08', '0.010 to 0.080', `${p_actual.toFixed(4)}`, isRatioOk ? '✓ PASS' : '✗ FAIL'],
-    ['Tie spacing (ACI limits)', `${type === 'TIED' ? '12.00 in max' : 'Pitch limits'}`, `${s_final.toFixed(2)} in`, (type === 'TIED' ? (s_final <= 16 * mainBarDia) : isSpacingOk) ? '✓ PASS' : '✗ FAIL'],
+    ['Tie spacing (ACI limits)', `${s_limit.toFixed(2)} in`, `${s_final.toFixed(2)} in`, (s_final <= s_limit) ? '✓ PASS' : '✗ FAIL'],
     ['DCR (Pu / α·ϕ·Pn)', '<= 1.00', `${dcRatio.toFixed(3)}`, dcRatio <= 1.00 ? '✓ PASS' : '✗ FAIL'],
-    ['Slenderness', 'Short/Long', `${isSlender ? 'Slender' : 'Short'}`, '✓ OK']
+    ['Slenderness', 'Short/Slender', isSlender ? 'Slender' : 'Short', isSlender ? ('Slender — delta_ns = ' + delta_ns.toFixed(3) + ' applied') : 'Short — no magnification']
   ];
 
   doc.setFont('helvetica', 'normal');
@@ -5297,7 +5364,7 @@ function downloadColumnPDF() {
     doc.text(check, 0.6, cy + 0.15);
     doc.text(req, 3.0, cy + 0.15);
     doc.text(prov, 4.8, cy + 0.15);
-    if (stat.includes('PASS') || stat.includes('OK')) {
+    if (stat.includes('PASS') || stat.includes('OK') || stat.includes('Short')) {
       doc.setTextColor(30, 150, 30);
     } else if (stat.includes('FAIL')) {
       doc.setTextColor(220, 50, 50);
@@ -5313,7 +5380,7 @@ function downloadColumnPDF() {
   });
 
   cy += 0.10;
-  const overallVerdict = dcRatio <= 1.0 && isRatioOk && isSpacingOk && (vu <= 0.75 * Vc);
+  const overallVerdict = dcRatio <= 1.0 && isRatioOk && isSpacingOk && (vu <= 0.75 * Vc) && (phiMn_min >= Mc_min);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9.5);
   if (overallVerdict) {
@@ -5325,140 +5392,86 @@ function downloadColumnPDF() {
   }
   cy += 0.30;
 
-  // SECTION 15
+  // SECTION 15 (Correction 5 - ASCII Detailing Drawings)
+  checkPageBreak(doc, 3.2);
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   doc.setTextColor(201, 168, 76);
-  doc.text('SECTION 15 — REINFORCEMENT DETAILING DRAWING', 0.5, cy);
-  cy += 0.15;
+  doc.text('SECTION 15 — REINFORCEMENT DETAILING DRAWING (Schematic)', 0.5, cy);
+  cy += 0.20;
 
-  const drawX = 0.5;
-  const drawY = cy;
-  const drawW = 3.6;
-  const drawH = 2.4;
+  const bar_size = mainBarSize;
+  const tie_size = tieBarSize;
+  const n_total = N_bars;
+  const spacing = s_final.toFixed(2);
+  const b_dim = Dim.toFixed(1);
+  const h_dim = Dim.toFixed(1);
+  const lu_val = colHeight.toFixed(1);
+  const k_val = "1.00";
+  const slenderness_ratio = klu_r.toFixed(2);
+  const dia_val = mainBarDia.toFixed(3);
+  const area_val = Ab.toFixed(2);
+  const tie_dia_val = d_tie.toFixed(3);
 
-  doc.setDrawColor(200, 200, 200);
-  doc.setLineWidth(0.005);
-  doc.rect(drawX, drawY, drawW, drawH);
+  const asciiCS = [
+    `CROSS-SECTION (${b_dim}" x ${h_dim}"):`,
+    `  +-----------------------------+`,
+    `  |  o      o      o      o     |  <- ${bar_size} long. bars`,
+    `  |                             |     ${n_total} total`,
+    `  |  o                    o     |     Cover = 1.5 in`,
+    `  |                             |`,
+    `  |  o                    o     |`,
+    `  |                             |`,
+    `  |  o      o      o      o     |`,
+    `  +-----------------------------+`,
+    `    Ties: ${tie_size} @ ${spacing}" c/c (ACI 25.7.2.1)`,
+    `    b = ${b_dim}"   h = ${h_dim}"`
+  ];
 
-  const cx_cs = drawX + drawW / 2;
-  const cy_cs = drawY + drawH / 2;
-  const cs_size = 1.6;
+  const asciiEV = [
+    `ELEVATION VIEW:`,
+    `  |==============================|  <- Top`,
+    `  | |   |   |   |   |   |   | |  `,
+    `  |-+---+---+---+---+---+---+-|  <- Tie @ ${spacing}" c/c`,
+    `  | |   |   |   |   |   |   | |  `,
+    `  |-+---+---+---+---+---+---+-|`,
+    `  | |   |   |   |   |   |   | |  `,
+    `  |-+---+---+---+---+---+---+-|`,
+    `  | |   |   |   |   |   |   | |  `,
+    `  |==============================|  <- Base`,
+    `  lu = ${lu_val} ft    k = ${k_val}`,
+    `  klu/r = ${slenderness_ratio}`
+  ];
 
-  doc.setFillColor(245, 247, 250);
-  doc.setDrawColor(30, 30, 30);
-  doc.setLineWidth(0.015);
+  const asciiLegend = [
+    `LEGEND:`,
+    `  o  = ${bar_size} bar  (db = ${dia_val}",  Ab = ${area_val} in2)`,
+    `  -- = ${tie_size} tie  (db = ${tie_dia_val}")`
+  ];
 
-  if (type === 'TIED') {
-    doc.rect(cx_cs - cs_size/2, cy_cs - cs_size/2, cs_size, cs_size, 'FD');
-
-    doc.setDrawColor(220, 50, 50);
-    doc.setLineWidth(0.01);
-    const cage_size = cs_size - 2 * (cover * (cs_size / Dim));
-    doc.rect(cx_cs - cage_size/2, cy_cs - cage_size/2, cage_size, cage_size, 'S');
-
-    const hx = cx_cs - cage_size/2;
-    const hy = cy_cs - cage_size/2;
-    doc.line(hx, hy, hx + 0.12, hy + 0.12);
-    doc.line(hx, hy, hx + 0.04, hy + 0.15);
-
-    const barScale = cs_size / Dim;
-    const barR = Math.max(0.025, (mainBarDia / 2) * barScale);
-    doc.setFillColor(201, 168, 76);
-    doc.setDrawColor(30, 30, 30);
-    doc.setLineWidth(0.005);
-
-    bars.forEach(bar => {
-      const bx = cx_cs + bar.x * barScale;
-      const by = cy_cs + bar.y * barScale;
-      doc.circle(bx, by, barR, 'FD');
-    });
-
-    doc.setDrawColor(80, 80, 80);
-    doc.line(cx_cs - cs_size/2, cy_cs - cs_size/2 - 0.1, cx_cs + cs_size/2, cy_cs - cs_size/2 - 0.1);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(40, 40, 40);
-    doc.text(`${Dim.toFixed(0)}"`, cx_cs - 0.08, cy_cs - cs_size/2 - 0.15);
-  } else {
-    doc.circle(cx_cs, cy_cs, cs_size / 2, 'FD');
-
-    doc.setDrawColor(220, 50, 50);
-    doc.setLineWidth(0.01);
-    const spiral_rad = cs_size/2 - (cover * (cs_size / Dim));
-    doc.circle(cx_cs, cy_cs, spiral_rad, 'S');
-
-    const barScale = cs_size / Dim;
-    const barR = Math.max(0.025, (mainBarDia / 2) * barScale);
-    doc.setFillColor(201, 168, 76);
-    doc.setDrawColor(30, 30, 30);
-    doc.setLineWidth(0.005);
-
-    bars.forEach(bar => {
-      const bx = cx_cs + bar.x * barScale;
-      const by = cy_cs + bar.y * barScale;
-      doc.circle(bx, by, barR, 'FD');
-    });
-
-    doc.setDrawColor(80, 80, 80);
-    doc.line(cx_cs - cs_size/2, cy_cs, cx_cs + cs_size/2, cy_cs);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(40, 40, 40);
-    doc.text(`D = ${Dim.toFixed(0)}"`, cx_cs - 0.2, cy_cs - 0.08);
-  }
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(30, 30, 30);
-  doc.text('CROSS SECTION', drawX + 0.1, drawY + 0.2);
-
-  const drawX2 = drawX + drawW + 0.2;
-  doc.setDrawColor(200, 200, 200);
-  doc.setLineWidth(0.005);
-  doc.rect(drawX2, drawY, drawW, drawH);
-
-  const cx_el = drawX2 + drawW / 2;
-  const el_w = 1.0;
-  const el_h = 1.8;
-  const cy_el = drawY + drawH / 2;
-
-  doc.setFillColor(245, 247, 250);
-  doc.setDrawColor(30, 30, 30);
-  doc.setLineWidth(0.01);
-  doc.rect(cx_el - el_w/2, cy_el - el_h/2, el_w, el_h, 'FD');
-
-  doc.setDrawColor(201, 168, 76);
-  doc.setLineWidth(0.015);
-  doc.line(cx_el - el_w/2 + 0.15, cy_el - el_h/2, cx_el - el_w/2 + 0.15, cy_el + el_h/2);
-  doc.line(cx_el + el_w/2 - 0.15, cy_el - el_h/2, cx_el + el_w/2 - 0.15, cy_el + el_h/2);
-
-  doc.setDrawColor(220, 50, 50);
-  doc.setLineWidth(0.008);
-  const n_ties_draw = 8;
-  for (let i = 0; i < n_ties_draw; i++) {
-    const ty = cy_el - el_h/2 + i * (el_h / (n_ties_draw - 1));
-    doc.line(cx_el - el_w/2, ty, cx_el + el_w/2, ty);
-  }
-
-  doc.setFont('helvetica', 'normal');
+  doc.setFont('courier', 'normal');
   doc.setFontSize(7.5);
-  doc.setTextColor(40, 40, 40);
-  doc.setDrawColor(80, 80, 80);
-  doc.setLineWidth(0.005);
-  doc.line(cx_el + el_w/2 + 0.1, cy_el - el_h/2, cx_el + el_w/2 + 0.1, cy_el + el_h/2);
-  doc.line(cx_el + el_w/2 + 0.05, cy_el - el_h/2, cx_el + el_w/2 + 0.15, cy_el - el_h/2);
-  doc.line(cx_el + el_w/2 + 0.05, cy_el + el_h/2, cx_el + el_w/2 + 0.15, cy_el + el_h/2);
-  doc.text(`Lu = ${colHeight.toFixed(0)} ft`, cx_el + el_w/2 + 0.15, cy_el + 0.05);
+  doc.setTextColor(35, 35, 35);
 
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(30, 30, 30);
-  doc.text('ELEVATION VIEW', drawX2 + 0.1, drawY + 0.2);
+  let draw_y = cy;
+  for (let i = 0; i < asciiCS.length; i++) {
+    doc.text(asciiCS[i], 0.6, draw_y);
+    if (i < asciiEV.length) {
+      doc.text(asciiEV[i], 4.4, draw_y);
+    }
+    draw_y += 0.14;
+  }
 
-  cy += drawH + 0.15;
+  draw_y += 0.05;
+  asciiLegend.forEach(line => {
+    doc.text(line, 0.6, draw_y);
+    draw_y += 0.14;
+  });
+
+  cy = draw_y + 0.15;
 
   // SECTION 16
+  checkPageBreak(doc, 2.2);
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   doc.setTextColor(201, 168, 76);
