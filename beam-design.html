@@ -2561,7 +2561,7 @@ ${checkListTable}
 
         // Brand
         doc.setTextColor(201, 168, 76);
-        doc.setFont('times', 'bold');
+        doc.setFont('helvetica', 'bold');
         doc.setFontSize(14);
         doc.text('TwinAnalytic', 13, 16);
         
@@ -2626,7 +2626,7 @@ ${checkListTable}
             doc.setLineWidth(0.35);
             doc.line(10, cy, 200, cy);
             
-            doc.setFont('times', 'bold');
+            doc.setFont('helvetica', 'bold');
             doc.setFontSize(11);
             doc.setTextColor(201, 168, 76);
             doc.text(title, x, cy + 4);
@@ -2637,7 +2637,7 @@ ${checkListTable}
           } else if (line.includes('class="report-subsection-header"')) {
             const title = line.replace(/<div.*?>|<\/div>/g, '');
             cy += 2;
-            doc.setFont('times', 'bold');
+            doc.setFont('helvetica', 'bold');
             doc.setFontSize(9.5);
             doc.setTextColor(26, 32, 44);
             doc.text(title, x, cy + 3.5);
@@ -2710,7 +2710,7 @@ ${checkListTable}
       doc.rect(10.5, 30.5, 189, 30, 'F');
 
       doc.setTextColor(201, 168, 76);
-      doc.setFont('times', 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.setFontSize(20);
       doc.text('TWINANALYTIC CALCULATIONS', 20, 48);
       
@@ -2720,7 +2720,7 @@ ${checkListTable}
       doc.text('ENGINEERING CALCULATIONS & COMPLIANCE REPORTS', 20, 56);
 
       doc.setTextColor(30, 30, 30);
-      doc.setFont('times', 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.setFontSize(20);
       const projName = document.getElementById('beam-proj-name').value || "TwinAnalytic Tower";
       const beamMark = document.getElementById('beam-mark').value || "B1";
@@ -2791,7 +2791,7 @@ ${checkListTable}
           doc.setDrawColor(26, 32, 44);
           doc.setLineWidth(0.35);
           doc.line(10, cy, 200, cy);
-          doc.setFont('times', 'bold');
+          doc.setFont('helvetica', 'bold');
           doc.setFontSize(11);
           doc.setTextColor(201, 168, 76);
           doc.text('5.0  BEAM DETAILING DIAGRAMS', 13, cy + 4);
@@ -2821,7 +2821,7 @@ ${checkListTable}
             doc.line(ax - 0.8, 48.5, ax, 50);
             doc.line(ax + 0.8, 48.5, ax, 50);
           });
-          doc.setFont('courier', 'bold');
+          doc.setFont('helvetica', 'bold');
           doc.setFontSize(7);
           doc.text("wu = " + r.wu.toFixed(1) + " kN/m", 105, 43, { align: 'center' });
 
@@ -2831,7 +2831,7 @@ ${checkListTable}
           doc.line(40, 68, 170, 68);
           doc.line(40, 66, 40, 70);
           doc.line(170, 66, 170, 70);
-          doc.setFont('courier', 'normal');
+          doc.setFont('helvetica', 'normal');
           doc.setFontSize(7);
           doc.text("L = " + r.L + " m", 105, 67, { align: 'center' });
 
@@ -2846,12 +2846,12 @@ ${checkListTable}
           doc.line(40, 72, 170, 88); // Diagonal shear line
           doc.line(170, 88, 170, 80); // Right vertical (-Vu)
           
-          doc.setFont('courier', 'bold');
+          doc.setFont('helvetica', 'bold');
           doc.setFontSize(6.5);
           doc.setTextColor(59, 130, 246);
           doc.text("+" + r.Vu.toFixed(1) + " kN", 40, 70);
           doc.text("-" + r.Vu.toFixed(1) + " kN", 170, 92, { align: 'right' });
-          doc.setFont('courier', 'normal');
+          doc.setFont('helvetica', 'normal');
           doc.text("0", 105, 78.5, { align: 'center' });
           doc.text("Shear Force Diagram (SFD)", 105, 91, { align: 'center' });
 
@@ -2869,11 +2869,11 @@ ${checkListTable}
             prevX = px;
             prevY = py;
           }
-          doc.setFont('courier', 'bold');
+          doc.setFont('helvetica', 'bold');
           doc.setFontSize(6.5);
           doc.setTextColor(220, 38, 38);
           doc.text("Max Mu = " + r.Mu.toFixed(1) + " kN-m", 105, 114, { align: 'center' });
-          doc.setFont('courier', 'normal');
+          doc.setFont('helvetica', 'normal');
           doc.text("Bending Moment Diagram (BMD)", 105, 118, { align: 'center' });
 
           // 4. Cross section, Strain & Stress Block
@@ -2933,7 +2933,7 @@ ${checkListTable}
           doc.line(limL, y_c, limR, y_c);
           doc.setTextColor(220, 38, 38);
           doc.setFontSize(6);
-          doc.setFont('courier', 'bold');
+          doc.setFont('helvetica', 'bold');
           doc.text(`N.A. c=${r.c.toFixed(0)}`, limR + 1, y_c + 0.8);
 
           // Effective Depth Line
@@ -2975,10 +2975,10 @@ ${checkListTable}
 
           // Section labels
           doc.setTextColor(0, 0, 0);
-          doc.setFont('courier', 'normal');
+          doc.setFont('helvetica', 'normal');
           doc.setFontSize(6.5);
           doc.text(`b = ${r.b}mm`, 50, y_f + h_draw + 3.5, { align: 'center' });
-          doc.text(`h = ${r.h}mm`, limL - 6, 125, { angle: 90, align: 'center' });
+          doc.text(`h = ${r.h}mm`, limL - 6, 180, { angle: 90, align: 'center' });
 
           // Strain Diagram (center at x = 110)
           doc.setDrawColor(0, 0, 0);
