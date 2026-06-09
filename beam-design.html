@@ -2531,9 +2531,9 @@ ${checkListTable}
       });
 
       // Crucial: Append temporary container to body so styles and Courier fonts resolve properly!
-      tempContainer.style.position = 'fixed';
+      tempContainer.style.position = 'absolute';
       tempContainer.style.left = '0';
-      tempContainer.style.top = '100vh';
+      tempContainer.style.top = '0';
       tempContainer.style.zIndex = '-9999';
       document.body.appendChild(tempContainer);
 
@@ -2545,7 +2545,9 @@ ${checkListTable}
           scale: 2, 
           useCORS: true, 
           logging: false,
-          letterRendering: true
+          letterRendering: true,
+          scrollY: 0,
+          scrollX: 0
         },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak:    { mode: ['css', 'legacy'] }
