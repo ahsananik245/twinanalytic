@@ -334,58 +334,13 @@
 
         <!-- Panel 1: BEAM -->
         <div class="tool-content-panel active" id="panel-beam">
-          <div class="tool-inputs-card glass-card">
-            <h3>Input Parameters</h3>
-            <div class="input-grid">
-              <div class="input-field">
-                <label>Width, b (mm)</label>
-                <input type="number" id="beam-w" value="250" min="150" max="600">
-              </div>
-              <div class="input-field">
-                <label>Depth, D (mm)</label>
-                <input type="number" id="beam-d" value="450" min="200" max="1000">
-              </div>
-              <div class="input-field">
-                <label>Bending Moment, Mu (kNm)</label>
-                <input type="number" id="beam-moment" value="120" min="10" max="1000">
-              </div>
-              <div class="input-field">
-                <label>Clear Cover (mm)</label>
-                <input type="number" id="beam-cover" value="25" min="15" max="75">
-              </div>
-              <div class="input-field">
-                <label>Concrete Grade</label>
-                <select id="beam-concrete">
-                  <option value="20">M20 (fck = 20 MPa)</option>
-                  <option value="25" selected>M25 (fck = 25 MPa)</option>
-                  <option value="30">M30 (fck = 30 MPa)</option>
-                </select>
-              </div>
-              <div class="input-field">
-                <label>Steel Rebar Grade</label>
-                <select id="beam-steel">
-                  <option value="415">Fe415 (fy = 415 MPa)</option>
-                  <option value="500" selected>Fe500 (fy = 500 MPa)</option>
-                </select>
-              </div>
-            </div>
-            <button class="btn btn-gold btn-calc" id="btn-calc-beam" style="margin-top: 1.5rem;">Calculate Member</button>
-          </div>
-          
-          <div class="tool-outputs-card glass-card">
-            <h3>Analysis Output <span class="tool-status-badge pass" id="beam-status-badge">PASS</span></h3>
-            <div class="results-console text-mono">
-              <div class="console-line"><span class="console-label">Effective Depth (d)</span><span class="console-val" id="beam-out-depth">413 mm</span></div>
-              <div class="console-line"><span class="console-label">Limiting Moment Capacity (Mu,lim)</span><span class="console-val" id="beam-out-mulim">140.2 kNm</span></div>
-              <div class="console-line"><span class="console-label">Design Tension Steel Area (Ast)</span><span class="console-val" id="beam-out-ast">764 mm²</span></div>
-              <div class="console-line"><span class="console-label">Required Rebars (Tension)</span><span class="console-val" id="beam-out-bars">4 Nos - 16mm dia</span></div>
-              <div class="console-line"><span class="console-label">Minimum Steel Area (Ast,min)</span><span class="console-val" id="beam-out-astmin">176 mm²</span></div>
-              <div class="console-line"><span class="console-label">Steel Reinforcement Ratio (pt)</span><span class="console-val" id="beam-out-ratio">0.74%</span></div>
-            </div>
-            <div class="schematic-box">
-              <h4>Cross-Section Layout</h4>
-              <canvas id="beam-canvas" class="schematic-canvas"></canvas>
-            </div>
+          <div class="glass-card launch-card" style="grid-column: 1 / span 2; text-align: center; padding: 3rem 2rem; width: 100%;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;"><i class="fa-solid fa-layer-group text-gold" style="color: var(--color-gold);"></i></div>
+            <h3 style="font-family: var(--font-serif); font-size: 1.8rem; margin-bottom: 1rem; color: #fff;">Interactive RC Beam Designer</h3>
+            <p style="max-width: 600px; margin: 0 auto 1.5rem auto; color: #aaa; line-height: 1.6;">
+              Perform advanced reinforced concrete beam flexural design per ACI 318 & BNBC 2020. Supports Singly, Doubly, and T-Beam sections with live SVG scaling, stress block visualizations, and step-by-step calculation breakdowns.
+            </p>
+            <a href="beam-design.html" class="btn btn-gold" style="display: inline-block; text-decoration: none;">Launch Beam Designer</a>
           </div>
         </div>
 
@@ -1303,7 +1258,7 @@
         <div class="footer-col">
           <h3>Interactive</h3>
           <ul class="footer-links">
-            <li><a href="tools.html">Beam Design Calculator</a></li>
+            <li><a href="beam-design.html">Beam Design Calculator</a></li>
             <li><a href="tools.html">Column Design Calculator</a></li>
             <li><a href="tools.html">Slab Spans Calculator</a></li>
             <li><a href="tools.html">Foundation Analysis</a></li>

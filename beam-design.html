@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RC Beam Flexural Design Calculator per ACI 318 / BNBC 2020</title>
+  <meta name="description" content="Online structural engineering check for reinforced concrete beams. Singly, doubly, and T-beam calculators with live SVG drawings.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    :root {
+      --font-serif: 'Outfit', sans-serif;
+      --font-sans: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    body {
+      background-color: #0b0f17;
+      color: #e2e8f0;
+      font-family: var(--font-sans);
+      margin: 0;
+      padding: 0;
+    }
+
+    .beam-design-page {
+      padding: 7rem 0 5rem 0;
+    }
+
+    /* Page Header Styles */
+    .page-title-section {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    .page-title-section h1 {
+      font-family: var(--font-serif);
+      font-size: 2.8rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #fff;
+    }
+    .page-title-section p {
+      color: var(--color-gold);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    /* Three-Column Workspace Grid */
+    .beam-workspace-grid {
+      display: grid;
+      grid-template-columns: 32% 38% 30%;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    /* Glassmorphism Cards */
+    .beam-card {
+      background: rgba(20, 24, 33, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    }
+    .beam-card h3 {
+      font-family: var(--font-serif);
+      color: var(--color-gold);
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+      font-size: 1.25rem;
+      border-bottom: 1px solid rgba(201, 168, 76, 0.15);
+      padding-bottom: 0.5rem;
+    }
+
+    /* Form Fields Styling */
+    .form-group-title {
+      font-family: var(--font-serif);
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-top: 1.25rem;
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+    .input-field {
+      display: flex;
+      flex-direction: column;
+    }
+    .input-field.full-width {
+      grid-column: span 2;
+    }
+    .input-field label {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-bottom: 0.35rem;
+    }
+    .input-field input, .input-field select {
+      background-color: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      padding: 0.5rem;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-field input:focus, .input-field select:focus {
+      border-color: var(--color-gold);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.15);
+    }
+
+    /* Radios */
+    .radio-group {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.85rem;
+      color: #e2e8f0;
+      cursor: pointer;
+    }
+    .radio-label input {
+      accent-color: var(--color-gold);
+    }
+
+    /* Buttons block */
+    .buttons-block {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.75rem;
+    }
+    .btn-dark-red {
+      background-color: #8b0000;
+      color: #fff;
+      border: none;
+      font-weight: 600;
+      flex-grow: 2;
+    }
+    .btn-dark-red:hover {
+      background-color: #b30000;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(179,0,0,0.3);
+    }
+    .btn-outline {
+      background-color: transparent;
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      flex-grow: 1;
+    }
+    .btn-outline:hover {
+      border-color: #fff;
+      color: #fff;
+    }
+
+    /* Middle Column Result Card Layout */
+    .status-banner {
+      padding: 0.9rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-align: center;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+    .status-banner.safe {
+      background-color: rgba(46, 125, 50, 0.15);
+      color: #81c784;
+      border: 1px solid rgba(76, 175, 80, 0.3);
+    }
+    .status-banner.inadequate {
+      background-color: rgba(198, 40, 40, 0.15);
+      color: #e57373;
+      border: 1px solid rgba(244, 67, 54, 0.3);
+    }
+
+    /* Results 2x4 Grid */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .result-card {
+      background-color: rgba(30, 41, 59, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      position: relative;
+      cursor: help;
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+    .result-card:hover {
+      background-color: rgba(30, 41, 59, 0.5);
+      border-color: rgba(201, 168, 76, 0.2);
+    }
+    .result-label {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      margin-bottom: 0.25rem;
+    }
+    .result-value {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #fff;
+      font-family: var(--font-serif);
+    }
+    .result-unit {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      font-weight: 400;
+      margin-left: 0.15rem;
+    }
+
+    /* CSS Tooltip on Hover */
+    .result-card::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 105%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #161a23;
+      color: #e2e8f0;
+      padding: 0.45rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+      border: 1px solid var(--border-gold);
+      z-index: 20;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+      pointer-events: none;
+      font-family: var(--font-mono);
+    }
+    .result-card:hover::after {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* DCR mini progress bar */
+    .dcr-container {
+      margin-top: 0.35rem;
+    }
+    .dcr-bar-bg {
+      width: 100%;
+      height: 5px;
+      background-color: rgba(255,255,255,0.08);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .dcr-bar-fill {
+      height: 100%;
+      background-color: #4caf50;
+      border-radius: 3px;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .dcr-bar-fill.warning {
+      background-color: #ff9800;
+    }
+    .dcr-bar-fill.danger {
+      background-color: #f44336;
+    }
+
+    /* Strain Zone Indicator Graphic */
+    .strain-indicator-wrapper {
+      background-color: rgba(30, 41, 59, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .strain-bar-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.65rem;
+      color: #94a3b8;
+      margin-bottom: 0.35rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .strain-bar-graphic {
+      height: 12px;
+      border-radius: 6px;
+      background: linear-gradient(to right, #c62828 0%, #c62828 30%, #ff8f00 30%, #ff8f00 70%, #2e7d32 70%, #2e7d32 100%);
+      position: relative;
+      margin-bottom: 0.5rem;
+    }
+    .strain-marker {
+      position: absolute;
+      top: -3px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-bottom: 18px solid #fff;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+      transition: left 0.3s ease;
+    }
+    .strain-limits {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.6rem;
+      color: #64748b;
+      font-family: var(--font-mono);
+    }
+
+    /* SVG Diagram Wrapper */
+    .beam-svg-box {
+      background-color: #0b0e14;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 6px;
+      padding: 1rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .beam-svg-box svg {
+      width: 100%;
+      max-width: 400px;
+      height: auto;
+    }
+
+    /* Right Column Accordion calculations */
+    .accordion-card {
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      background-color: rgba(20, 24, 33, 0.5);
+      border-radius: 6px;
+      margin-bottom: 0.6rem;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .accordion-card:hover {
+      border-color: rgba(201, 168, 76, 0.25);
+    }
+    .accordion-header {
+      padding: 0.85rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      background-color: rgba(30, 41, 59, 0.2);
+      user-select: none;
+    }
+    .accordion-header-left {
+      display: flex;
+      align-items: center;
+    }
+    .accordion-header h4 {
+      margin: 0;
+      font-family: var(--font-serif);
+      font-size: 0.85rem;
+      color: #fff;
+      font-weight: 600;
+    }
+    .accordion-body {
+      padding: 1rem;
+      background-color: rgba(10, 12, 17, 0.8);
+      border-top: 1px solid rgba(255,255,255,0.03);
+      font-size: 0.8rem;
+      line-height: 1.5;
+      display: none;
+    }
+    .accordion-body.open {
+      display: block;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 0.6rem;
+    }
+    .status-dot.pass { background-color: #4caf50; }
+    .status-dot.fail { background-color: #f44336; }
+    .status-dot.na { background-color: #757575; }
+
+    .step-math {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: #aaa;
+      background-color: rgba(0,0,0,0.2);
+      padding: 0.5rem;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+      white-space: pre-line;
+      line-height: 1.4;
+      border-left: 2px solid var(--color-gold);
+    }
+
+    /* Warnings Badges */
+    .warning-box {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background-color: rgba(255, 152, 0, 0.05);
+      border: 1px dashed rgba(255, 152, 0, 0.2);
+      border-radius: 4px;
+      display: none;
+    }
+    .warning-box.active {
+      display: block;
+    }
+    .warning-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: #ffb74d;
+      font-size: 0.75rem;
+      margin-bottom: 0.4rem;
+      line-height: 1.3;
+    }
+    .warning-badge:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Order on Mobile Stacking */
+    @media (max-width: 1024px) {
+      .beam-workspace-grid {
+        grid-template-columns: 100%;
+      }
+      .col-left {
+        order: 2;
+      }
+      .col-middle {
+        order: 1;
+      }
+      .col-right {
+        order: 3;
+      }
+    }
+
+    /* Print Stylesheet */
+    @media print {
+      body {
+        background: #fff !important;
+        color: #000 !important;
+      }
+      .navbar, .footer, .col-left, .buttons-block, .accordion-header::after {
+        display: none !important;
+      }
+      .beam-design-page {
+        padding: 0;
+      }
+      .beam-workspace-grid {
+        grid-template-columns: 50% 50%;
+        gap: 20px;
+      }
+      .col-middle, .col-right {
+        order: 1 !important;
+      }
+      .beam-card {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+      .accordion-body {
+        display: block !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+      }
+      .accordion-card {
+        border: none !important;
+        background: transparent !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVIGATION BAR -->
+  <nav class="navbar scrolled" id="navbar">
+    <div class="container">
+      <a href="index.html" class="logo">
+        Twin<span>Analytic</span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="bim-viewer.html">BIM Viewer</a></li>
+        <li><a href="tools.html" class="active">Tools</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="contact.html" class="btn btn-gold btn-sm">Get a Quote</a>
+      </div>
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- CALCULATOR WORKSPACE -->
+  <main class="beam-design-page">
+    <div class="container">
+      <header class="page-title-section">
+        <p>Interactive Analysis Suite</p>
+        <h1>RC Beam Flexural Design Calculator</h1>
+      </header>
+
+      <div class="beam-workspace-grid">
+        
+        <!-- Left Column: Inputs -->
+        <section class="beam-card col-left">
+          <h3>Design Parameters</h3>
+          <form id="beam-form" onsubmit="return false;">
+            
+            <div class="form-group-title" style="margin-top:0;">Beam Cross-Section Type</div>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" name="beam-type" value="singly" checked> Singly Reinforced
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="beam-type" value="doubly"> Doubly Reinforced
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="beam-type" value="tbeam"> T-Beam
+              </label>
+            </div>
+
+            <div class="form-group-title">Material Properties</div>
+            <div class="input-grid">
+              <div class="input-field">
+                <label>Concrete Strength, f'c (MPa)</label>
+                <input type="number" id="beam-fc" value="28" min="17" max="70" step="0.5">
+              </div>
+              <div class="input-field">
+                <label>Steel Yield Strength, fy (MPa)</label>
+                <input type="number" id="beam-fy" value="420" min="280" max="690" step="5">
+              </div>
+              <div class="input-field">
+                <label>Modulus of Steel, Es (MPa)</label>
+                <input type="number" id="beam-es" value="200000" disabled style="background-color: rgba(255,255,255,0.02); color: #777;">
+              </div>
+            </div>
+
+            <div class="form-group-title">Loading Parameters</div>
+            <div class="input-grid">
+              <div class="input-field">
+                <label>Dead Load, wD (kN/m)</label>
+                <input type="number" id="beam-wd" value="20" min="0" step="0.5">
+              </div>
+              <div class="input-field">
+                <label>Live Load, wL (kN/m)</label>
+                <input type="number" id="beam-wl" value="30" min="0" step="0.5">
+              </div>
+              <div class="input-field full-width">
+                <label>Clear Span Length, L (m)</label>
+                <input type="number" id="beam-span" value="6" min="1" step="0.1">
+              </div>
+            </div>
+
+            <div class="form-group-title">Section Geometry</div>
+            <div class="input-grid">
+              <div class="input-field">
+                <label>Beam Width, b (mm)</label>
+                <input type="number" id="beam-w" value="300" min="150" max="1200" step="10">
+              </div>
+              <div class="input-field">
+                <label>Total Depth, h (mm)</label>
+                <input type="number" id="beam-h" value="600" min="200" max="2000" step="10">
+              </div>
+              <div class="input-field">
+                <label>Clear Cover, cc (mm)</label>
+                <input type="number" id="beam-cc" value="40" min="15" max="100" step="5">
+              </div>
+              <div class="input-field">
+                <label>Stirrup Diameter, ds (mm)</label>
+                <input type="number" id="beam-ds" value="10" min="6" max="25" step="1">
+              </div>
+              <div class="input-field">
+                <label>Main Bar Diameter, db (mm)</label>
+                <input type="number" id="beam-db" value="25" min="10" max="50" step="1">
+              </div>
+              <div class="input-field">
+                <label>Number of Tension Bars</label>
+                <input type="number" id="beam-nbars" value="3" min="1" max="12" step="1">
+              </div>
+            </div>
+
+            <!-- Conditional T-Beam Fields -->
+            <div id="t-beam-fields" style="display: none;">
+              <div class="form-group-title">T-Beam Flange Geometry</div>
+              <div class="input-grid">
+                <div class="input-field">
+                  <label>Flange Width, bf (mm)</label>
+                  <input type="number" id="beam-bf" value="800" min="150" max="3000" step="10">
+                </div>
+                <div class="input-field">
+                  <label>Flange Thickness, hf (mm)</label>
+                  <input type="number" id="beam-hf" value="120" min="50" max="500" step="5">
+                </div>
+              </div>
+            </div>
+
+            <!-- Conditional Doubly Reinforced Fields -->
+            <div id="doubly-fields" style="display: none;">
+              <div class="form-group-title">Doubly Reinforced steel</div>
+              <div class="input-grid">
+                <div class="input-field">
+                  <label>Comp. Bar Diameter, db' (mm)</label>
+                  <input type="number" id="beam-db-prime" value="20" min="10" max="50" step="1">
+                </div>
+                <div class="input-field">
+                  <label>Comp. Clear Cover, cc' (mm)</label>
+                  <input type="number" id="beam-cc-prime" value="50" min="15" max="100" step="5">
+                </div>
+                <div class="input-field full-width">
+                  <label>Number of Compression Bars</label>
+                  <input type="number" id="beam-nbars-prime" value="2" min="1" max="10" step="1">
+                </div>
+              </div>
+            </div>
+
+            <!-- Validation Warnings Block -->
+            <div class="warning-box" id="warning-container">
+              <!-- Warning Badges dynamically injected -->
+            </div>
+
+            <div class="buttons-block">
+              <button class="btn btn-dark-red" id="btn-calculate">Calculate</button>
+              <button class="btn btn-outline" id="btn-reset">Reset</button>
+            </div>
+
+          </form>
+        </section>
+
+        <!-- Middle Column: SVG + Result Cards -->
+        <section class="col-middle">
+          
+          <!-- Banner -->
+          <div class="status-banner safe" id="status-banner">
+            🟢 SAFE — &phi;Mn = 0.0 kN&middot;m &ge; Mu = 0.0 kN&middot;m
+          </div>
+
+          <!-- Result Cards Grid (2x4) -->
+          <div class="results-grid">
+            
+            <div class="result-card" id="card-mu" data-tooltip="Factored design moment: Mu = wu * L^2 / 8">
+              <div class="result-label">Mu (Factored)</div>
+              <div class="result-value" id="val-mu">0.0<span class="result-unit">kNm</span></div>
+            </div>
+
+            <div class="result-card" id="card-phimn" data-tooltip="Design moment capacity: phi * Mn">
+              <div class="result-label">&phi;Mn (Capacity)</div>
+              <div class="result-value" id="val-phimn">0.0<span class="result-unit">kNm</span></div>
+            </div>
+
+            <div class="result-card" id="card-dcr" data-tooltip="Demand Capacity Ratio (DCR): Mu / (phi * Mn)">
+              <div class="result-label">DCR Ratio</div>
+              <div class="result-value" id="val-dcr">0.00</div>
+              <div class="dcr-container">
+                <div class="dcr-bar-bg">
+                  <div class="dcr-bar-fill" id="dcr-fill"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="result-card" id="card-et" data-tooltip="Net tensile steel strain: et = 0.003 * (d_t - c) / c">
+              <div class="result-label">Tensile Strain (&epsilon;t)</div>
+              <div class="result-value" id="val-et">0.0000</div>
+            </div>
+
+            <div class="result-card" id="card-phi" data-tooltip="Strength reduction factor based on strain value">
+              <div class="result-label">Reduction Factor (&phi;)</div>
+              <div class="result-value" id="val-phi">0.900</div>
+            </div>
+
+            <div class="result-card" id="card-ac" data-tooltip="Stress block depth (a) and neutral axis depth (c)">
+              <div class="result-label">Block Depth a / c</div>
+              <div class="result-value" id="val-ac">0.0 / 0.0<span class="result-unit">mm</span></div>
+            </div>
+
+            <div class="result-card" id="card-as-req" data-tooltip="Required tension steel area for ultimate loading">
+              <div class="result-label">As Required</div>
+              <div class="result-value" id="val-as-req">0<span class="result-unit">mm²</span></div>
+            </div>
+
+            <div class="result-card" id="card-as-prov" data-tooltip="Provided tension steel reinforcement area">
+              <div class="result-label">As Provided</div>
+              <div class="result-value" id="val-as-prov">0<span class="result-unit">mm²</span></div>
+            </div>
+
+          </div>
+
+          <!-- Strain Zone Indicator -->
+          <div class="strain-indicator-wrapper">
+            <div class="strain-bar-labels">
+              <span>Compression</span>
+              <span>Transition</span>
+              <span>Tension Controlled</span>
+            </div>
+            <div class="strain-bar-graphic">
+              <div class="strain-marker" id="strain-marker"></div>
+            </div>
+            <div class="strain-limits">
+              <span>&epsilon;t &le; 0.002</span>
+              <span>0.002 &lt; &epsilon;t &lt; 0.005</span>
+              <span>&epsilon;t &ge; 0.005</span>
+            </div>
+          </div>
+
+          <!-- Live SVG Diagram Box -->
+          <div class="beam-svg-box">
+            <svg id="beam-svg" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="diagonalHatch" width="10" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+                  <line x1="0" y1="0" x2="0" y2="10" stroke="#4f86c6" stroke-width="2" />
+                </pattern>
+              </defs>
+              <g id="svg-g-container">
+                <!-- SVG elements dynamically drawn by JS -->
+              </g>
+            </svg>
+          </div>
+
+        </section>
+
+        <!-- Right Column: Step-by-Step Breakdown -->
+        <section class="col-right">
+          <div id="accordion-container">
+            <!-- Dynamically populated calculation steps -->
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-top-gradient"></div>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col brand">
+          <h3>Twin<span>Analytic</span></h3>
+          <p>Precision building structures, high-fidelity BIM level 3 coordination modeling, and IoT-driven real-time structural performance tracking.</p>
+          <div class="footer-socials">
+            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="#"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#"><i class="fa-brands fa-youtube"></i></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h3>Services</h3>
+          <ul class="footer-links">
+            <li><a href="services.html">BIM Coordination</a></li>
+            <li><a href="services.html">Structural Design</a></li>
+            <li><a href="services.html">Digital Twin Analytics</a></li>
+            <li><a href="services.html">MEP Engineering</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Interactive</h3>
+          <ul class="footer-links">
+            <li><a href="beam-design.html">Beam Design Calculator</a></li>
+            <li><a href="tools.html">Column Design Calculator</a></li>
+            <li><a href="tools.html">Slab Spans Calculator</a></li>
+            <li><a href="tools.html">Foundation Analysis</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Company</h3>
+          <ul class="footer-links">
+            <li><a href="about.html">About Our Firm</a></li>
+            <li><a href="projects.html">Project Portfolio</a></li>
+            <li><a href="index.html#blog">Research R&amp;D</a></li>
+            <li><a href="contact.html">Contact Offices</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2025 TwinAnalytic. All rights reserved. Calculated via TwinAnalytic — www.twinanalytic.com</p>
+        <div class="footer-bottom-links">
+          <a href="#">Privacy Protocol</a>
+          <a href="#">Security Audits</a>
+          <a href="#">Sitemap</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JS Calculation & Interaction -->
+  <script>
+    // Event listeners and global initialization
+    document.addEventListener('DOMContentLoaded', () => {
+      // Toggle inputs based on beam type selection
+      const typeRadios = document.querySelectorAll('input[name="beam-type"]');
+      typeRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+          toggleConditionalFields(e.target.value);
+          runAnalysis();
+        });
+      });
+
+      // Inputs live update
+      const inputs = document.querySelectorAll('#beam-form input:not([disabled])');
+      inputs.forEach(input => {
+        input.addEventListener('input', runAnalysis);
+      });
+
+      // Calculate Button
+      document.getElementById('btn-calculate').addEventListener('click', (e) => {
+        e.preventDefault();
+        runAnalysis();
+      });
+
+      // Reset Button
+      document.getElementById('btn-reset').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('beam-form').reset();
+        toggleConditionalFields('singly');
+        runAnalysis();
+      });
+
+      // Hamburger Menu
+      const hamburger = document.getElementById('hamburger');
+      const navLinks = document.getElementById('nav-links');
+      if (hamburger && navLinks) {
+        hamburger.addEventListener('click', () => {
+          navLinks.classList.toggle('active');
+          hamburger.classList.toggle('active');
+        });
+      }
+
+      // Initial run
+      runAnalysis();
+    });
+
+    function toggleConditionalFields(type) {
+      const tbeamFields = document.getElementById('t-beam-fields');
+      const doublyFields = document.getElementById('doubly-fields');
+      
+      if (type === 'tbeam') {
+        tbeamFields.style.display = 'block';
+        doublyFields.style.display = 'none';
+      } else if (type === 'doubly') {
+        tbeamFields.style.display = 'none';
+        doublyFields.style.display = 'block';
+      } else {
+        tbeamFields.style.display = 'none';
+        doublyFields.style.display = 'none';
+      }
+    }
+
+    function runAnalysis() {
+      // 1. Gather Inputs
+      const type = document.querySelector('input[name="beam-type"]:checked').value;
+      const fc = parseFloat(document.getElementById('beam-fc').value) || 28;
+      const fy = parseFloat(document.getElementById('beam-fy').value) || 420;
+      const Es = 200000;
+      
+      const wD = parseFloat(document.getElementById('beam-wd').value) || 0;
+      const wL = parseFloat(document.getElementById('beam-wl').value) || 0;
+      const L = parseFloat(document.getElementById('beam-span').value) || 0;
+
+      const b = parseFloat(document.getElementById('beam-w').value) || 300;
+      const h = parseFloat(document.getElementById('beam-h').value) || 600;
+      const cc = parseFloat(document.getElementById('beam-cc').value) || 40;
+      const ds = parseFloat(document.getElementById('beam-ds').value) || 10;
+      const db = parseFloat(document.getElementById('beam-db').value) || 25;
+      const n_bars = parseInt(document.getElementById('beam-nbars').value) || 3;
+
+      // Conditional T-beam values
+      const bf = parseFloat(document.getElementById('beam-bf').value) || 800;
+      const hf = parseFloat(document.getElementById('beam-hf').value) || 120;
+
+      // Conditional Doubly values
+      const db_prime = parseFloat(document.getElementById('beam-db-prime').value) || 20;
+      const cc_prime = parseFloat(document.getElementById('beam-cc-prime').value) || 50;
+      const n_bars_prime = parseInt(document.getElementById('beam-nbars-prime').value) || 2;
+
+      // Validate inputs ranges
+      const warnings = [];
+      if (fc < 17 || fc > 70) warnings.push("Concrete strength f'c must be between 17 and 70 MPa.");
+      if (fy < 280 || fy > 690) warnings.push("Steel yield strength fy must be between 280 and 690 MPa.");
+
+      // Step 1: Factored Moment
+      const wu = 1.2 * wD + 1.6 * wL;
+      const Mu = (wu * L * L) / 8; // kN-m
+
+      // Step 2: Effective Depth
+      const d = h - cc - ds - db / 2;
+      const dt = d; // single layer
+
+      // Step 3: Whitney block factor beta1
+      let beta1 = 0.85;
+      if (fc > 28) {
+        beta1 = Math.max(0.85 - 0.05 * (fc - 28) / 7, 0.65);
+      }
+
+      // Step 4: Limits
+      const eps_u = 0.003;
+      const eps_y = fy / Es;
+      const rho_b = (0.85 * beta1 * fc / fy) * (eps_u / (eps_u + eps_y));
+      const rho_0005 = (0.85 * beta1 * fc / fy) * (eps_u / (eps_u + 0.005));
+      const rho_0004 = (0.85 * beta1 * fc / fy) * (eps_u / (eps_u + 0.004));
+      
+      const rho_min = Math.max(0.25 * Math.sqrt(fc) / fy, 1.4 / fy);
+      const rho_max = rho_0004;
+
+      // Step 5: Provided Steel
+      const As_provided = n_bars * (Math.PI / 4) * db * db;
+      const rho_provided = As_provided / (b * d);
+
+      // Step 6: Stress block a and Neutral Axis c
+      let a = 0;
+      let c = 0;
+      let Mn = 0;
+      let isTBeamAction = false;
+      let isCompSteelYielded = false;
+      let f_s_prime_val = 0;
+      let eps_s_prime_val = 0;
+      let As_prime_provided = 0;
+
+      if (type === 'singly') {
+        a = (As_provided * fy) / (0.85 * fc * b);
+        c = a / beta1;
+        Mn = As_provided * fy * (d - a / 2) * 1e-6; // kN-m
+      } else if (type === 'tbeam') {
+        // T-beam check
+        // First assume stress block is within flange: a <= hf
+        a = (As_provided * fy) / (0.85 * fc * bf);
+        if (a <= hf) {
+          c = a / beta1;
+          Mn = As_provided * fy * (d - a / 2) * 1e-6;
+        } else {
+          isTBeamAction = true;
+          // Compression block extends into the web: true T-beam action
+          const Cf = 0.85 * fc * (bf - b) * hf;
+          const aw = (As_provided * fy - Cf) / (0.85 * fc * b);
+          a = aw + hf; // total compression block depth (flange + web portion)
+          c = aw / beta1 + hf / beta1;
+          Mn = (Cf * (d - hf / 2) + 0.85 * fc * aw * b * (d - aw / 2)) * 1e-6;
+        }
+      } else if (type === 'doubly') {
+        // Doubly reinforced: iterate to find NA depth c
+        As_prime_provided = n_bars_prime * (Math.PI / 4) * db_prime * db_prime;
+        
+        let c_low = 0.1;
+        let c_high = h;
+        let c_sol = (c_low + c_high) / 2;
+        
+        for (let iter = 0; iter < 100; iter++) {
+          const c_mid = (c_low + c_high) / 2;
+          const a_mid = beta1 * c_mid;
+          const eps_s_prime = eps_u * (c_mid - cc_prime) / c_mid;
+          const f_s_prime = Math.max(-fy, Math.min(fy, Es * eps_s_prime));
+          
+          const tension = As_provided * fy;
+          const compression = 0.85 * fc * a_mid * b + As_prime_provided * f_s_prime;
+          
+          if (Math.abs(tension - compression) < 0.01) {
+            c_sol = c_mid;
+            break;
+          }
+          if (compression > tension) {
+            c_high = c_mid;
+          } else {
+            c_low = c_mid;
+          }
+          c_sol = c_mid;
+        }
+        
+        c = c_sol;
+        a = beta1 * c;
+        eps_s_prime_val = eps_u * (c - cc_prime) / c;
+        f_s_prime_val = Math.max(-fy, Math.min(fy, Es * eps_s_prime_val));
+        isCompSteelYielded = Math.abs(f_s_prime_val) >= fy;
+        
+        Mn = (0.85 * fc * a * b * (d - a / 2) + As_prime_provided * f_s_prime_val * (d - cc_prime)) * 1e-6;
+      }
+
+      // Step 7: Net tensile strain et and phi
+      const eps_t = eps_u * (dt - c) / c;
+      let phi = 0.90;
+      let zone = 'Tension controlled';
+      if (eps_t >= 0.005) {
+        phi = 0.90;
+        zone = 'Tension controlled';
+      } else if (eps_t > 0.002) {
+        phi = 0.483 + 83.3 * eps_t;
+        zone = 'Transition zone';
+      } else {
+        phi = 0.65;
+        zone = 'Compression controlled';
+      }
+
+      // Step 8: Capacity Check
+      const phiMn = phi * Mn;
+      const dcr = Mu / phiMn;
+      const isSafe = dcr <= 1.0;
+
+      // Step 9: Required Steel (Design suggestion)
+      const Rn = (Mu * 1e6) / (phi * b * d * d); // MPa
+      let As_req = 0;
+      let n_bars_suggested = 0;
+      let term_in_sqrt = 1 - (2 * Rn) / (0.85 * fc);
+      if (term_in_sqrt >= 0) {
+        const rho_req = (0.85 * fc / fy) * (1 - Math.sqrt(term_in_sqrt));
+        As_req = Math.max(rho_req, rho_min) * b * d;
+        n_bars_suggested = Math.ceil(As_req / ((Math.PI / 4) * db * db));
+      } else {
+        // Concrete alone cannot carry this moment without compression steel
+        As_req = rho_max * b * d;
+        n_bars_suggested = Math.ceil(As_req / ((Math.PI / 4) * db * db));
+      }
+
+      // 2. Update Warnings
+      if (rho_provided > rho_max) warnings.push("Over-reinforced: steel ratio exceeds maximum limit. Brittle failure risk.");
+      if (rho_provided < rho_min) warnings.push("Under minimum steel: steel ratio is less than code minimum.");
+      if (eps_t < 0.004) warnings.push("Not permitted: ACI 318 limits tension steel strain to at least 0.004.");
+      if (dcr > 1.0) warnings.push("Section inadequate: factored moment exceeds design moment capacity.");
+      if (isTBeamAction) warnings.push("T-beam action governs: compression zone extends into the web.");
+      if (type === 'doubly' && !isCompSteelYielded) warnings.push("Compression steel has not yielded: compression steel stress is reduced.");
+
+      const warningContainer = document.getElementById('warning-container');
+      warningContainer.innerHTML = '';
+      if (warnings.length > 0) {
+        warningContainer.classList.add('active');
+        warnings.forEach(warn => {
+          const badge = document.createElement('div');
+          badge.className = 'warning-badge';
+          badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${warn}`;
+          warningContainer.appendChild(badge);
+        });
+      } else {
+        warningContainer.classList.remove('active');
+      }
+
+      // 3. Update Status Banner and Cards
+      const banner = document.getElementById('status-banner');
+      if (isSafe) {
+        banner.className = 'status-banner safe';
+        banner.innerHTML = `🟢 SAFE — &phi;Mn = ${phiMn.toFixed(1)} kN&middot;m &ge; Mu = ${Mu.toFixed(1)} kN&middot;m`;
+      } else {
+        banner.className = 'status-banner inadequate';
+        banner.innerHTML = `🔴 INADEQUATE — &phi;Mn = ${phiMn.toFixed(1)} kN&middot;m &lt; Mu = ${Mu.toFixed(1)} kN&middot;m (DCR = ${dcr.toFixed(2)})`;
+      }
+
+      document.getElementById('val-mu').innerHTML = `${Mu.toFixed(1)}<span class="result-unit">kNm</span>`;
+      document.getElementById('val-phimn').innerHTML = `${phiMn.toFixed(1)}<span class="result-unit">kNm</span>`;
+      document.getElementById('val-dcr').textContent = dcr.toFixed(3);
+      
+      const dcrFill = document.getElementById('dcr-fill');
+      const dcrPct = Math.min(100, dcr * 100);
+      dcrFill.style.width = `${dcrPct}%`;
+      if (dcr > 1.0) {
+        dcrFill.className = 'dcr-bar-fill danger';
+      } else if (dcr > 0.85) {
+        dcrFill.className = 'dcr-bar-fill warning';
+      } else {
+        dcrFill.className = 'dcr-bar-fill';
+      }
+
+      document.getElementById('val-et').textContent = `${eps_t.toFixed(5)} (${zone})`;
+      document.getElementById('val-phi').textContent = phi.toFixed(3);
+      document.getElementById('val-ac').innerHTML = `${a.toFixed(1)} / ${c.toFixed(1)}<span class="result-unit">mm</span>`;
+      document.getElementById('val-as-req').innerHTML = `${Math.round(As_req)}<span class="result-unit">mm²</span>`;
+      document.getElementById('val-as-prov').innerHTML = `${Math.round(As_provided)}<span class="result-unit">mm² (${n_bars} nos)</span>`;
+
+      // 4. Position Strain Marker
+      let strainMarkerPct = 0;
+      if (eps_t <= 0.002) {
+        strainMarkerPct = (eps_t / 0.002) * 30;
+      } else if (eps_t < 0.005) {
+        strainMarkerPct = 30 + ((eps_t - 0.002) / 0.003) * 40;
+      } else {
+        strainMarkerPct = 70 + (Math.min(0.005, eps_t - 0.005) / 0.005) * 30;
+      }
+      strainMarkerPct = Math.max(0, Math.min(100, strainMarkerPct));
+      document.getElementById('strain-marker').style.left = `${strainMarkerPct}%`;
+
+      // 5. Draw Live SVG Diagram
+      drawLiveSVG(type, b, h, cc, ds, db, n_bars, a, c, d, bf, hf, db_prime, cc_prime, n_bars_prime);
+
+      // 6. Populate Accordion Steps
+      populateSteps(type, fc, fy, wD, wL, L, wu, Mu, d, beta1, rho_b, rho_max, rho_min, a, c, eps_t, phi, Mn, phiMn, dcr, As_req, n_bars_suggested, isSafe, isTBeamAction, isCompSteelYielded, eps_s_prime_val, f_s_prime_val, As_prime_provided);
+    }
+
+    function drawLiveSVG(type, b, h, cc, ds, db, n_bars, a, c, d, bf, hf, db_prime, cc_prime, n_bars_prime) {
+      const g = document.getElementById('svg-g-container');
+      g.innerHTML = ''; // clear
+
+      const cx = 200;
+      const cy = 150;
+      const scale = Math.min(180 / (type === 'tbeam' ? bf : b), 220 / h);
+
+      const w_draw = b * scale;
+      const h_draw = h * scale;
+      const y_f = cy - h_draw / 2;
+      const x_w = cx - w_draw / 2;
+
+      // Draw Main Concrete Shape
+      let shapePath = '';
+      if (type === 'tbeam') {
+        const wf_draw = bf * scale;
+        const tf_draw = hf * scale;
+        const x_f = cx - wf_draw / 2;
+        const y_w = y_f + tf_draw;
+        
+        // T-beam Polygon
+        const points = `${x_f},${y_f} ${x_f + wf_draw},${y_f} ${x_f + wf_draw},${y_w} ${cx + w_draw/2},${y_w} ${cx + w_draw/2},${y_f + h_draw} ${cx - w_draw/2},${y_f + h_draw} ${cx - w_draw/2},${y_w} ${x_f},${y_w}`;
+        shapePath = `<polygon points="${points}" stroke="#4f86c6" stroke-width="2" fill="rgba(79, 134, 198, 0.05)" />`;
+      } else {
+        // Rectangular Beam
+        shapePath = `<rect x="${x_w}" y="${y_f}" width="${w_draw}" height="${h_draw}" stroke="#4f86c6" stroke-width="2" fill="rgba(79, 134, 198, 0.05)" />`;
+      }
+      g.innerHTML += shapePath;
+
+      // Draw Whitney Stress Block Hatching
+      let hatchPath = '';
+      const stressBlockHeight = a * scale;
+      if (type === 'tbeam') {
+        const wf_draw = bf * scale;
+        const tf_draw = hf * scale;
+        const x_f = cx - wf_draw / 2;
+        
+        if (a <= hf) {
+          // Stress block lies inside flange only
+          hatchPath = `<rect x="${x_f}" y="${y_f}" width="${wf_draw}" height="${stressBlockHeight}" fill="url(#diagonalHatch)" opacity="0.3" />`;
+        } else {
+          // Stress block goes into the web
+          const y_w = y_f + tf_draw;
+          const points = `${x_f},${y_f} ${x_f + wf_draw},${y_f} ${x_f + wf_draw},${y_w} ${cx + w_draw/2},${y_w} ${cx + w_draw/2},${y_f + stressBlockHeight} ${cx - w_draw/2},${y_f + stressBlockHeight} ${cx - w_draw/2},${y_w} ${x_f},${y_w}`;
+          hatchPath = `<polygon points="${points}" fill="url(#diagonalHatch)" opacity="0.3" />`;
+        }
+      } else {
+        hatchPath = `<rect x="${x_w}" y="${y_f}" width="${w_draw}" height="${stressBlockHeight}" fill="url(#diagonalHatch)" opacity="0.3" />`;
+      }
+      g.innerHTML += hatchPath;
+
+      // Draw Neutral Axis (N.A.) Line
+      const y_c = y_f + c * scale;
+      const leftLimit = cx - (type === 'tbeam' ? bf*scale/2 : w_draw/2) - 15;
+      const rightLimit = cx + (type === 'tbeam' ? bf*scale/2 : w_draw/2) + 15;
+      g.innerHTML += `<line x1="${leftLimit}" y1="${y_c}" x2="${rightLimit}" y2="${y_c}" stroke="#ff5252" stroke-width="1.2" stroke-dasharray="4,4" />`;
+      g.innerHTML += `<text x="${rightLimit + 5}" y="${y_c + 3}" fill="#ff5252" font-size="9" font-family="var(--font-mono)">N.A. (c=${c.toFixed(0)}mm)</text>`;
+
+      // Draw Whitney Block Height Line
+      const y_a = y_f + a * scale;
+      g.innerHTML += `<line x1="${leftLimit}" y1="${y_a}" x2="${rightLimit}" y2="${y_a}" stroke="#4f86c6" stroke-width="1" stroke-dasharray="2,2" />`;
+      g.innerHTML += `<text x="${rightLimit + 5}" y="${y_a + 3}" fill="#4f86c6" font-size="9" font-family="var(--font-mono)">a = ${a.toFixed(0)}mm</text>`;
+
+      // Draw Effective Depth Line
+      const y_d = y_f + d * scale;
+      g.innerHTML += `<line x1="${leftLimit}" y1="${y_d}" x2="${rightLimit}" y2="${y_d}" stroke="#aaa" stroke-width="1" stroke-dasharray="3,3" />`;
+      g.innerHTML += `<text x="${rightLimit + 5}" y="${y_d + 3}" fill="#aaa" font-size="9" font-family="var(--font-mono)">d = ${d.toFixed(0)}mm</text>`;
+
+      // Draw Tension Rebars (Bottom)
+      const r_bar = Math.max(3.5, (db / 2) * scale);
+      const innerW = w_draw - 2 * (cc + ds + db / 2) * scale;
+      const tensionY = y_f + d * scale;
+      if (n_bars > 0) {
+        const x_start = cx - w_draw / 2 + (cc + ds + db / 2) * scale;
+        const spacing = n_bars > 1 ? innerW / (n_bars - 1) : 0;
+        for (let i = 0; i < n_bars; i++) {
+          const barX = x_start + i * spacing;
+          g.innerHTML += `<circle cx="${barX}" cy="${tensionY}" r="${r_bar}" fill="#c9a84c" stroke="#161a23" stroke-width="1" />`;
+        }
+      }
+
+      // Draw Compression Rebars (Top, if Doubly)
+      if (type === 'doubly') {
+        const r_bar_prime = Math.max(3, (db_prime / 2) * scale);
+        const compY = y_f + cc_prime * scale;
+        const innerW_prime = w_draw - 2 * (cc_prime) * scale;
+        if (n_bars_prime > 0) {
+          const x_start_prime = cx - w_draw / 2 + cc_prime * scale;
+          const spacing_prime = n_bars_prime > 1 ? innerW_prime / (n_bars_prime - 1) : 0;
+          for (let i = 0; i < n_bars_prime; i++) {
+            const barX_prime = x_start_prime + i * spacing_prime;
+            g.innerHTML += `<circle cx="${barX_prime}" cy="${compY}" r="${r_bar_prime}" fill="#4f86c6" stroke="#161a23" stroke-width="1" />`;
+          }
+        }
+      }
+
+      // Draw Dimensions & Text labels
+      g.innerHTML += `<line x1="${x_w}" y1="${y_f + h_draw + 15}" x2="${x_w + w_draw}" y2="${y_f + h_draw + 15}" stroke="#777" stroke-width="0.8" />`;
+      g.innerHTML += `<line x1="${x_w}" y1="${y_f + h_draw + 10}" x2="${x_w}" y2="${y_f + h_draw + 20}" stroke="#777" stroke-width="0.8" />`;
+      g.innerHTML += `<line x1="${x_w + w_draw}" y1="${y_f + h_draw + 10}" x2="${x_w + w_draw}" y2="${y_f + h_draw + 20}" stroke="#777" stroke-width="0.8" />`;
+      g.innerHTML += `<text x="${cx}" y="${y_f + h_draw + 30}" fill="#94a3b8" font-size="9.5" text-anchor="middle" font-family="var(--font-sans)">b = ${b} mm</text>`;
+
+      // Total Height Dimension Line
+      const dimLeft = x_w - 30;
+      g.innerHTML += `<line x1="${dimLeft}" y1="${y_f}" x2="${dimLeft}" y2="${y_f + h_draw}" stroke="#777" stroke-width="0.8" />`;
+      g.innerHTML += `<line x1="${dimLeft - 5}" y1="${y_f}" x2="${dimLeft + 5}" y2="${y_f}" stroke="#777" stroke-width="0.8" />`;
+      g.innerHTML += `<line x1="${dimLeft - 5}" y1="${y_f + h_draw}" x2="${dimLeft + 5}" y2="${y_f + h_draw}" stroke="#777" stroke-width="0.8" />`;
+      g.innerHTML += `<text x="${dimLeft - 10}" y="${cy}" fill="#94a3b8" font-size="9.5" text-anchor="middle" transform="rotate(-90, ${dimLeft - 10}, ${cy})" font-family="var(--font-sans)">h = ${h} mm</text>`;
+    }
+
+    function populateSteps(type, fc, fy, wD, wL, L, wu, Mu, d, beta1, rho_b, rho_max, rho_min, a, c, eps_t, phi, Mn, phiMn, dcr, As_req, n_bars_suggested, isSafe, isTBeamAction, isCompSteelYielded, eps_s_prime, f_s_prime, As_prime_provided) {
+      const container = document.getElementById('accordion-container');
+      container.innerHTML = ''; // Clear
+
+      const hf = parseFloat(document.getElementById('beam-hf').value) || 120;
+      const aw = a - hf;
+
+      const stepsData = [
+        {
+          num: 1,
+          title: "Factored Design Moment (Mu)",
+          status: isSafe ? "pass" : "fail",
+          formula: "wu = 1.2wD + 1.6wL\nMu = wu * L² / 8",
+          sub: `wu = 1.2 * (${wD}) + 1.6 * (${wL}) = ${wu.toFixed(1)} kN/m\nMu = ${wu.toFixed(1)} * ${L}² / 8 = ${Mu.toFixed(1)} kN·m`,
+          res: `Mu = ${Mu.toFixed(1)} kN·m`
+        },
+        {
+          num: 2,
+          title: "Effective Structural Depth (d)",
+          status: "pass",
+          formula: "d = h - cc - ds - db/2",
+          sub: `d = ${document.getElementById('beam-h').value} - ${document.getElementById('beam-cc').value} - ${document.getElementById('beam-ds').value} - ${document.getElementById('beam-db').value}/2`,
+          res: `d = ${d.toFixed(1)} mm`
+        },
+        {
+          num: 3,
+          title: "Whitney Block Factor (beta1)",
+          status: "pass",
+          formula: "If f'c <= 28: beta1 = 0.85\nIf f'c > 28: beta1 = max(0.85 - 0.05*(f'c - 28)/7, 0.65)",
+          sub: fc > 28 
+            ? `beta1 = 0.85 - 0.05 * (${fc} - 28) / 7 = ${beta1.toFixed(3)}` 
+            : `f'c = ${fc} MPa <= 28 MPa -> beta1 = 0.850`,
+          res: `beta1 = ${beta1.toFixed(3)}`
+        },
+        {
+          num: 4,
+          title: "Steel Ratio Code Limits (rho)",
+          status: "pass",
+          formula: "rho_min = max(0.25 * sqrt(f'c) / fy, 1.4 / fy)\nrho_max = rho_0.004",
+          sub: `rho_min = max(0.25 * sqrt(${fc}) / ${fy}, 1.4 / ${fy}) = ${(rho_min*100).toFixed(3)}%\nrho_max = ${(rho_max*100).toFixed(3)}%`,
+          res: `rho_min = ${(rho_min*100).toFixed(3)}% | rho_max = ${(rho_max*100).toFixed(3)}%`
+        },
+        {
+          num: 5,
+          title: "Neutral Axis (c) & Stress Block (a)",
+          status: "pass",
+          formula: type === 'singly' 
+            ? "a = As * fy / (0.85 * f'c * b)\nc = a / beta1"
+            : type === 'tbeam'
+            ? "If T-beam, Cf = 0.85*fc'*(bf - b)*hf\naw = (As*fy - Cf)/(0.85*fc'*b)\nc = aw/beta1 + hf/beta1"
+            : "Iterate: 0.85*fc'*a*b + A's*f's = As*fy",
+          sub: type === 'singly'
+            ? `a = (${Math.round(document.getElementById('beam-nbars').value * Math.PI / 4 * Math.pow(document.getElementById('beam-db').value, 2))} * ${fy}) / (0.85 * ${fc} * ${document.getElementById('beam-w').value})\nc = ${a.toFixed(1)} / ${beta1.toFixed(3)}`
+            : type === 'tbeam'
+            ? isTBeamAction 
+              ? `True T-Beam: Cf = 0.85 * ${fc} * (${document.getElementById('beam-bf').value} - ${document.getElementById('beam-w').value}) * ${document.getElementById('beam-hf').value} = ${Math.round(0.85*fc*(document.getElementById('beam-bf').value - document.getElementById('beam-w').value)*document.getElementById('beam-hf').value*1e-3)} kN\naw = ${aw.toFixed(1)} mm, a = ${a.toFixed(1)} mm`
+              : `Flange block: a = ${a.toFixed(1)} mm <= hf (${document.getElementById('beam-hf').value} mm)`
+            : `Doubly Iteration: A's = ${Math.round(As_prime_provided)} mm², stress f's = ${f_s_prime.toFixed(1)} MPa\nBalanced depth a = ${a.toFixed(1)} mm, c = ${c.toFixed(1)} mm`,
+          res: `a = ${a.toFixed(1)} mm | c = ${c.toFixed(1)} mm`
+        },
+        {
+          num: 6,
+          title: "Steel Tensile Strain (et)",
+          status: eps_t >= 0.004 ? "pass" : "fail",
+          formula: "et = 0.003 * (d - c) / c",
+          sub: `et = 0.003 * (${d.toFixed(1)} - ${c.toFixed(1)}) / ${c.toFixed(1)}`,
+          res: `et = ${eps_t.toFixed(5)}`
+        },
+        {
+          num: 7,
+          title: "Strength Reduction Factor (phi)",
+          status: "pass",
+          formula: "If et >= 0.005: phi = 0.90\nIf 0.002 < et < 0.005: phi = 0.483 + 83.3*et\nIf et <= 0.002: phi = 0.65",
+          sub: eps_t >= 0.005 
+            ? `et = ${eps_t.toFixed(5)} >= 0.005 -> phi = 0.900`
+            : eps_t > 0.002
+            ? `phi = 0.483 + 83.3 * ${eps_t.toFixed(5)} = ${phi.toFixed(3)}`
+            : `et = ${eps_t.toFixed(5)} <= 0.002 -> phi = 0.650`,
+          res: `phi = ${phi.toFixed(3)}`
+        },
+        {
+          num: 8,
+          title: "Nominal & Factored Capacity (phiMn)",
+          status: isSafe ? "pass" : "fail",
+          formula: type === 'doubly'
+            ? "Mn = 0.85*fc'*a*b*(d - a/2) + A's*f's*(d - d')\nphiMn = phi * Mn"
+            : "Mn = As * fy * (d - a/2)\nphiMn = phi * Mn",
+          sub: `Mn = ${Mn.toFixed(1)} kN·m\nphiMn = ${phi.toFixed(3)} * ${Mn.toFixed(1)}`,
+          res: `phiMn = ${phiMn.toFixed(1)} kN·m`
+        },
+        {
+          num: 9,
+          title: "DCR Analysis Check",
+          status: isSafe ? "pass" : "fail",
+          formula: "DCR = Mu / phiMn",
+          sub: `DCR = ${Mu.toFixed(1)} / ${phiMn.toFixed(1)}`,
+          res: `DCR = ${dcr.toFixed(3)} -> ${isSafe ? 'SAFE ✓' : 'INADEQUATE ✗'}`
+        },
+        {
+          num: 10,
+          title: "Required Reinforcement Suggestion",
+          status: "pass",
+          formula: "As_req = rho_req * b * d\nn_bars = ceil(As_req / Ab)",
+          sub: `As_req = ${Math.round(As_req)} mm²\nSuggested bar pattern: ${n_bars_suggested} Nos - #${document.getElementById('beam-db').value} bars`,
+          res: `As_req = ${Math.round(As_req)} mm² (${n_bars_suggested} bars)`
+        }
+      ];
+
+      stepsData.forEach(step => {
+        const stepCard = document.createElement('div');
+        stepCard.className = 'accordion-card';
+        
+        stepCard.innerHTML = `
+          <div class="accordion-header" onclick="toggleAccordion(this)">
+            <div class="accordion-header-left">
+              <span class="status-dot ${step.status}"></span>
+              <h4>STEP ${step.num} — ${step.title}</h4>
+            </div>
+            <i class="fa-solid fa-chevron-down" style="font-size:0.75rem; color:#777;"></i>
+          </div>
+          <div class="accordion-body">
+            <div style="font-family: var(--font-sans); color: #94a3b8; font-weight: 500;">Method:</div>
+            <div class="step-math" style="border-left-color: #777;">${step.formula}</div>
+            <div style="font-family: var(--font-sans); color: #94a3b8; font-weight: 500; margin-top: 0.75rem;">Calculations:</div>
+            <div class="step-math">${step.sub}</div>
+            <div style="font-family: var(--font-sans); color: #fff; font-weight: 600; margin-top: 0.75rem;">Result:</div>
+            <div class="step-math" style="border-left-color: #4caf50; color: #fff;">${step.res}</div>
+          </div>
+        `;
+
+        container.appendChild(stepCard);
+      });
+    }
+
+    function toggleAccordion(header) {
+      const card = header.parentElement;
+      const body = card.querySelector('.accordion-body');
+      const icon = header.querySelector('i');
+      
+      const isOpen = body.classList.contains('open');
+      
+      // Close all first for neatness
+      const allBodies = document.querySelectorAll('.accordion-body');
+      const allIcons = document.querySelectorAll('.accordion-header i');
+      allBodies.forEach(b => b.classList.remove('open'));
+      allIcons.forEach(i => {
+        i.className = 'fa-solid fa-chevron-down';
+      });
+
+      if (!isOpen) {
+        body.classList.add('open');
+        icon.className = 'fa-solid fa-chevron-up';
+      }
+    }
+  </script>
+</body>
+</html>
