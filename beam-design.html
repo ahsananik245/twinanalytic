@@ -2612,15 +2612,25 @@ ${checkListTable}
         doc.setFontSize(7.5);
         doc.text('Calculated via TwinAnalytic — www.twinanalytic.com', 13, 284);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Page ${pageNum} of 9`, 175, 284);
+        doc.text(`Page ${pageNum}`, 175, 284);
       }
 
       let cy = 35;
       function printText(doc, text, x = 13) {
+        function checkPageBreak(inc) {
+          if (cy + inc > 275) {
+            doc.addPage();
+            const pageNum = doc.internal.getNumberOfPages();
+            drawPageBorderAndHeader(doc, pageNum);
+            cy = 36;
+          }
+        }
+
         const lines = text.split('\n');
         lines.forEach(line => {
           if (line.includes('class="report-section-header"')) {
             const title = line.replace(/<div.*?>|<\/div>/g, '');
+            checkPageBreak(15);
             cy += 2;
             doc.setDrawColor(26, 32, 44);
             doc.setLineWidth(0.35);
@@ -2636,6 +2646,7 @@ ${checkListTable}
             cy += 6;
           } else if (line.includes('class="report-subsection-header"')) {
             const title = line.replace(/<div.*?>|<\/div>/g, '');
+            checkPageBreak(12);
             cy += 2;
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(9.5);
@@ -2648,10 +2659,6 @@ ${checkListTable}
             doc.line(10, cy, 200, cy);
             cy += 5.5;
           } else {
-            doc.setFont('courier', 'normal');
-            doc.setFontSize(8.5);
-            doc.setTextColor(26, 32, 44);
-            
             let cleanLine = line
               .replace(/&times;/g, 'x')
               .replace(/&le;/g, '<=')
@@ -2695,8 +2702,23 @@ ${checkListTable}
               .replace(/ℹ️/g, '[INFO]')
               .replace(/⚠️/g, '[WARN]');
             
-            doc.text(cleanLine, x, cy);
-            cy += 4.5;
+            doc.setFont('courier', 'normal');
+            doc.setFontSize(8.5);
+            doc.setTextColor(26, 32, 44);
+
+            const isTable = cleanLine.includes('+') || cleanLine.includes('|') || cleanLine.includes('│') || cleanLine.includes('─') || cleanLine.trim().startsWith('-');
+            if (isTable) {
+              checkPageBreak(4.5);
+              doc.text(cleanLine, x, cy);
+              cy += 4.5;
+            } else {
+              const wrappedLines = doc.splitTextToSize(cleanLine, 180);
+              wrappedLines.forEach(wl => {
+                checkPageBreak(4.5);
+                doc.text(wl, x, cy);
+                cy += 4.5;
+              });
+            }
           }
         });
       }
