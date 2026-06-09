@@ -975,9 +975,14 @@
             </svg>
           </div>
 
-          <button class="btn btn-outline" id="btn-print-report" style="margin-top: 1.5rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background-color: rgba(201, 168, 76, 0.1); border-color: var(--color-gold); color: #fff;">
-            <i class="fa-solid fa-file-pdf"></i> Generate Printable PDF Report
-          </button>
+          <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <button class="btn btn-gold" id="btn-download-report-direct" style="flex: 1.2; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.88rem;">
+              <i class="fa-solid fa-file-pdf"></i> Download Full Report (PDF)
+            </button>
+            <button class="btn btn-outline" id="btn-print-report" style="flex: 0.8; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.88rem; border-color: rgba(255,255,255,0.2); background-color: rgba(255,255,255,0.02); color: #fff;">
+              <i class="fa-solid fa-eye"></i> Preview Report
+            </button>
+          </div>
 
         </section>
 
@@ -1101,6 +1106,14 @@
       if (btnPrint) {
         btnPrint.addEventListener('click', () => {
           checkAuthAndRun(generateAndOpenReport, 'Beam Report Export');
+        });
+      }
+
+      // Direct Download Report Button
+      const btnDownloadDirect = document.getElementById('btn-download-report-direct');
+      if (btnDownloadDirect) {
+        btnDownloadDirect.addEventListener('click', () => {
+          checkAuthAndRun(downloadBeamPDFDirect, 'Beam Report Export');
         });
       }
 
@@ -1784,7 +1797,7 @@
       };
     }
 
-    function generateAndOpenReport() {
+    function generateAndOpenReport(showModal = true) {
       const r = window.calcResults;
       if (!r) {
         alert("Please run analysis first.");
@@ -2473,10 +2486,17 @@ Bar Spacing Detailing Check:
       container.appendChild(p9);
 
       // Show modal preview
-      document.getElementById('report-modal').classList.add('active');
+      if (showModal) {
+        document.getElementById('report-modal').classList.add('active');
+      }
     }
 
-    function downloadBeamPDF() {
+    function downloadBeamPDFDirect() {
+      generateAndOpenReport(false);
+      downloadBeamPDF('btn-download-report-direct');
+    }
+
+    function downloadBeamPDF(triggerBtnId = 'btn-download-pdf') {
       const original = document.getElementById('report-preview-container');
       const pages = original.querySelectorAll('.report-page-a4');
       
@@ -2511,7 +2531,7 @@ Bar Spacing Detailing Check:
         pagebreak:    { mode: ['css', 'legacy'] }
       };
 
-      const btn = document.getElementById('btn-download-pdf');
+      const btn = document.getElementById(triggerBtnId);
       if (btn) {
         const originalText = btn.innerHTML;
         btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating...`;
