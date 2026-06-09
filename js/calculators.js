@@ -1888,6 +1888,39 @@ function syncLeadDataBeforeDownload(Mol, Mos, hFinal, quVal) {
   }
 }
 
+// Reusable helper function to draw the TwinAnalytic vector logo in PDF reports
+function drawTwinAnalyticLogo(doc, x, y, size, isDarkBg) {
+  const slateR = isDarkBg ? 240 : 47;
+  const slateG = isDarkBg ? 244 : 55;
+  const slateB = isDarkBg ? 248 : 71;
+  const goldR = 201, goldG = 168, goldB = 76;
+
+  // Base gold line
+  doc.setDrawColor(goldR, goldG, goldB);
+  doc.setLineWidth(size * 0.04);
+  doc.line(x + size * 0.05, y + size * 0.95, x + size * 0.95, y + size * 0.95);
+
+  // Left vertical column (slate gray)
+  doc.setFillColor(slateR, slateG, slateB);
+  doc.rect(x + size * 0.25, y + size * 0.2, size * 0.15, size * 0.75, 'F');
+
+  // Right vertical column (gold)
+  doc.setFillColor(goldR, goldG, goldB);
+  doc.rect(x + size * 0.6, y + size * 0.2, size * 0.15, size * 0.75, 'F');
+
+  // Connecting horizontal beam (gold)
+  doc.rect(x + size * 0.15, y + size * 0.35, size * 0.7, size * 0.12, 'F');
+
+  // Diagonal brace (slate gray)
+  doc.setDrawColor(slateR, slateG, slateB);
+  doc.setLineWidth(size * 0.08);
+  doc.line(x + size * 0.25, y + size * 0.75, x + size * 0.75, y + size * 0.47);
+
+  // Intersection detail (gold dot/square)
+  doc.setFillColor(goldR, goldG, goldB);
+  doc.rect(x + size * 0.45, y + size * 0.47, size * 0.1, size * 0.1, 'F');
+}
+
 function downloadSlabPDF() {
   const projName = document.getElementById('slab-proj-name').value || "TwinAnalytic Tower";
   const designer = document.getElementById('slab-designer').value || "AH";
@@ -2115,12 +2148,11 @@ function downloadSlabPDF() {
     doc.text('SHEET S-102', 6.6, 0.22);
 
     // Logo
-    doc.setFillColor(0, 70, 130);
-    doc.rect(7.4, 0.13, 0.6, 0.10, 'F');
-    doc.setTextColor(255, 255, 255);
+    drawTwinAnalyticLogo(doc, 7.3, 0.09, 0.13, false);
+    doc.setTextColor(201, 168, 76);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6.5);
-    doc.text('TWIN', 7.7, 0.205, { align: 'center' });
+    doc.setFontSize(8);
+    doc.text('TwinAnalytic', 7.47, 0.19);
 
     // Gold border
     doc.setDrawColor(201, 168, 76);
@@ -2246,8 +2278,9 @@ function downloadSlabPDF() {
   doc.text('FLAT PLATE SLAB SYSTEM', 4.25, 7.9, { align: 'center' });
 
   // Branding at bottom
+  drawTwinAnalyticLogo(doc, 4.0, 8.6, 0.5, false);
   doc.setTextColor(201, 168, 76);
-  doc.setFont('times', 'bold');
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
   doc.text('TwinAnalytic', 4.25, 9.4, { align: 'center' });
   doc.setFont('helvetica', 'italic');
@@ -4045,17 +4078,20 @@ function downloadColumnPDF() {
     doc.line(2.3, 0.25, 2.3, 1.45);
     doc.line(5.6, 0.25, 5.6, 1.45);
 
+    // Logo
+    drawTwinAnalyticLogo(doc, 0.35, 0.38, 0.3, false);
+
     doc.setTextColor(201, 168, 76);
-    doc.setFont('times', 'bold');
-    doc.setFontSize(16);
-    doc.text('TwinAnalytic', 0.4, 0.60);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text('TwinAnalytic', 0.70, 0.58);
 
     doc.setTextColor(80, 80, 80);
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.text('STRUCTURAL DESIGN GROUP', 0.4, 0.80);
-    doc.text(code.toUpperCase() + ' COMPLIANCE', 0.4, 0.98);
-    doc.text('BUET CE 317 Method', 0.4, 1.15);
+    doc.setFontSize(6.0);
+    doc.text('STRUCTURAL DESIGN GROUP', 0.70, 0.76);
+    doc.text(code.toUpperCase() + ' COMPLIANCE', 0.70, 0.94);
+    doc.text('BUET CE 317 Method', 0.70, 1.12);
 
     doc.setTextColor(60, 60, 60);
     doc.setFont('helvetica', 'bold');
@@ -4113,14 +4149,17 @@ function downloadColumnPDF() {
   doc.setFillColor(30, 30, 30);
   doc.rect(0.3, 0.3, 7.9, 1.8, 'F');
 
+  // Logo
+  drawTwinAnalyticLogo(doc, 1.0, 0.5, 0.8, true);
+
   doc.setTextColor(201, 168, 76);
-  doc.setFont('times', 'bold');
-  doc.setFontSize(26);
-  doc.text('TWINANALYTIC', 1.0, 1.2);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(24);
+  doc.text('TWINANALYTIC', 2.0, 0.9);
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
+  doc.setFontSize(8.5);
   doc.setTextColor(255, 255, 255);
-  doc.text('ENGINEERING CALCULATIONS & COMPLIANCE REPORTS', 1.0, 1.6);
+  doc.text('ENGINEERING CALCULATIONS & COMPLIANCE REPORTS', 2.0, 1.25);
 
   doc.setTextColor(30, 30, 30);
   doc.setFont('times', 'bold');

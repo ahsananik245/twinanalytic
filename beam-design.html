@@ -793,6 +793,7 @@
   <nav class="navbar scrolled" id="navbar">
     <div class="container">
       <a href="index.html" class="logo">
+        <img src="assets/logo.png" alt="TwinAnalytic Logo" style="height: 38px; width: auto; border-radius: 4px; margin-right: 8px; vertical-align: middle;">
         Twin<span>Analytic</span>
       </a>
       <ul class="nav-links" id="nav-links">
@@ -2568,6 +2569,38 @@ ${detailTable}
       }
 
       // Helper functions
+      function drawTwinAnalyticLogo(doc, x, y, size, isDarkBg) {
+        const slateR = isDarkBg ? 240 : 47;
+        const slateG = isDarkBg ? 244 : 55;
+        const slateB = isDarkBg ? 248 : 71;
+        const goldR = 201, goldG = 168, goldB = 76;
+
+        // Base gold line
+        doc.setDrawColor(goldR, goldG, goldB);
+        doc.setLineWidth(size * 0.04);
+        doc.line(x + size * 0.05, y + size * 0.95, x + size * 0.95, y + size * 0.95);
+
+        // Left vertical column (slate gray)
+        doc.setFillColor(slateR, slateG, slateB);
+        doc.rect(x + size * 0.25, y + size * 0.2, size * 0.15, size * 0.75, 'F');
+
+        // Right vertical column (gold)
+        doc.setFillColor(goldR, goldG, goldB);
+        doc.rect(x + size * 0.6, y + size * 0.2, size * 0.15, size * 0.75, 'F');
+
+        // Connecting horizontal beam (gold)
+        doc.rect(x + size * 0.15, y + size * 0.35, size * 0.7, size * 0.12, 'F');
+
+        // Diagonal brace (slate gray)
+        doc.setDrawColor(slateR, slateG, slateB);
+        doc.setLineWidth(size * 0.08);
+        doc.line(x + size * 0.25, y + size * 0.75, x + size * 0.75, y + size * 0.47);
+
+        // Intersection detail (gold dot/square)
+        doc.setFillColor(goldR, goldG, goldB);
+        doc.rect(x + size * 0.45, y + size * 0.47, size * 0.1, size * 0.1, 'F');
+      }
+
       function drawPageBorderAndHeader(doc, pageNum) {
         // Gold border
         doc.setDrawColor(201, 168, 76);
@@ -2583,18 +2616,21 @@ ${detailTable}
         doc.line(70, 10, 70, 30);
         doc.line(152, 10, 152, 30);
 
+        // Brand Logo
+        drawTwinAnalyticLogo(doc, 13, 11, 8, false);
+
         // Brand
         doc.setTextColor(201, 168, 76);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(14);
-        doc.text('TwinAnalytic', 13, 16);
+        doc.text('TwinAnalytic', 23, 16);
         
         doc.setTextColor(74, 85, 104);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(5.5);
-        doc.text('STRUCTURAL DESIGN GROUP', 13, 21);
-        doc.text('ACI 318-19 COMPLIANCE', 13, 24.5);
-        doc.text('CE 315 CALCULATION SHEET', 13, 28);
+        doc.text('STRUCTURAL DESIGN GROUP', 23, 21);
+        doc.text('ACI 318-19 COMPLIANCE', 23, 24.5);
+        doc.text('CE 315 CALCULATION SHEET', 23, 28);
 
         // Project
         doc.setTextColor(26, 32, 44);
@@ -2755,15 +2791,18 @@ ${detailTable}
       doc.setFillColor(30, 30, 30);
       doc.rect(10.5, 30.5, 189, 30, 'F');
 
+      // Logo
+      drawTwinAnalyticLogo(doc, 20, 35, 20, true);
+
       doc.setTextColor(201, 168, 76);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(20);
-      doc.text('TWINANALYTIC CALCULATIONS', 20, 48);
+      doc.text('TWINANALYTIC CALCULATIONS', 44, 47);
       
       doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8.5);
-      doc.text('ENGINEERING CALCULATIONS & COMPLIANCE REPORTS', 20, 56);
+      doc.text('ENGINEERING CALCULATIONS & COMPLIANCE REPORTS', 44, 54);
 
       doc.setTextColor(30, 30, 30);
       doc.setFont('helvetica', 'bold');
