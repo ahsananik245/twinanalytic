@@ -4096,7 +4096,7 @@ function downloadColumnPDF() {
     doc.setFont('helvetica', 'italic');
     doc.setFontSize(7.5);
     doc.setTextColor(150, 150, 150);
-    doc.text('Calculated per CE 317 — Dr. Tahsin Reza Hossain, BUET', 0.5, 10.6);
+    doc.text('Calculated via TwinAnalytic — www.twinanalytic.com', 0.5, 10.6);
     doc.text(`Page ${pageNum}`, 7.5, 10.6);
   }
 
@@ -4158,7 +4158,7 @@ function downloadColumnPDF() {
   doc.setFont('helvetica', 'italic');
   doc.setFontSize(9.5);
   doc.setTextColor(120, 120, 120);
-  doc.text('Software Reference: Calculated per CE 317 — Dr. Tahsin Reza Hossain, BUET', 1.0, 9.8);
+  doc.text('Software Reference: TwinAnalytic — www.twinanalytic.com', 1.0, 9.8);
 
   doc.setFont('times', 'bold');
   doc.setFontSize(10);
