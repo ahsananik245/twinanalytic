@@ -3693,6 +3693,7 @@ function drawFootingCanvas() {
 // 8. PDF REPORT GENERATION
 // ==========================================
 function downloadColumnPDF() {
+  const code = document.getElementById('column-code').value || 'ACI 318-14';
   const type = document.getElementById('column-type').value; // 'TIED' or 'SPIRAL'
   const pdl = parseFloat(document.getElementById('column-pdl').value) || 0;
   const pll = parseFloat(document.getElementById('column-pll').value) || 0;
@@ -3778,12 +3779,17 @@ function downloadColumnPDF() {
 
   const phi_axial = type === 'TIED' ? 0.65 : 0.75;
   const alpha = type === 'TIED' ? 0.80 : 0.85;
+  const beta1 = fc > 4.0 ? Math.max(0.65, 0.85 - 0.05 * (fc - 4.0)) : 0.85;
   const denom = phi_axial * alpha * (0.85 * fc * (1 - p) + fy * p);
   const Ag_req = Pu / denom;
+
+  const Ast_axial_req = (Pu / (phi_axial * alpha) - 0.85 * fc * Ag) / (fy - 0.85 * fc);
+  const Ast_req = Math.max(p * Ag, Ast_axial_req);
 
   // Recalculate detailing spacings and parameters for PDF checklist
   let N_bars = Math.ceil(Ast_actual / Ab);
   const p_actual = Ast_actual / Ag;
+  const isRatioOk = p_actual >= 0.01 && p_actual <= 0.08;
 
   const d_prime = cover + d_tie + mainBarDia / 2;
   let s_clear = 0;
@@ -3831,6 +3837,16 @@ function downloadColumnPDF() {
     shearCase = 'A';
   }
 
+  let s_shear = 999;
+  if (shearCase === 'C') {
+    s_shear = (2 * A_tie * fyt * d_eff) / Vs_req;
+  }
+  const av_s_min = Math.max(0.75 * Math.sqrt(fc * 1000) * Dim / (fyt * 1000), 50 * Dim / (fyt * 1000));
+  const s_min_shear = (2 * A_tie) / av_s_min;
+  if (shearCase === 'B' || shearCase === 'C') {
+    s_shear = Math.min(s_shear, s_min_shear);
+  }
+
   // Generate bar coordinates for the blueprint drawing
   const bars = [];
   if (type === 'TIED') {
@@ -3865,6 +3881,129 @@ function downloadColumnPDF() {
     }
   }
 
+  // Bending helpers
+  function getPhi(epsilon_t) {
+    const epsilon_ty = fy / 29000;
+    const phi_comp = type === 'TIED' ? 0.65 : 0.75;
+    if (epsilon_t <= epsilon_ty) return phi_comp;
+    if (epsilon_t >= 0.005) return 0.90;
+    return phi_comp + (0.90 - phi_comp) * (epsilon_t - epsilon_ty) / (0.005 - epsilon_ty);
+  }
+
+  function calcPnMnForC(c, bendingDirection) {
+    const H_bend = Dim;
+    const B_bend = Dim;
+    let beta1_val = fc > 4.0 ? Math.max(0.65, 0.85 - 0.05 * (fc - 4.0)) : 0.85;
+    let a_val = beta1_val * c;
+    if (a_val > H_bend) a_val = H_bend;
+
+    let Cc = 0, Mc = 0;
+    if (type === 'TIED') {
+      Cc = 0.85 * fc * B_bend * a_val;
+      Mc = Cc * (H_bend / 2 - a_val / 2);
+    } else {
+      const R = H_bend / 2;
+      const u = (R - a_val) / R;
+      let A_seg = 0, y_bar = 0;
+      if (u <= -1) {
+        A_seg = Math.PI * R * R;
+        y_bar = 0;
+      } else if (u >= 1) {
+        A_seg = 0;
+        y_bar = 0;
+      } else {
+        const theta = Math.acos(u);
+        A_seg = R * R * (theta - u * Math.sin(theta));
+        y_bar = (2 / 3) * R * Math.pow(Math.sin(theta), 3) / (theta - u * Math.sin(theta));
+      }
+      Cc = 0.85 * fc * A_seg;
+      Mc = Cc * y_bar;
+    }
+
+    let Fs_total = 0, Ms_total = 0, epsilon_t = 0;
+    let max_d = 0;
+    bars.forEach(bar => {
+      const coord = bendingDirection === 'x' ? bar.y : bar.x;
+      const d_i = H_bend / 2 - coord;
+      if (d_i > max_d) max_d = d_i;
+    });
+
+    bars.forEach(bar => {
+      const coord = bendingDirection === 'x' ? bar.y : bar.x;
+      const d_i = H_bend / 2 - coord;
+      const epsilon_i = 0.003 * (c - d_i) / c;
+      let stress_i = 29000 * epsilon_i;
+      if (stress_i > fy) stress_i = fy;
+      if (stress_i < -fy) stress_i = -fy;
+
+      let force_i = Ab * stress_i;
+      if (d_i < a_val) force_i -= 0.85 * fc * Ab;
+
+      Fs_total += force_i;
+      Ms_total += force_i * coord;
+
+      if (d_i === max_d) {
+        epsilon_t = -epsilon_i;
+      }
+    });
+
+    return { Pn: Cc + Fs_total, Mn: (Mc + Ms_total) / 12, epsilon_t };
+  }
+
+  function solveUniaxial(e_target, bendingDirection) {
+    if (e_target <= 0.0001) {
+      const Pno = 0.85 * fc * (Ag - Ast_actual) + fy * Ast_actual;
+      return { Pn: alpha * Pno, Mn: 0, phi: phi_axial, epsilon_t: 0, c: 999 };
+    }
+
+    let c_low = 0.01;
+    let c_high = 5.0 * Dim;
+    let Pn = 0, Mn = 0, epsilon_t = 0, c_sol = 0;
+
+    for (let iter = 0; iter < 150; iter++) {
+      const c = (c_low + c_high) / 2;
+      const res = calcPnMnForC(c, bendingDirection);
+      Pn = res.Pn;
+      Mn = res.Mn;
+      epsilon_t = res.epsilon_t;
+      c_sol = c;
+
+      const e_calc = Pn > 0.01 ? (Mn * 12 / Pn) : 999999;
+      if (Math.abs(e_calc - e_target) < 0.001) break;
+      if (e_calc > e_target) c_low = c;
+      else c_high = c;
+    }
+
+    const Pno = 0.85 * fc * (Ag - Ast_actual) + fy * Ast_actual;
+    if (Pn > alpha * Pno) {
+      Pn = alpha * Pno;
+    }
+
+    const phi_val = getPhi(epsilon_t);
+    return { Pn, Mn, phi: phi_val, epsilon_t, c: c_sol };
+  }
+
+  let res_sol;
+  if (mux > 0 && muy > 0) {
+    const e_x = muy * 12 / Pu;
+    const e_y = mux * 12 / Pu;
+    const res_x = solveUniaxial(e_x, 'y');
+    const res_y = solveUniaxial(e_y, 'x');
+    const Pno = 0.85 * fc * (Ag - Ast_actual) + fy * Ast_actual;
+    const invPni = 1 / res_x.Pn + 1 / res_y.Pn - 1 / Pno;
+    const Pni = invPni > 0 ? 1 / invPni : 0.001;
+    const phi_biaxial = Math.min(res_x.phi, res_y.phi);
+    res_sol = { Pn: Pni, Mn: 0, phi: phi_biaxial, epsilon_t: 0, c: 999 };
+  } else if (mux > 0) {
+    const e_y = mux * 12 / Pu;
+    res_sol = solveUniaxial(e_y, 'x');
+  } else if (muy > 0) {
+    const e_x = muy * 12 / Pu;
+    res_sol = solveUniaxial(e_x, 'y');
+  } else {
+    res_sol = solveUniaxial(0, 'x');
+  }
+
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -3872,454 +4011,1502 @@ function downloadColumnPDF() {
     format: 'letter'
   });
 
-  // PAGE 1: HEADER & DESIGN INFORMATION & COMPLIANCE CHECKLIST
-  drawPDFHeader(doc, projName, projNum, designerInitials, reviewerInitials, Dim, type);
+  let pageNum = 1;
+  let cy = 1.8;
+  const bottomMargin = 10.2;
 
-  let lx = 0.5;
-  let ly = 1.8;
-
-  // 1. Input Parameters
-  doc.setFont('times', 'bold');
-  doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
-  doc.text('1. INPUT PARAMETERS (ACI 318-19 Chapters 19 & 20)', lx, ly);
-  doc.setDrawColor(201, 168, 76);
-  doc.setLineWidth(0.01);
-  doc.line(lx, ly + 0.08, 4.1, ly + 0.08);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(60, 60, 60);
-
-  const inputs = [
-    ['Column Type', type === 'TIED' ? 'TIED (Rectangular/Square)' : 'SPIRAL (Circular)'],
-    ['Factored Axial Loads', `Dead Load = ${pdl} k, Live Load = ${pll} k`],
-    ['Factored Moments', `Mux = ${mux} k-ft, Muy = ${muy} k-ft`],
-    ['Factored Shear Force (Vu)', `${vu} kips`],
-    ['Concrete Strength (f\'c)', `${fc} ksi`],
-    ['Steel Strengths', `Longitudinal fy = ${fy} ksi, Transverse fyt = ${fyt} ksi`],
-    ['Clear Cover to Ties/Spiral', `${cover} in`],
-    ['Target Longitudinal Steel Ratio', `${p}`]
-  ];
-
-  ly += 0.22;
-  inputs.forEach(([label, val]) => {
-    doc.setFont('helvetica', 'bold');
-    doc.text(label, lx, ly);
-    doc.setFont('helvetica', 'normal');
-    doc.text(val, lx + 2.3, ly);
-    ly += 0.20;
-  });
-
-  ly += 0.15;
-
-  // 2. Design Output & Sizing
-  doc.setFont('times', 'bold');
-  doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
-  doc.text('2. DESIGN OUTPUT & SIZING (ACI 318-19 Chapter 10)', lx, ly);
-  doc.line(lx, ly + 0.08, 4.1, ly + 0.08);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(60, 60, 60);
-
-  const outputs = [
-    ['Factored Axial Load (Pu)', `${Pu.toFixed(1)} kips`],
-    ['Minimum Gross Area Required', `${Ag_req.toFixed(2)} in²`],
-    ['Selected Member Sizing', type === 'TIED' ? `${Dim}" x ${Dim}" Square` : `D = ${Dim}" Circular`],
-    ['Actual Concrete Area (Ag)', `${Ag.toFixed(1)} in²`],
-    ['Longitudinal Reinforcement', `${N_bars} - ${mainBarSize} bars`],
-    ['Actual Steel Area (Ast)', `${Ast_actual.toFixed(2)} in² (Ratio = ${(p_actual * 100).toFixed(2)}%)`],
-    ['Transverse Spacing / Pitch', `${s_final.toFixed(2)} in`],
-    ['Material Takeoffs', 'See Page 2 Sec 5']
-  ];
-
-  ly += 0.22;
-  outputs.forEach(([label, val]) => {
-    doc.setFont('helvetica', 'bold');
-    doc.text(label, lx, ly);
-    doc.setFont('helvetica', 'normal');
-    doc.text(val, lx + 2.3, ly);
-    ly += 0.20;
-  });
-
-  // 3. ACI Code Compliance Checklist (11 checks)
-  let rx = 4.4;
-  let ry = 1.8;
-
-  doc.setFont('times', 'bold');
-  doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
-  doc.text('3. ACI CODE COMPLIANCE AUDIT', rx, ry);
-  doc.line(rx, ry + 0.08, 8.0, ry + 0.08);
-
-  const checklist = [
-    { desc: "Min Steel Ratio", ref: "ACI 10.6.1.1", limit: ">= 1.0%", calc: `${(p_actual*100).toFixed(2)}%`, ok: p_actual >= 0.01 },
-    { desc: "Max Steel Ratio", ref: "ACI 10.6.1.1", limit: "<= 8.0%", calc: `${(p_actual*100).toFixed(2)}%`, ok: p_actual <= 0.08 },
-    { desc: "Min Bar Count", ref: "ACI 10.7.3.1", limit: type === 'TIED' ? ">= 4" : ">= 6", calc: `${N_bars}`, ok: N_bars >= (type === 'TIED' ? 4 : 6) },
-    { desc: "Concrete Cover", ref: "ACI 20.6.1.3", limit: ">= 1.5 in", calc: `${cover.toFixed(2)} in`, ok: cover >= 1.5 },
-    { desc: "Min Bar Spacing", ref: "ACI 25.2.1", limit: `>= ${minAllowedSpacing.toFixed(2)} in`, calc: `${s_clear.toFixed(2)} in`, ok: isSpacingOk },
-    { desc: "Max Tie Spacing", ref: "ACI 25.7.2.1", limit: type === 'TIED' ? `<= ${s_detail.toFixed(2)} in` : "N/A", calc: type === 'TIED' ? `${s_final.toFixed(2)} in` : "N/A", ok: type === 'TIED' ? (s_final <= s_detail) : true },
-    { desc: "Min Spiral Pitch", ref: "ACI 25.7.3.1", limit: type === 'SPIRAL' ? ">= 1.0 in clr" : "N/A", calc: type === 'SPIRAL' ? `${(s_final - d_tie).toFixed(2)} in clr` : "N/A", ok: type === 'SPIRAL' ? ((s_final - d_tie) >= 1.0) : true },
-    { desc: "Max Spiral Pitch", ref: "ACI 25.7.3.1", limit: type === 'SPIRAL' ? "<= 3.0 in clr" : "N/A", calc: type === 'SPIRAL' ? `${(s_final - d_tie).toFixed(2)} in clr` : "N/A", ok: type === 'SPIRAL' ? ((s_final - d_tie) <= 3.0) : true },
-    { desc: "Spiral Ratio", ref: "ACI 25.7.3.3", limit: type === 'SPIRAL' ? `>= ${rho_s_min.toFixed(4)}` : "N/A", calc: type === 'SPIRAL' ? `${rho_s.toFixed(4)}` : "N/A", ok: type === 'SPIRAL' ? (rho_s >= rho_s_min) : true },
-    { desc: "Axial+Bending D/C", ref: "ACI Ch.10 & 22", limit: "<= 1.00", calc: `${dcRatio.toFixed(2)}`, ok: dcRatio <= 1.00 },
-    { desc: "Shear Capacity", ref: "ACI 22.5", limit: `Vs <= Vs_max`, calc: shearCase === 'D' ? "Vs Exceeded" : `${Vs_req.toFixed(1)} k`, ok: shearCase !== 'D' }
-  ];
-
-  ry += 0.22;
-  // Draw Checklist Table Header
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(30, 30, 30);
-  doc.text('Check/ACI Ref', rx, ry);
-  doc.text('Limit', rx + 1.8, ry);
-  doc.text('Actual', rx + 2.7, ry);
-  doc.text('Status', rx + 3.3, ry);
-  doc.line(rx, ry + 0.08, rx + 3.6, ry + 0.08);
-  
-  ry += 0.16;
-  checklist.forEach((item) => {
-    doc.setTextColor(60, 60, 60);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    const descWidth = doc.getTextWidth(item.desc);
-    doc.text(item.desc, rx, ry);
-    
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.setTextColor(110, 110, 110);
-    doc.text(` (${item.ref})`, rx + descWidth + 0.04, ry);
-    
-    doc.setFontSize(8);
-    doc.setTextColor(60, 60, 60);
-    doc.text(item.limit, rx + 1.8, ry);
-    doc.text(item.calc, rx + 2.7, ry);
-    
-    if (item.ok) {
-      doc.setTextColor(30, 150, 30);
-      doc.text('PASS', rx + 3.3, ry);
-    } else {
-      doc.setTextColor(220, 50, 50);
-      doc.text('FAIL', rx + 3.3, ry);
+  function checkPageBreak(doc, increment) {
+    if (cy + increment > bottomMargin) {
+      doc.addPage();
+      pageNum++;
+      cy = 1.8;
+      drawPageBorderAndHeader(doc);
     }
-    
-    ry += 0.21;
-  });
-
-  // Footer on page 1
-  doc.setFont('helvetica', 'italic');
-  doc.setFontSize(8);
-  doc.setTextColor(150, 150, 150);
-  doc.text('TwinAnalytic Engineering Group — Calculations Sheet S-101', 0.5, 10.5);
-  doc.text('Page 1 of 2', 7.2, 10.5);
-
-
-  // PAGE 2: VISUAL BLUEPRINT & TAKEOFF SCHEDULE & SPECIFICATIONS
-  doc.addPage();
-  drawPDFHeader(doc, projName, projNum, designerInitials, reviewerInitials, Dim, type);
-
-  lx = 0.5;
-  ly = 1.8;
-
-  // 4. Visual Engineering Blueprint
-  doc.setFont('times', 'bold');
-  doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
-  doc.text('4. VISUAL ENGINEERING BLUEPRINT', lx, ly);
-  doc.line(lx, ly + 0.08, 4.1, ly + 0.08);
-
-  ly += 0.25;
-  const blueprintW = 3.6;
-  const blueprintH = 3.6;
-  const drawX = lx;
-  const drawY = ly;
-
-  // Grid background
-  doc.setDrawColor(235, 235, 235);
-  doc.setLineWidth(0.005);
-  for (let gx = drawX + 0.4; gx < drawX + blueprintW; gx += 0.4) {
-    doc.line(gx, drawY, gx, drawY + blueprintH);
-  }
-  for (let gy = drawY + 0.4; gy < drawY + blueprintH; gy += 0.4) {
-    doc.line(drawX, gy, drawX + blueprintW, gy);
   }
 
-  doc.setDrawColor(200, 200, 200);
-  doc.setLineWidth(0.01);
-  doc.rect(drawX, drawY, blueprintW, blueprintH);
+  function drawPageBorderAndHeader(doc) {
+    doc.setDrawColor(201, 168, 76);
+    doc.setLineWidth(0.015);
+    doc.rect(0.25, 0.25, 8.0, 10.5);
 
-  // Scaling logic
-  const drawBoxSize = 2.6;
-  const offsetX = drawX + (blueprintW - drawBoxSize)/2;
-  const offsetY = drawY + (blueprintH - drawBoxSize)/2;
+    doc.setDrawColor(30, 30, 30);
+    doc.setLineWidth(0.01);
+    doc.rect(0.25, 0.25, 8.0, 1.2, 'S');
+
+    doc.line(2.3, 0.25, 2.3, 1.45);
+    doc.line(5.6, 0.25, 5.6, 1.45);
+
+    doc.setTextColor(201, 168, 76);
+    doc.setFont('times', 'bold');
+    doc.setFontSize(16);
+    doc.text('TwinAnalytic', 0.4, 0.60);
+
+    doc.setTextColor(80, 80, 80);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.text('STRUCTURAL DESIGN GROUP', 0.4, 0.80);
+    doc.text(code.toUpperCase() + ' COMPLIANCE', 0.4, 0.98);
+    doc.text('BUET CE 317 Method', 0.4, 1.15);
+
+    doc.setTextColor(60, 60, 60);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text('PROJECT:', 2.4, 0.45);
+    doc.setFont('helvetica', 'normal');
+    const splitName = doc.splitTextToSize(projName, 2.0);
+    doc.text(splitName, 3.2, 0.45);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('PROJ NO:', 2.4, 0.85);
+    doc.setFont('helvetica', 'normal');
+    doc.text(projNum, 3.2, 0.85);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('MEMBER:', 2.4, 1.25);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${type === 'TIED' ? 'Tied' : 'Spiral'} (${Dim.toFixed(0)}" x ${Dim.toFixed(0)}")`, 3.2, 1.25);
+
+    doc.line(5.6, 0.65, 8.25, 0.65);
+    doc.line(5.6, 1.05, 8.25, 1.05);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('DESIGNED BY:', 5.7, 0.45);
+    doc.setFont('helvetica', 'normal');
+    doc.text(designerInitials, 7.0, 0.45);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('REVIEWED BY:', 5.7, 0.85);
+    doc.setFont('helvetica', 'normal');
+    doc.text(reviewerInitials, 7.0, 0.85);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('DATE:', 5.7, 1.25);
+    doc.setFont('helvetica', 'normal');
+    doc.text(new Date().toLocaleDateString(), 6.3, 1.25);
+
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(7.5);
+    doc.setTextColor(150, 150, 150);
+    doc.text('Calculated per CE 317 — Dr. Tahsin Reza Hossain, BUET', 0.5, 10.6);
+    doc.text(`Page ${pageNum}`, 7.5, 10.6);
+  }
+
+  // ==========================================
+  // PAGE 1: COVER PAGE
+  // ==========================================
+  doc.setDrawColor(201, 168, 76);
+  doc.setLineWidth(0.02);
+  doc.rect(0.25, 0.25, 8.0, 10.5);
 
   doc.setFillColor(245, 247, 250);
-  doc.setDrawColor(30, 30, 30);
-  doc.setLineWidth(0.03);
+  doc.rect(0.3, 0.3, 7.9, 10.4, 'F');
 
-  if (type === 'TIED') {
-    doc.rect(offsetX, offsetY, drawBoxSize, drawBoxSize, 'FD');
+  doc.setFillColor(30, 30, 30);
+  doc.rect(0.3, 0.3, 7.9, 1.8, 'F');
 
-    const drawScale = drawBoxSize / Dim;
-    const coverPaper = cover * drawScale;
-    const tieSizePaper = drawBoxSize - 2 * coverPaper;
+  doc.setTextColor(201, 168, 76);
+  doc.setFont('times', 'bold');
+  doc.setFontSize(26);
+  doc.text('TWINANALYTIC', 1.0, 1.2);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(255, 255, 255);
+  doc.text('ENGINEERING CALCULATIONS & COMPLIANCE REPORTS', 1.0, 1.6);
 
-    doc.setDrawColor(220, 50, 50); // red ties
-    doc.setLineWidth(0.02);
-    doc.rect(offsetX + coverPaper, offsetY + coverPaper, tieSizePaper, tieSizePaper, 'S');
+  doc.setTextColor(30, 30, 30);
+  doc.setFont('times', 'bold');
+  doc.setFontSize(28);
+  const titleLines = doc.splitTextToSize("Reinforced Concrete Column Design Report", 6.0);
+  doc.text(titleLines, 1.0, 4.0);
 
-    // hooks
-    const hookX = offsetX + coverPaper;
-    const hookY = offsetY + coverPaper;
-    doc.line(hookX, hookY, hookX + 0.15, hookY + 0.15);
-    doc.line(hookX, hookY, hookX + 0.05, hookY + 0.18);
+  doc.setDrawColor(201, 168, 76);
+  doc.setLineWidth(0.04);
+  doc.line(1.0, 5.2, 7.0, 5.2);
 
-    // bars
-    const barRPaper = Math.max(0.04, (mainBarDia / 2) * drawScale);
-    doc.setFillColor(201, 168, 76);
-    doc.setDrawColor(30, 30, 30);
-    doc.setLineWidth(0.008);
+  doc.setTextColor(80, 80, 80);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text('PROJECT DATA:', 1.0, 5.8);
 
-    bars.forEach(bar => {
-      const bx = offsetX + drawBoxSize/2 + bar.x * drawScale;
-      const by = offsetY + drawBoxSize/2 + bar.y * drawScale;
-      doc.circle(bx, by, barRPaper, 'FD');
-    });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
+  doc.text(`Project Name: ${projName}`, 1.0, 6.2);
+  doc.text(`Project Number: ${projNum}`, 1.0, 6.5);
+  doc.text(`Design Code: ${code}`, 1.0, 6.8);
+  doc.text(`Member Type: ${type === 'TIED' ? 'Tied Column (Rectangular)' : 'Spiral Column (Circular)'}`, 1.0, 7.1);
+  doc.text(`Sizing: ${type === 'TIED' ? `${Dim}" x ${Dim}"` : `D = ${Dim}"`}`, 1.0, 7.4);
 
-    // Dimension lines
-    doc.setDrawColor(80, 80, 80);
-    doc.setLineWidth(0.008);
-    // horizontal dim
-    doc.line(offsetX, offsetY - 0.15, offsetX + drawBoxSize, offsetY - 0.15);
-    doc.line(offsetX, offsetY - 0.20, offsetX, offsetY - 0.10);
-    doc.line(offsetX + drawBoxSize, offsetY - 0.20, offsetX + drawBoxSize, offsetY - 0.10);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(30, 30, 30);
-    doc.text(`${Dim.toFixed(0)}"`, offsetX + drawBoxSize/2 - 0.08, offsetY - 0.20);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text('METADATA:', 1.0, 8.0);
 
-    // vertical dim
-    doc.line(offsetX - 0.15, offsetY, offsetX - 0.15, offsetY + drawBoxSize);
-    doc.line(offsetX - 0.20, offsetY, offsetX - 0.10, offsetY);
-    doc.line(offsetX - 0.20, offsetY + drawBoxSize, offsetX - 0.10, offsetY + drawBoxSize);
-    doc.text(`${Dim.toFixed(0)}"`, offsetX - 0.35, offsetY + drawBoxSize/2 + 0.05);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
+  doc.text(`Prepared By: ${designerInitials || "Structural Engineer"}`, 1.0, 8.4);
+  doc.text(`Reviewed By: ${reviewerInitials || "Reviewer"}`, 1.0, 8.7);
+  doc.text(`Date: ${new Date().toLocaleDateString()}`, 1.0, 9.0);
 
-  } else {
-    // spiral circle boundary
-    const radiusPaper = drawBoxSize / 2;
-    const cx = offsetX + radiusPaper;
-    const cy = offsetY + radiusPaper;
-    
-    doc.circle(cx, cy, radiusPaper, 'FD');
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(9.5);
+  doc.setTextColor(120, 120, 120);
+  doc.text('Software Reference: Calculated per CE 317 — Dr. Tahsin Reza Hossain, BUET', 1.0, 9.8);
 
-    const drawScale = drawBoxSize / Dim;
-    const coverPaper = cover * drawScale;
-    const spiralRadiusPaper = radiusPaper - coverPaper;
+  doc.setFont('times', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(201, 168, 76);
+  doc.text(`Designed per ${code} | CE 317 Method | ${new Date().toLocaleDateString()}`, 1.0, 10.2);
 
-    doc.setDrawColor(220, 50, 50); // red spirals
-    doc.setLineWidth(0.02);
-    doc.circle(cx, cy, spiralRadiusPaper, 'S');
+  // ==========================================
+  // PAGE 2: PROJECT DATA, LOADS, MATERIALS
+  // ==========================================
+  doc.addPage();
+  pageNum = 2;
+  cy = 1.8;
+  drawPageBorderAndHeader(doc);
 
-    // bars
-    const barRPaper = Math.max(0.04, (mainBarDia / 2) * drawScale);
-    doc.setFillColor(201, 168, 76);
-    doc.setDrawColor(30, 30, 30);
-    doc.setLineWidth(0.008);
-
-    bars.forEach(bar => {
-      const bx = cx + bar.x * drawScale;
-      const by = cy + bar.y * drawScale;
-      doc.circle(bx, by, barRPaper, 'FD');
-    });
-
-    // Dimension lines
-    doc.setDrawColor(80, 80, 80);
-    doc.setLineWidth(0.008);
-    // Diameter dim
-    doc.line(cx - radiusPaper, cy, cx + radiusPaper, cy);
-    doc.line(cx - radiusPaper, cy - 0.08, cx - radiusPaper, cy + 0.08);
-    doc.line(cx + radiusPaper, cy - 0.08, cx + radiusPaper, cy + 0.08);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(30, 30, 30);
-    doc.text(`D = ${Dim.toFixed(0)}"`, cx - 0.2, cy - 0.1);
-  }
-
-  // 5. DETAILED REINFORCEMENT TAKEOFF SCHEDULE
-  rx = 4.3;
-  ry = 1.8;
-
+  // SECTION 2
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   doc.setTextColor(201, 168, 76);
-  doc.text('5. MATERIAL TAKEOFF SCHEDULE', rx, ry);
-  doc.line(rx, ry + 0.08, 8.0, ry + 0.08);
+  doc.text('SECTION 2 — PROJECT DATA & DESIGN INPUTS', 0.5, cy);
+  cy += 0.15;
 
-  ry += 0.25;
-  // Compute individual bar lengths and weights
-  const barWeightPerFt = Ab * 3.4;
-  const ld_comp = Math.max((20 * fy * mainBarDia) / Math.sqrt(fc * 1000), 0.3 * fy * mainBarDia, 8.0);
-  const l_splice = Math.max(12.0, 1.3 * ld_comp);
-  const singleBarLen = colHeight + l_splice / 12;
-  const totLongWeight = N_bars * singleBarLen * barWeightPerFt;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(30, 30, 30);
+  doc.setFillColor(245, 245, 245);
+  doc.rect(0.5, cy, 7.5, 0.25, 'F');
+  doc.text('Item', 0.6, cy + 0.17);
+  doc.text('Value', 4.5, cy + 0.17);
 
-  let totTransWeight = 0;
-  let transQtyText = "";
-  let transLenText = "";
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.005);
+  doc.line(0.5, cy, 8.0, cy);
+  doc.line(0.5, cy + 0.25, 8.0, cy + 0.25);
+  cy += 0.25;
+
+  const section2Rows = [
+    ['Column Type', type === 'TIED' ? 'Tied' : 'Spiral'],
+    ['Section Shape', type === 'TIED' ? 'Rectangular' : 'Circular'],
+    ['Concrete Strength (fc\')', `${fc.toFixed(2)} ksi`],
+    ['Steel Yield Strength (fy)', `${fy.toFixed(2)} ksi`],
+    ['Dead Load (PDL)', `${pdl.toFixed(1)} kips`],
+    ['Live Load (PLL)', `${pll.toFixed(1)} kips`],
+    ['Moment about x-axis (Mux)', `${mux.toFixed(1)} kip-ft`],
+    ['Moment about y-axis (Muy)', `${muy.toFixed(1)} kip-ft`],
+    ['Applied Shear (Vu)', `${vu.toFixed(1)} kips`],
+    ['Unsupported Length (lu)', `${colHeight.toFixed(1)} ft`],
+    ['Effective Length Factor (k)', '1.00']
+  ];
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(60, 60, 60);
+
+  section2Rows.forEach(([item, val]) => {
+    doc.text(item, 0.6, cy + 0.16);
+    doc.text(val, 4.5, cy + 0.16);
+    doc.line(0.5, cy + 0.22, 8.0, cy + 0.22);
+    cy += 0.22;
+  });
+
+  // SECTION 3
+  cy += 0.15;
+  doc.setFont('times', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(201, 168, 76);
+  doc.text('SECTION 3 — FACTORED LOADS & LOAD COMBINATIONS', 0.5, cy);
+  cy += 0.20;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(40, 40, 40);
+  doc.text('Governing Load Combination: Pu = 1.2 * PDL + 1.6 * PLL', 0.5, cy);
+  cy += 0.18;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(60, 60, 60);
+
+  doc.text('Symbols:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text('Pu = 1.2 * PDL + 1.6 * PLL', 2.0, cy);
+  cy += 0.18;
+
+  doc.setFont('helvetica', 'normal');
+  doc.text('Substitution:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`Pu = 1.2 * (${pdl.toFixed(1)} kips) + 1.6 * (${pll.toFixed(1)} kips)`, 2.0, cy);
+  cy += 0.18;
+
+  doc.setFont('helvetica', 'normal');
+  doc.text('Result:', 0.6, cy);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Pu = ${Pu.toFixed(1)} kips`, 2.0, cy);
+  cy += 0.25;
+
+  if (mux > 0 || muy > 0) {
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(40, 40, 40);
+    doc.text('Moments Bending Load Combinations:', 0.5, cy);
+    cy += 0.18;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(80, 80, 80);
+    doc.text('[NOTE: Input moments are factored. A 50% DL / 50% LL split is assumed for demonstration.]', 0.6, cy);
+    cy += 0.18;
+
+    doc.setTextColor(60, 60, 60);
+    if (mux > 0) {
+      const mdlx = 0.5 * mux / 1.2;
+      const mllx = 0.5 * mux / 1.6;
+      doc.text('Symbols:', 0.6, cy);
+      doc.setFont('courier', 'normal');
+      doc.text('Mux,u = 1.2 * MDL,x + 1.6 * MLL,x', 2.0, cy);
+      cy += 0.18;
+
+      doc.setFont('helvetica', 'normal');
+      doc.text('Substitution:', 0.6, cy);
+      doc.setFont('courier', 'normal');
+      doc.text(`Mux,u = 1.2 * (${mdlx.toFixed(2)} kip-ft) + 1.6 * (${mllx.toFixed(2)} kip-ft)`, 2.0, cy);
+      cy += 0.18;
+
+      doc.setFont('helvetica', 'normal');
+      doc.text('Result:', 0.6, cy);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Mux,u = ${mux.toFixed(1)} kip-ft`, 2.0, cy);
+      cy += 0.25;
+    }
+
+    if (muy > 0) {
+      const mdly = 0.5 * muy / 1.2;
+      const mlly = 0.5 * muy / 1.6;
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(60, 60, 60);
+      doc.text('Symbols:', 0.6, cy);
+      doc.setFont('courier', 'normal');
+      doc.text('Muy,u = 1.2 * MDL,y + 1.6 * MLL,y', 2.0, cy);
+      cy += 0.18;
+
+      doc.setFont('helvetica', 'normal');
+      doc.text('Substitution:', 0.6, cy);
+      doc.setFont('courier', 'normal');
+      doc.text(`Muy,u = 1.2 * (${mdly.toFixed(2)} kip-ft) + 1.6 * (${mlly.toFixed(2)} kip-ft)`, 2.0, cy);
+      cy += 0.18;
+
+      doc.setFont('helvetica', 'normal');
+      doc.text('Result:', 0.6, cy);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Muy,u = ${muy.toFixed(1)} kip-ft`, 2.0, cy);
+      cy += 0.25;
+    }
+  } else {
+    doc.setFont('helvetica', 'italic');
+    doc.text('Moments: N/A — no moments applied.', 0.6, cy);
+    cy += 0.25;
+  }
+
+  // SECTION 4
+  checkPageBreak(doc, 2.5);
+  doc.setFont('times', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(201, 168, 76);
+  doc.text('SECTION 4 — MATERIAL PROPERTIES & CODE FACTORS', 0.5, cy);
+  cy += 0.15;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(30, 30, 30);
+  doc.setFillColor(245, 245, 245);
+  doc.rect(0.5, cy, 7.5, 0.22, 'F');
+  doc.text('Parameter', 0.6, cy + 0.15);
+  doc.text('Value', 4.0, cy + 0.15);
+  doc.text('Reference', 5.5, cy + 0.15);
+
+  doc.setDrawColor(200, 200, 200);
+  doc.line(0.5, cy, 8.0, cy);
+  doc.line(0.5, cy + 0.22, 8.0, cy + 0.22);
+  cy += 0.22;
+
+  const isACI = code === 'ACI 318-14';
+  const ref_fc = isACI ? 'ACI 318-14 §26.4' : 'BNBC 2020 Part 6 Ch 5';
+  const ref_fy = isACI ? 'ACI 318-14 §20.2' : 'BNBC 2020 Part 6 Ch 5';
+  const ref_es = isACI ? 'ACI 318-14 §20.2.2' : 'BNBC 2020 Part 6 Ch 6';
+  const ref_ecu = isACI ? 'ACI 318-14 §22.2' : 'BNBC 2020 Part 6 Ch 6';
+  const ref_beta1 = isACI ? 'ACI 318-14 §22.2.2.4.3' : 'BNBC 2020 Part 6 Ch 6';
+  const ref_phi = isACI ? 'ACI 318-14 §21.2' : 'BNBC 2020 Part 6 Ch 6';
+  const ref_alpha = isACI ? 'ACI 318-14 §22.4' : 'BNBC 2020 Part 6 Ch 6';
+
+  const section4Rows = [
+    ['fc\' (concrete strength)', `${fc.toFixed(2)} ksi`, ref_fc],
+    ['fy (steel yield strength)', `${fy.toFixed(2)} ksi`, ref_fy],
+    ['Es (modulus of elasticity, steel)', '29,000.00 ksi', ref_es],
+    ['εcu (ultimate concrete strain)', '0.00300', ref_ecu],
+    ['εy (steel yield strain = fy/Es)', `${(fy/29000).toFixed(5)}`, '—'],
+    ['β1 (stress block factor)', `${beta1.toFixed(3)}`, ref_beta1],
+    ['ϕ (strength reduction factor)', `${phi_axial.toFixed(2)}`, ref_phi],
+    ['α (additional reduction factor)', `${alpha.toFixed(2)}`, ref_alpha]
+  ];
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(60, 60, 60);
+
+  section4Rows.forEach(([param, val, ref]) => {
+    doc.text(param, 0.6, cy + 0.15);
+    doc.text(val, 4.0, cy + 0.15);
+    doc.text(ref, 5.5, cy + 0.15);
+    doc.line(0.5, cy + 0.20, 8.0, cy + 0.20);
+    cy += 0.20;
+  });
+
+  // ==========================================
+  // PAGE 3: SIZING, LONGITUDINAL, AXIAL CHECK
+  // ==========================================
+  doc.addPage();
+  pageNum = 3;
+  cy = 1.8;
+  drawPageBorderAndHeader(doc);
+
+  // SECTION 5
+  doc.setFont('times', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(201, 168, 76);
+  doc.text('SECTION 5 — COLUMN SIZING', 0.5, cy);
+  cy += 0.15;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(40, 40, 40);
+  doc.text('5.1 Required Gross Area:', 0.5, cy);
+  cy += 0.16;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(60, 60, 60);
+
+  doc.text('Formula:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text('Ag = Pu / [α * ϕ * (0.85 * fc\' * (1 - ρg) + ρg * fy)]', 2.0, cy);
+  cy += 0.18;
+
+  doc.setFont('helvetica', 'normal');
+  doc.text('Substitution:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`Ag = ${Pu.toFixed(1)} / [${alpha.toFixed(2)} * ${phi_axial.toFixed(2)} * (0.85 * ${fc.toFixed(2)} * (1 - ${p.toFixed(3)}) + ${p.toFixed(3)} * ${fy.toFixed(2)})]`, 2.0, cy);
+  cy += 0.18;
+
+  doc.setFont('helvetica', 'normal');
+  doc.text('Result:', 0.6, cy);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Ag,required = ${Ag_req.toFixed(2)} in²`, 2.0, cy);
+  cy += 0.25;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('5.2 Selected Section:', 0.5, cy);
+  cy += 0.16;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(60, 60, 60);
   if (type === 'TIED') {
-    const n_ties = Math.floor(colHeight * 12 / s_final) + 1;
+    doc.text(`Selected shape: Square Section`, 0.6, cy);
+    cy += 0.16;
+    doc.text(`b = ${Dim.toFixed(1)} in, h = ${Dim.toFixed(1)} in`, 0.6, cy);
+    cy += 0.16;
+    doc.text('Formula:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('Ag,provided = b * h', 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`Ag,provided = ${Dim.toFixed(1)} * ${Dim.toFixed(1)}`, 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Ag,provided = ${Ag.toFixed(2)} in²`, 2.0, cy);
+    cy += 0.25;
+  } else {
+    doc.text(`Selected shape: Circular Section`, 0.6, cy);
+    cy += 0.16;
+    doc.text(`D = ${Dim.toFixed(1)} in`, 0.6, cy);
+    cy += 0.16;
+    doc.text('Formula:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('Ag,provided = π * D² / 4', 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`Ag,provided = π * (${Dim.toFixed(1)})² / 4`, 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Ag,provided = ${Ag.toFixed(2)} in²`, 2.0, cy);
+    cy += 0.25;
+  }
+
+  // SECTION 6
+  doc.setFont('times', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(201, 168, 76);
+  doc.text('SECTION 6 — LONGITUDINAL REINFORCEMENT DESIGN', 0.5, cy);
+  cy += 0.15;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(40, 40, 40);
+  doc.text('6.1 Required Steel Area:', 0.5, cy);
+  cy += 0.16;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(60, 60, 60);
+  doc.text('Formula:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text('Ast,required = ρg,target * Ag,provided', 2.0, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Substitution:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`Ast,required = ${p.toFixed(3)} * ${Ag.toFixed(2)}`, 2.0, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Ast,required = ${Ast_req.toFixed(2)} in²`, 2.0, cy);
+  cy += 0.25;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('6.2 Bar Selection:', 0.5, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(60, 60, 60);
+  doc.text(`Try ${N_bars} bars of ${mainBarSize} (area per bar Ab = ${Ab.toFixed(2)} in², dia db = ${mainBarDia.toFixed(3)} in)`, 0.6, cy);
+  cy += 0.16;
+  doc.text('Formula:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text('Ast,provided = N_bars * Ab', 2.0, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Substitution:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`Ast,provided = ${N_bars} * ${Ab.toFixed(2)}`, 2.0, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Ast,provided = ${Ast_actual.toFixed(2)} in²`, 2.0, cy);
+  cy += 0.25;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('6.3 Check Steel Ratio:', 0.5, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(60, 60, 60);
+  doc.text('Formula:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text('ρg,actual = Ast,provided / Ag,provided', 2.0, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Substitution:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`ρg,actual = ${Ast_actual.toFixed(2)} / ${Ag.toFixed(2)}`, 2.0, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`ρg,actual = ${p_actual.toFixed(5)}`, 2.0, cy);
+  cy += 0.16;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(isRatioOk ? 30 : 200, isRatioOk ? 150 : 30, 30);
+  doc.text(`Limits Check: 0.01 <= ρg <= 0.08 -> ${isRatioOk ? 'PASS ✓' : 'FAIL ✗'}`, 0.6, cy);
+  cy += 0.25;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(40, 40, 40);
+  doc.text('6.4 Minimum Bar Spacing Check:', 0.5, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(60, 60, 60);
+
+  if (type === 'TIED') {
+    const n_side = Math.ceil(N_bars / 4) + 1;
+    doc.text('Formula:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('s_clear = [b - 2*cover - 2*d_tie - n_side * db] / (n_side - 1)', 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`s_clear = [${Dim.toFixed(1)} - 2*${cover.toFixed(2)} - 2*${d_tie.toFixed(3)} - ${n_side} * ${mainBarDia.toFixed(3)}] / (${n_side} - 1)`, 2.0, cy);
+    cy += 0.16;
+  } else {
+    doc.text('Formula:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('s_clear = [π * (D - 2*cover - 2*d_tie - db) / N_bars] - db', 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    const Ds = Dim - 2 * cover - 2 * d_tie - mainBarDia;
+    doc.text(`s_clear = [π * ${Ds.toFixed(2)} / ${N_bars}] - ${mainBarDia.toFixed(3)}`, 2.0, cy);
+    cy += 0.16;
+  }
+  doc.setFont('helvetica', 'bold');
+  doc.text(`s_clear = ${s_clear.toFixed(2)} in`, 2.0, cy);
+  cy += 0.16;
+  doc.setTextColor(isSpacingOk ? 30 : 200, isSpacingOk ? 150 : 30, 30);
+  doc.text(`Limits Check: s_clear >= max(1.5 db, 1.5 in) = ${minAllowedSpacing.toFixed(2)} in -> ${isSpacingOk ? 'PASS ✓' : 'FAIL ✗'}`, 0.6, cy);
+  cy += 0.25;
+
+  // SECTION 7
+  doc.setFont('times', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(201, 168, 76);
+  doc.text('SECTION 7 — AXIAL CAPACITY VERIFICATION', 0.5, cy);
+  cy += 0.15;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(60, 60, 60);
+
+  doc.text('Formula:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text('Pn = 0.85 * fc\' * (Ag - Ast) + Ast * fy', 2.0, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Substitution:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`Pn = 0.85 * ${fc.toFixed(2)} * (${Ag.toFixed(2)} - ${Ast_actual.toFixed(2)}) + ${Ast_actual.toFixed(2)} * ${fy.toFixed(2)}`, 2.0, cy);
+  cy += 0.16;
+
+  const Pn_pure = 0.85 * fc * (Ag - Ast_actual) + Ast_actual * fy;
+  const alpha_phi_Pn = alpha * phi_axial * Pn_pure;
+  const isAxialOk = Pu <= alpha_phi_Pn;
+  const axialDcr = Pu / alpha_phi_Pn;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Pn = ${Pn_pure.toFixed(1)} kips`, 2.0, cy);
+  cy += 0.18;
+
+  doc.setFont('helvetica', 'normal');
+  doc.text('Factored capacity:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text('α * ϕ * Pn', 2.0, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Substitution:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`${alpha.toFixed(2)} * ${phi_axial.toFixed(2)} * ${Pn_pure.toFixed(1)}`, 2.0, cy);
+  cy += 0.16;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text(`α * ϕ * Pn = ${alpha_phi_Pn.toFixed(1)} kips`, 2.0, cy);
+  cy += 0.18;
+
+  doc.setTextColor(isAxialOk ? 30 : 200, isAxialOk ? 150 : 30, 30);
+  doc.text(`Check: Pu <= α * ϕ * Pn -> ${Pu.toFixed(1)} kips <= ${alpha_phi_Pn.toFixed(1)} kips -> ${isAxialOk ? 'PASS ✓' : 'FAIL ✗'}`, 0.6, cy);
+  cy += 0.18;
+
+  doc.setTextColor(axialDcr <= 1.0 ? 30 : 200, axialDcr <= 1.0 ? 150 : 30, 30);
+  doc.text(`DCR = Pu / (α * ϕ * Pn) = ${axialDcr.toFixed(3)}`, 0.6, cy);
+  cy += 0.25;
+
+  // ==========================================
+  // PAGE 4: LATERAL REINFORCEMENT, INTERACTION
+  // ==========================================
+  doc.addPage();
+  pageNum = 4;
+  cy = 1.8;
+  drawPageBorderAndHeader(doc);
+
+  // SECTION 8
+  doc.setFont('times', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(201, 168, 76);
+  doc.text('SECTION 8 — LATERAL REINFORCEMENT DESIGN', 0.5, cy);
+  cy += 0.15;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(60, 60, 60);
+
+  if (type === 'TIED') {
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Tied Column Limits Check (ACI 25.7.2.1):`, 0.5, cy);
+    cy += 0.18;
+
+    const sa = 16 * mainBarDia;
+    const sb = 48 * d_tie;
+    const sc = Dim;
+    const s_limit = Math.min(sa, sb, sc);
+
+    doc.setFont('helvetica', 'normal');
+    doc.text(`(a) 16 * db,long = 16 * ${mainBarDia.toFixed(3)} in = ${sa.toFixed(2)} in`, 0.6, cy);
+    cy += 0.16;
+    doc.text(`(b) 48 * db,tie  = 48 * ${d_tie.toFixed(3)} in = ${sb.toFixed(2)} in`, 0.6, cy);
+    cy += 0.16;
+    doc.text(`(c) Least column dimension = ${sc.toFixed(2)} in`, 0.6, cy);
+    cy += 0.16;
+
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Governing ACI limit s = ${s_limit.toFixed(2)} in`, 0.6, cy);
+    cy += 0.18;
+
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Provided spacing s_final = ${s_final.toFixed(2)} in`, 0.6, cy);
+    cy += 0.16;
+
+    const isSpacingLimitOk = s_final <= s_limit;
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(isSpacingLimitOk ? 30 : 200, isSpacingLimitOk ? 150 : 30, 30);
+    doc.text(`Check: s_final <= s_limit -> ${s_final.toFixed(2)} in <= ${s_limit.toFixed(2)} in -> ${isSpacingLimitOk ? 'PASS ✓' : 'FAIL ✗'}`, 0.6, cy);
+    cy += 0.25;
+  } else {
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Spiral Column Limits Check (ACI 25.7.3):`, 0.5, cy);
+    cy += 0.18;
+
+    const dc = Dim - 2 * cover;
+    const Ac = Math.PI * dc * dc / 4;
+    const rho_s_min = 0.45 * (Ag / Ac - 1) * (fc / fyt);
+
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Core diameter: dc = Dim - 2*cover = ${Dim.toFixed(1)} - 2*${cover.toFixed(1)} = ${dc.toFixed(2)} in`, 0.6, cy);
+    cy += 0.16;
+    doc.text(`Core area: Ac = π/4 * dc² = π/4 * (${dc.toFixed(2)})² = ${Ac.toFixed(2)} in²`, 0.6, cy);
+    cy += 0.16;
+
+    doc.text('Formula for min spiral ratio:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('ρs,min = 0.45 * (Ag/Ac - 1) * (fc\'/fyt)', 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`ρs,min = 0.45 * (${Ag.toFixed(2)}/${Ac.toFixed(2)} - 1) * (${fc.toFixed(2)}/${fyt.toFixed(2)})`, 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`ρs,min = ${rho_s_min.toFixed(5)}`, 2.0, cy);
+    cy += 0.20;
+
+    doc.setFont('helvetica', 'normal');
+    const s_req = (4 * A_tie) / (dc * rho_s_min);
+    doc.text('Required spiral pitch:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('s = 4 * Asp / (ρs,min * dc)', 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`s = 4 * ${A_tie.toFixed(3)} / (${rho_s_min.toFixed(5)} * ${dc.toFixed(2)})`, 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`s_req = ${s_req.toFixed(2)} in`, 2.0, cy);
+    cy += 0.20;
+
+    const s_clear_spiral = s_final - d_tie;
+    const isSpiralPitchOk = s_clear_spiral >= 1.0 && s_clear_spiral <= 3.0 && s_final <= s_req;
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Provided spiral pitch s_final = ${s_final.toFixed(2)} in (clear pitch = ${s_clear_spiral.toFixed(2)} in)`, 0.6, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(isSpiralPitchOk ? 30 : 200, isSpiralPitchOk ? 150 : 30, 30);
+    doc.text(`Check: 1 in <= s_clear <= 3 in -> ${isSpiralPitchOk ? 'PASS ✓' : 'FAIL ✗'}`, 0.6, cy);
+    cy += 0.25;
+  }
+
+  // SECTION 9
+  doc.setFont('times', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(201, 168, 76);
+  doc.text('SECTION 9 — INTERACTION DIAGRAM CHECK (if moment present)', 0.5, cy);
+  cy += 0.15;
+
+  if (mux > 0 || muy > 0) {
+    const Mu = Math.sqrt(mux * mux + muy * muy);
+    const e_in = Mu * 12 / Pu;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(40, 40, 40);
+    doc.text('9.1 Eccentricity:', 0.5, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(60, 60, 60);
+    doc.text('Formula:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('e = Mu / Pu', 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`e = ${Mu.toFixed(1)} * 12 / ${Pu.toFixed(1)}`, 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`e = ${e_in.toFixed(2)} in`, 2.0, cy);
+    cy += 0.25;
+
+    // 9.2 Balanced failure condition
+    const ey = fy / 29000;
+    const cb = (0.003 / (0.003 + ey)) * d_eff;
+    const ab = beta1 * cb;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(40, 40, 40);
+    doc.text('9.2 Balanced failure condition:', 0.5, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(60, 60, 60);
+    doc.text('Formula:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('cb = [0.003 / (0.003 + εy)] * d', 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`cb = [0.003 / (0.003 + ${ey.toFixed(5)})] * ${d_eff.toFixed(2)}`, 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`cb = ${cb.toFixed(2)} in`, 2.0, cy);
+    cy += 0.18;
+    doc.setFont('helvetica', 'normal');
+    doc.text(`ab = β1 * cb = ${beta1.toFixed(3)} * ${cb.toFixed(2)} = ${ab.toFixed(2)} in`, 0.6, cy);
+    cy += 0.25;
+
+    // 9.3 Balanced eccentricity
+    const res_bal = calcPnMnForC(cb, mux > 0 ? 'x' : 'y');
+    const e_b = res_bal.Pn > 0.01 ? (res_bal.Mn * 12 / res_bal.Pn) : 9999;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text('9.3 Balanced eccentricity:', 0.5, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    doc.text('Formula:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('eb = Mnb / Pnb', 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`eb = ${res_bal.Mn.toFixed(1)} * 12 / ${res_bal.Pn.toFixed(1)}`, 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`eb = ${e_b.toFixed(2)} in (Pnb = ${res_bal.Pn.toFixed(1)} kips, Mnb = ${res_bal.Mn.toFixed(1)} kip-ft)`, 2.0, cy);
+    cy += 0.25;
+
+    // 9.4 Failure mode
+    const failMode = e_in < e_b ? 'Compression-controlled' : 'Tension-controlled';
+    doc.setFont('helvetica', 'bold');
+    doc.text('9.4 Failure mode:', 0.5, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    doc.text(`e = ${e_in.toFixed(2)} in vs eb = ${e_b.toFixed(2)} in`, 0.6, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(e_in < e_b ? 120 : 30, e_in < e_b ? 30 : 150, 30);
+    doc.text(`→ Column behaves as ${failMode}`, 0.6, cy);
+    cy += 0.25;
+
+    // 9.5 Capacity check
+    const res_uni = solveUniaxial(e_in, mux > 0 ? 'x' : 'y');
+    const c_solved = res_uni.c;
+    const eps_prime = 0.003 * (c_solved - d_prime) / c_solved;
+    const eps_t = 0.003 * (d_eff - c_solved) / c_solved;
+    const f_prime_s = Math.max(-fy, Math.min(fy, 29000 * eps_prime));
+    const f_s = Math.max(-fy, Math.min(fy, 29000 * eps_t));
+
+    let Cc = 0;
+    if (type === 'TIED') {
+      Cc = 0.85 * fc * Dim * (beta1 * c_solved);
+    } else {
+      const R = Dim / 2;
+      const a_val = Math.min(Dim, beta1 * c_solved);
+      const u = (R - a_val) / R;
+      let A_seg = 0;
+      if (u <= -1) A_seg = Math.PI * R * R;
+      else if (u >= 1) A_seg = 0;
+      else {
+        const theta = Math.acos(u);
+        A_seg = R * R * (theta - u * Math.sin(theta));
+      }
+      Cc = 0.85 * fc * A_seg;
+    }
+
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(40, 40, 40);
+    doc.text('9.5 Capacity check:', 0.5, cy);
+    cy += 0.16;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    doc.text(`Neutral axis depth c = ${c_solved.toFixed(2)} in`, 0.6, cy);
+    cy += 0.16;
+    doc.text(`Compression steel strain ε's = 0.003 * (c - d') / c = ${eps_prime.toFixed(5)}`, 0.6, cy);
+    cy += 0.16;
+    doc.text(`Tension steel strain εs = 0.003 * (d - c) / c = ${eps_t.toFixed(5)}`, 0.6, cy);
+    cy += 0.16;
+    doc.text(`Compression steel stress f's = Es * ε's = ${f_prime_s.toFixed(2)} ksi`, 0.6, cy);
+    cy += 0.16;
+    doc.text(`Tension steel stress fs = Es * εs = ${f_s.toFixed(2)} ksi`, 0.6, cy);
+    cy += 0.16;
+    doc.text(`Concrete compression force C = ${Cc.toFixed(1)} kips`, 0.6, cy);
+    cy += 0.18;
+
+    const phiPn_sol = res_uni.phi * res_uni.Pn;
+    const phiMn_sol = res_uni.phi * res_uni.Mn;
+
+    doc.setFont('helvetica', 'bold');
+    const isP_ok = phiPn_sol >= Pu;
+    doc.setTextColor(isP_ok ? 30 : 200, isP_ok ? 150 : 30, 30);
+    doc.text(`Check: ϕPn >= Pu -> ${phiPn_sol.toFixed(1)} kips >= ${Pu.toFixed(1)} kips -> ${isP_ok ? 'PASS ✓' : 'FAIL ✗'}`, 0.6, cy);
+    cy += 0.16;
+
+    const isM_ok = phiMn_sol >= Mu;
+    doc.setTextColor(isM_ok ? 30 : 200, isM_ok ? 150 : 30, 30);
+    doc.text(`Check: ϕMn >= Mu -> ${phiMn_sol.toFixed(1)} kip-ft >= ${Mu.toFixed(1)} kip-ft -> ${isM_ok ? 'PASS ✓' : 'FAIL ✗'}`, 0.6, cy);
+    cy += 0.25;
+  } else {
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(80, 80, 80);
+    doc.text('N/A — not applicable (no moments applied)', 0.6, cy);
+    cy += 0.25;
+  }
+
+  // ==========================================
+  // PAGE 5: BIAXIAL BENDING, SHEAR
+  // ==========================================
+  doc.addPage();
+  pageNum = 5;
+  cy = 1.8;
+  drawPageBorderAndHeader(doc);
+
+  // SECTION 10
+  doc.setFont('times', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(201, 168, 76);
+  doc.text('SECTION 10 — BIAXIAL BENDING (if Mux and Muy both present)', 0.5, cy);
+  cy += 0.15;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(60, 60, 60);
+
+  if (mux > 0 && muy > 0) {
+    const e_x = muy * 12 / Pu;
+    const e_y = mux * 12 / Pu;
+    const res_x = solveUniaxial(e_x, 'y');
+    const res_y = solveUniaxial(e_y, 'x');
+    const Pno = 0.85 * fc * (Ag - Ast_actual) + fy * Ast_actual;
+    const invPni = 1 / res_x.Pn + 1 / res_y.Pn - 1 / Pno;
+    const Pni = invPni > 0 ? 1 / invPni : 0.001;
+    const phi_biaxial = Math.min(res_x.phi, res_y.phi);
+    const phiPni = phi_biaxial * Pni;
+
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Bresler Reciprocal Load Method:`, 0.5, cy);
+    cy += 0.18;
+
+    doc.setFont('helvetica', 'normal');
+    doc.text('Formula:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('1/Pni = 1/Pnx + 1/Pny - 1/Po', 2.0, cy);
+    cy += 0.16;
+
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`1/Pni = 1/${res_x.Pn.toFixed(1)} + 1/${res_y.Pn.toFixed(1)} - 1/${Pno.toFixed(1)}`, 2.0, cy);
+    cy += 0.16;
+
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Pni = ${Pni.toFixed(1)} kips`, 2.0, cy);
+    cy += 0.18;
+
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Po (pure nominal axial) = ${Pno.toFixed(1)} kips`, 0.6, cy);
+    cy += 0.16;
+    doc.text(`Pnx (capacity under ex only) = ${res_x.Pn.toFixed(1)} kips`, 0.6, cy);
+    cy += 0.16;
+    doc.text(`Pny (capacity under ey only) = ${res_y.Pn.toFixed(1)} kips`, 0.6, cy);
+    cy += 0.18;
+
+    const isBiaxialOk = Pu <= phiPni;
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(isBiaxialOk ? 30 : 200, isBiaxialOk ? 150 : 30, 30);
+    doc.text(`Check: Pu <= ϕ * Pni -> ${Pu.toFixed(1)} kips <= ${phiPni.toFixed(1)} kips -> ${isBiaxialOk ? 'PASS ✓' : 'FAIL ✗'}`, 0.6, cy);
+    cy += 0.25;
+  } else {
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(80, 80, 80);
+    doc.text('N/A — not applicable (uniaxial/axial-only column)', 0.6, cy);
+    cy += 0.25;
+  }
+
+  // SECTION 11
+  doc.setFont('times', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(201, 168, 76);
+  doc.text('SECTION 11 — SHEAR DESIGN', 0.5, cy);
+  cy += 0.15;
+
+  const Pu_lbs = Pu * 1000;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(40, 40, 40);
+  doc.text('Concrete shear strength (including axial compression):', 0.5, cy);
+  cy += 0.16;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(60, 60, 60);
+
+  doc.text('Formula:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text('Vc = 2 * [1 + Nu/(2000*Ag)] * √fc\' * b * d', 2.0, cy);
+  cy += 0.16;
+
+  doc.setFont('helvetica', 'normal');
+  doc.text('Substitution:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`Vc = 2 * [1 + ${Pu_lbs.toFixed(0)}/(2000*${Ag.toFixed(1)})] * √${(fc*1000).toFixed(0)} * ${Dim.toFixed(1)} * ${d_eff.toFixed(2)} / 1000`, 2.0, cy);
+  cy += 0.16;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Vc = ${Vc.toFixed(1)} kips`, 2.0, cy);
+  cy += 0.18;
+
+  doc.setFont('helvetica', 'normal');
+  doc.text(`ϕVc = 0.75 * ${Vc.toFixed(1)} = ${(0.75*Vc).toFixed(1)} kips`, 0.6, cy);
+  cy += 0.20;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Shear design case classification:`, 0.5, cy);
+  cy += 0.16;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(60, 60, 60);
+  doc.text(`Case A: Vu <= ϕVc/2 = ${(0.375*Vc).toFixed(1)} kips (No shear steel needed)`, 0.6, cy);
+  cy += 0.16;
+  doc.text(`Case B: ϕVc/2 < Vu <= ϕVc = ${(0.75*Vc).toFixed(1)} kips (Minimum shear steel required)`, 0.6, cy);
+  cy += 0.16;
+  doc.text(`Case C: Vu > ϕVc = ${(0.75*Vc).toFixed(1)} kips (Shear reinforcement required)`, 0.6, cy);
+  cy += 0.18;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Governing Case: Case ${shearCase}`, 0.6, cy);
+  cy += 0.18;
+
+  if (shearCase === 'C') {
+    doc.setFont('helvetica', 'normal');
+    doc.text('Formula for required shear strength Vs:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('Vs = (Vu - ϕVc) / ϕ', 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`Vs = (${vu.toFixed(1)} - ${(0.75*Vc).toFixed(1)}) / 0.75`, 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Vs = ${Vs_req.toFixed(1)} kips`, 2.0, cy);
+    cy += 0.20;
+
+    doc.setFont('helvetica', 'normal');
+    doc.text('Required Av/s:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('Av/s = Vs / (fyt * d)', 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`Av/s = ${Vs_req.toFixed(1)} / (${fyt.toFixed(1)} * ${d_eff.toFixed(2)})`, 2.0, cy);
+    cy += 0.16;
+    const avs_val = Vs_req / (fyt * d_eff);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Av/s = ${avs_val.toFixed(4)} in²/in`, 2.0, cy);
+    cy += 0.20;
+
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Using tie size ${tieBarSize} (Av = ${(2*A_tie).toFixed(2)} in²):`, 0.6, cy);
+    cy += 0.16;
+    doc.text('Required spacing:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text('s = Av / (Av/s)', 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`s = ${(2*A_tie).toFixed(2)} / ${avs_val.toFixed(4)}`, 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`s = ${s_shear.toFixed(2)} in`, 2.0, cy);
+    cy += 0.20;
+  }
+
+  // ==========================================
+  // PAGE 6: SLENDERNESS, DETAILING NOTES
+  // ==========================================
+  doc.addPage();
+  pageNum = 6;
+  cy = 1.8;
+  drawPageBorderAndHeader(doc);
+
+  // SECTION 12
+  doc.setFont('times', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(201, 168, 76);
+  doc.text('SECTION 12 — SLENDERNESS CHECK', 0.5, cy);
+  cy += 0.15;
+
+  const r_val = type === 'TIED' ? 0.30 * Dim : 0.25 * Dim;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(40, 40, 40);
+  doc.text('12.1 Radius of Gyration:', 0.5, cy);
+  cy += 0.16;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(60, 60, 60);
+  doc.text('Formula:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  if (type === 'TIED') {
+    doc.text('r = 0.30 * h', 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`r = 0.30 * ${Dim.toFixed(1)}`, 2.0, cy);
+  } else {
+    doc.text('r = 0.25 * D', 2.0, cy);
+    cy += 0.16;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Substitution:', 0.6, cy);
+    doc.setFont('courier', 'normal');
+    doc.text(`r = 0.25 * ${Dim.toFixed(1)}`, 2.0, cy);
+  }
+  cy += 0.16;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`r = ${r_val.toFixed(2)} in`, 2.0, cy);
+  cy += 0.25;
+
+  const klu_val = 1.0 * colHeight * 12;
+  const klu_r = klu_val / r_val;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('12.2 Slenderness Ratio:', 0.5, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(60, 60, 60);
+  doc.text('Formula:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text('klu/r = k * (lu * 12) / r', 2.0, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Substitution:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text(`klu/r = 1.0 * (${colHeight.toFixed(1)} * 12) / ${r_val.toFixed(2)}`, 2.0, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`klu/r = ${klu_r.toFixed(2)}`, 2.0, cy);
+  cy += 0.25;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('12.3 Limit for Non-Sway Frames:', 0.5, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(60, 60, 60);
+  doc.text('Formula:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text('Limit = 34 - 12*(M1/M2)', 2.0, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Substitution:', 0.6, cy);
+  doc.setFont('courier', 'normal');
+  doc.text('Limit = 34 - 12*(1.0)  [Assuming M1/M2 = 1.0]', 2.0, cy);
+  cy += 0.16;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Limit = 22.00', 2.0, cy);
+  cy += 0.20;
+
+  const isSlender = klu_r > 22.0;
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(isSlender ? 200 : 30, isSlender ? 30 : 150, 30);
+  doc.text(`Verdict: klu/r vs Limit -> ${klu_r.toFixed(2)} vs 22.00 -> Column is ${isSlender ? 'SLENDER' : 'SHORT'}`, 0.6, cy);
+  cy += 0.25;
+
+  if (isSlender) {
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(40, 40, 40);
+    doc.text('12.4 Moment Magnification (ACI 318-14 §6.6):', 0.5, cy);
+    cy += 0.16;
+
+    const Ec = 57000 * Math.sqrt(fc * 1000) / 1000;
+    const Ig = type === 'TIED' ? Math.pow(Dim, 4) / 12 : Math.PI * Math.pow(Dim, 4) / 64;
+    const beta_dns = 1.2 * pdl / Pu;
+    const EI = 0.4 * Ec * Ig / (1 + beta_dns);
+    const Pc = Math.PI * Math.PI * EI / Math.pow(1.0 * colHeight * 12, 2);
+    const delta_ns = Math.max(1.0, 1.0 / (1 - Pu / (0.75 * Pc)));
+    const Mu = Math.sqrt(mux * mux + muy * muy);
+    const Mc = delta_ns * Mu;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    doc.text(`Ec = 57000 * √fc\' = 57000 * √${fc.toFixed(2)} = ${Ec.toFixed(1)} ksi`, 0.6, cy);
+    cy += 0.16;
+    doc.text(`Ig = ${Ig.toFixed(1)} in^4`, 0.6, cy);
+    cy += 0.16;
+    doc.text(`βdns = 1.2*PDL / Pu = ${beta_dns.toFixed(3)}`, 0.6, cy);
+    cy += 0.16;
+    doc.text(`EI = 0.4*Ec*Ig / (1 + βdns) = ${EI.toFixed(1)} EI`, 0.6, cy);
+    cy += 0.16;
+    doc.text(`Pc = π²*EI / (k*lu)² = ${Pc.toFixed(1)} kips`, 0.6, cy);
+    cy += 0.16;
+    doc.text(`δns = Cm / (1 - Pu/(0.75*Pc)) = ${delta_ns.toFixed(3)}`, 0.6, cy);
+    cy += 0.18;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Magnified Moment Mc = δns * Mu = ${Mc.toFixed(1)} kip-ft`, 0.6, cy);
+    cy += 0.25;
+  }
+
+  // SECTION 13
+  doc.setFont('times', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(201, 168, 76);
+  doc.text('SECTION 13 — REINFORCEMENT DETAILING SCHEDULE', 0.5, cy);
+  cy += 0.15;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(30, 30, 30);
+  doc.setFillColor(245, 245, 245);
+  doc.rect(0.5, cy, 7.5, 0.22, 'F');
+  doc.text('Mark', 0.6, cy + 0.15);
+  doc.text('Bar Size', 1.5, cy + 0.15);
+  doc.text('No. of Bars', 2.8, cy + 0.15);
+  doc.text('Length (ft)', 4.2, cy + 0.15);
+  doc.text('Remarks', 5.5, cy + 0.15);
+
+  doc.setDrawColor(200, 200, 200);
+  doc.line(0.5, cy, 8.0, cy);
+  doc.line(0.5, cy + 0.22, 8.0, cy + 0.22);
+  cy += 0.22;
+
+  let transQty = 0;
+  let transLen = 0;
+  if (type === 'TIED') {
+    transQty = Math.floor(colHeight * 12 / s_final) + 1;
     const L_tie = 4 * (Dim - 2 * cover) + 2 * hookExtension;
-    transQtyText = `${n_ties} ties`;
-    transLenText = `${(L_tie/12).toFixed(2)} ft/tie`;
-    totTransWeight = (n_ties * L_tie / 12) * A_tie * 3.4;
+    transLen = L_tie / 12;
   } else {
     const Dc = Dim - 2 * cover;
     const Ds = Dc - d_tie;
     const L_turn = Math.sqrt(Math.PI * Math.PI * Ds * Ds + s_final * s_final);
-    const n_turns = (colHeight * 12 / s_final) + 3.0;
-    transQtyText = `${n_turns.toFixed(1)} turns`;
-    transLenText = `${(L_turn/12).toFixed(2)} ft/turn`;
-    totTransWeight = (n_turns * L_turn / 12) * A_tie * 3.4;
+    transQty = (colHeight * 12 / s_final) + 3.0;
+    transLen = L_turn / 12;
   }
 
-  const concreteVol = ((Ag / 144) * colHeight) * 0.02831685; // m³
+  const ld_comp_ft = Math.max((20 * fy * mainBarDia) / Math.sqrt(fc * 1000), 0.3 * fy * mainBarDia, 8.0) / 12;
+  const l_splice_ft = Math.max(1.0, 1.3 * ld_comp_ft);
+  const longBarLen = colHeight + l_splice_ft;
 
-  const takeoff = [
-    ['Longitudinal Rebar', mainBarSize, `${N_bars} bars`, `${singleBarLen.toFixed(2)} ft/bar`, `${totLongWeight.toFixed(1)} lbs`],
-    ['Transverse Ties/Spirals', tieBarSize, transQtyText, transLenText, `${totTransWeight.toFixed(1)} lbs`],
-    ['Total Steel Weight', '-', '-', '-', `${(totLongWeight + totTransWeight).toFixed(1)} lbs (${((totLongWeight+totTransWeight)*0.45359237).toFixed(1)} kg)`],
-    ['Concrete Volume', '-', '-', `H = ${colHeight.toFixed(1)} ft`, `${(concreteVol).toFixed(2)} m³ (${(concreteVol*35.3147).toFixed(1)} cu. ft.)`]
+  const detailingRows = [
+    ['L1', mainBarSize, `${N_bars}`, `${longBarLen.toFixed(2)} ft`, 'Longitudinal Bars'],
+    [type === 'TIED' ? 'T1' : 'S1', tieBarSize, `${type === 'TIED' ? transQty : transQty.toFixed(1) + ' turns'}`, `${transLen.toFixed(2)} ft`, type === 'TIED' ? 'Ties / Stirrups' : 'Spiral']
   ];
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(60, 60, 60);
+
+  detailingRows.forEach(([mark, size, qty, len, rem]) => {
+    doc.text(mark, 0.6, cy + 0.15);
+    doc.text(size, 1.5, cy + 0.15);
+    doc.text(qty, 2.8, cy + 0.15);
+    doc.text(len, 4.2, cy + 0.15);
+    doc.text(rem, 5.5, cy + 0.15);
+    doc.line(0.5, cy + 0.20, 8.0, cy + 0.20);
+    cy += 0.20;
+  });
+
+  cy += 0.10;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.text(`* Clear cover to ties: 1.5 in (ACI 318-14 §20.6.1)`, 0.6, cy);
+  cy += 0.14;
+  doc.text(`* Minimum bar clear spacing: max(1.5 db, 1.5 in) = ${minAllowedSpacing.toFixed(2)} in`, 0.6, cy);
+  cy += 0.14;
+  doc.text(`* Lap splice length for longitudinal bars: Lsp = ${(l_splice_ft * 12).toFixed(1)} in (Class B splice)`, 0.6, cy);
+  cy += 0.14;
+  doc.text(`* Standard hook development length: ldh = ${(ld_comp_ft * 12).toFixed(1)} in`, 0.6, cy);
+  cy += 0.14;
+  doc.text('* All deformed bars to ASTM A615 Grade 60', 0.6, cy);
+  cy += 0.25;
+
+  // ==========================================
+  // PAGE 7: SUMMARY, DRAWINGS, REFERENCES
+  // ==========================================
+  doc.addPage();
+  pageNum = 7;
+  cy = 1.8;
+  drawPageBorderAndHeader(doc);
+
+  // SECTION 14
+  doc.setFont('times', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(201, 168, 76);
+  doc.text('SECTION 14 — DESIGN SUMMARY TABLE', 0.5, cy);
+  cy += 0.15;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(30, 30, 30);
+  doc.setFillColor(245, 245, 245);
+  doc.rect(0.5, cy, 7.5, 0.22, 'F');
+  doc.text('Check', 0.6, cy + 0.15);
+  doc.text('Required', 3.0, cy + 0.15);
+  doc.text('Provided', 4.8, cy + 0.15);
+  doc.text('Status', 6.8, cy + 0.15);
+
+  doc.setDrawColor(200, 200, 200);
+  doc.line(0.5, cy, 8.0, cy);
+  doc.line(0.5, cy + 0.22, 8.0, cy + 0.22);
+  cy += 0.22;
+
+  const Mu_d = Math.sqrt(mux * mux + muy * muy);
+  const phiMn_d = mux > 0 || muy > 0 ? (res_sol.phi * res_sol.Mn) : 0;
+
+  const summaryRows = [
+    ['Axial capacity Pu <= α·ϕ·Pn', `${Pu.toFixed(1)} kips`, `${(res_sol.Pn * res_sol.phi).toFixed(1)} kips`, (Pu <= res_sol.Pn * res_sol.phi) ? '✓ PASS' : '✗ FAIL'],
+    ['Moment capacity Mu <= ϕ·Mn', `${Mu_d.toFixed(1)} kip-ft`, `${phiMn_d.toFixed(1)} kip-ft`, (mux === 0 && muy === 0) ? 'N/A' : (Mu_d <= phiMn_d) ? '✓ PASS' : '✗ FAIL'],
+    ['Shear capacity Vu <= ϕ·Vc', `${vu.toFixed(1)} kips`, `${(0.75 * Vc).toFixed(1)} kips`, (vu <= 0.75 * Vc) ? '✓ PASS' : '✗ FAIL'],
+    ['Steel ratio 0.01 <= ρg <= 0.08', '0.010 to 0.080', `${p_actual.toFixed(4)}`, isRatioOk ? '✓ PASS' : '✗ FAIL'],
+    ['Tie spacing (ACI limits)', `${type === 'TIED' ? '12.00 in max' : 'Pitch limits'}`, `${s_final.toFixed(2)} in`, (type === 'TIED' ? (s_final <= 16 * mainBarDia) : isSpacingOk) ? '✓ PASS' : '✗ FAIL'],
+    ['DCR (Pu / α·ϕ·Pn)', '<= 1.00', `${dcRatio.toFixed(3)}`, dcRatio <= 1.00 ? '✓ PASS' : '✗ FAIL'],
+    ['Slenderness', 'Short/Long', `${isSlender ? 'Slender' : 'Short'}`, '✓ OK']
+  ];
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(60, 60, 60);
+
+  summaryRows.forEach(([check, req, prov, stat]) => {
+    doc.text(check, 0.6, cy + 0.15);
+    doc.text(req, 3.0, cy + 0.15);
+    doc.text(prov, 4.8, cy + 0.15);
+    if (stat.includes('PASS') || stat.includes('OK')) {
+      doc.setTextColor(30, 150, 30);
+    } else if (stat.includes('FAIL')) {
+      doc.setTextColor(220, 50, 50);
+    } else {
+      doc.setTextColor(100, 100, 100);
+    }
+    doc.setFont('helvetica', 'bold');
+    doc.text(stat, 6.8, cy + 0.15);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    doc.line(0.5, cy + 0.20, 8.0, cy + 0.20);
+    cy += 0.20;
+  });
+
+  cy += 0.10;
+  const overallVerdict = dcRatio <= 1.0 && isRatioOk && isSpacingOk && (vu <= 0.75 * Vc);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9.5);
+  if (overallVerdict) {
+    doc.setTextColor(30, 150, 30);
+    doc.text('Overall design verdict: ✓ DESIGN ACCEPTABLE — All checks satisfied per ' + code, 0.5, cy);
+  } else {
+    doc.setTextColor(220, 50, 50);
+    doc.text('Overall design verdict: ✗ REDESIGN REQUIRED — See flagged checks above', 0.5, cy);
+  }
+  cy += 0.30;
+
+  // SECTION 15
+  doc.setFont('times', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(201, 168, 76);
+  doc.text('SECTION 15 — REINFORCEMENT DETAILING DRAWING', 0.5, cy);
+  cy += 0.15;
+
+  const drawX = 0.5;
+  const drawY = cy;
+  const drawW = 3.6;
+  const drawH = 2.4;
+
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.005);
+  doc.rect(drawX, drawY, drawW, drawH);
+
+  const cx_cs = drawX + drawW / 2;
+  const cy_cs = drawY + drawH / 2;
+  const cs_size = 1.6;
+
+  doc.setFillColor(245, 247, 250);
+  doc.setDrawColor(30, 30, 30);
+  doc.setLineWidth(0.015);
+
+  if (type === 'TIED') {
+    doc.rect(cx_cs - cs_size/2, cy_cs - cs_size/2, cs_size, cs_size, 'FD');
+
+    doc.setDrawColor(220, 50, 50);
+    doc.setLineWidth(0.01);
+    const cage_size = cs_size - 2 * (cover * (cs_size / Dim));
+    doc.rect(cx_cs - cage_size/2, cy_cs - cage_size/2, cage_size, cage_size, 'S');
+
+    const hx = cx_cs - cage_size/2;
+    const hy = cy_cs - cage_size/2;
+    doc.line(hx, hy, hx + 0.12, hy + 0.12);
+    doc.line(hx, hy, hx + 0.04, hy + 0.15);
+
+    const barScale = cs_size / Dim;
+    const barR = Math.max(0.025, (mainBarDia / 2) * barScale);
+    doc.setFillColor(201, 168, 76);
+    doc.setDrawColor(30, 30, 30);
+    doc.setLineWidth(0.005);
+
+    bars.forEach(bar => {
+      const bx = cx_cs + bar.x * barScale;
+      const by = cy_cs + bar.y * barScale;
+      doc.circle(bx, by, barR, 'FD');
+    });
+
+    doc.setDrawColor(80, 80, 80);
+    doc.line(cx_cs - cs_size/2, cy_cs - cs_size/2 - 0.1, cx_cs + cs_size/2, cy_cs - cs_size/2 - 0.1);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(40, 40, 40);
+    doc.text(`${Dim.toFixed(0)}"`, cx_cs - 0.08, cy_cs - cs_size/2 - 0.15);
+  } else {
+    doc.circle(cx_cs, cy_cs, cs_size / 2, 'FD');
+
+    doc.setDrawColor(220, 50, 50);
+    doc.setLineWidth(0.01);
+    const spiral_rad = cs_size/2 - (cover * (cs_size / Dim));
+    doc.circle(cx_cs, cy_cs, spiral_rad, 'S');
+
+    const barScale = cs_size / Dim;
+    const barR = Math.max(0.025, (mainBarDia / 2) * barScale);
+    doc.setFillColor(201, 168, 76);
+    doc.setDrawColor(30, 30, 30);
+    doc.setLineWidth(0.005);
+
+    bars.forEach(bar => {
+      const bx = cx_cs + bar.x * barScale;
+      const by = cy_cs + bar.y * barScale;
+      doc.circle(bx, by, barR, 'FD');
+    });
+
+    doc.setDrawColor(80, 80, 80);
+    doc.line(cx_cs - cs_size/2, cy_cs, cx_cs + cs_size/2, cy_cs);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(40, 40, 40);
+    doc.text(`D = ${Dim.toFixed(0)}"`, cx_cs - 0.2, cy_cs - 0.08);
+  }
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(30, 30, 30);
-  doc.text('Material Component', rx, ry);
-  doc.text('Size', rx + 1.3, ry);
-  doc.text('Qty', rx + 1.7, ry);
-  doc.text('Details', rx + 2.1, ry);
-  doc.text('Weight/Vol', rx + 2.85, ry);
-  doc.line(rx, ry + 0.08, rx + 3.7, ry + 0.08);
+  doc.text('CROSS SECTION', drawX + 0.1, drawY + 0.2);
 
-  ry += 0.20;
+  const drawX2 = drawX + drawW + 0.2;
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.005);
+  doc.rect(drawX2, drawY, drawW, drawH);
+
+  const cx_el = drawX2 + drawW / 2;
+  const el_w = 1.0;
+  const el_h = 1.8;
+  const cy_el = drawY + drawH / 2;
+
+  doc.setFillColor(245, 247, 250);
+  doc.setDrawColor(30, 30, 30);
+  doc.setLineWidth(0.01);
+  doc.rect(cx_el - el_w/2, cy_el - el_h/2, el_w, el_h, 'FD');
+
+  doc.setDrawColor(201, 168, 76);
+  doc.setLineWidth(0.015);
+  doc.line(cx_el - el_w/2 + 0.15, cy_el - el_h/2, cx_el - el_w/2 + 0.15, cy_el + el_h/2);
+  doc.line(cx_el + el_w/2 - 0.15, cy_el - el_h/2, cx_el + el_w/2 - 0.15, cy_el + el_h/2);
+
+  doc.setDrawColor(220, 50, 50);
+  doc.setLineWidth(0.008);
+  const n_ties_draw = 8;
+  for (let i = 0; i < n_ties_draw; i++) {
+    const ty = cy_el - el_h/2 + i * (el_h / (n_ties_draw - 1));
+    doc.line(cx_el - el_w/2, ty, cx_el + el_w/2, ty);
+  }
+
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(60, 60, 60);
+  doc.setFontSize(7.5);
+  doc.setTextColor(40, 40, 40);
+  doc.setDrawColor(80, 80, 80);
+  doc.setLineWidth(0.005);
+  doc.line(cx_el + el_w/2 + 0.1, cy_el - el_h/2, cx_el + el_w/2 + 0.1, cy_el + el_h/2);
+  doc.line(cx_el + el_w/2 + 0.05, cy_el - el_h/2, cx_el + el_w/2 + 0.15, cy_el - el_h/2);
+  doc.line(cx_el + el_w/2 + 0.05, cy_el + el_h/2, cx_el + el_w/2 + 0.15, cy_el + el_h/2);
+  doc.text(`Lu = ${colHeight.toFixed(0)} ft`, cx_el + el_w/2 + 0.15, cy_el + 0.05);
 
-  takeoff.forEach(([comp, size, qty, details, weight], idx) => {
-    if (idx === 2 || idx === 3) {
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(30, 30, 30);
-      doc.line(rx, ry - 0.06, rx + 3.7, ry - 0.06);
-    }
-    doc.text(comp, rx, ry);
-    doc.text(size, rx + 1.3, ry);
-    doc.text(qty, rx + 1.7, ry);
-    doc.text(details, rx + 2.1, ry);
-    doc.text(weight, rx + 2.85, ry);
-    
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(60, 60, 60);
-    ry += 0.22;
-  });
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(30, 30, 30);
+  doc.text('ELEVATION VIEW', drawX2 + 0.1, drawY + 0.2);
 
-  // 6. Detailing Specifications (ACI 318-19 Chapters 25)
-  ry = drawY + blueprintH + 0.25;
+  cy += drawH + 0.15;
+
+  // SECTION 16
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   doc.setTextColor(201, 168, 76);
-  doc.text('6. DETAILING SPECIFICATIONS (ACI 318-19 Chapter 25)', lx, ry);
-  doc.line(lx, ry + 0.08, 8.0, ry + 0.08);
+  doc.text('SECTION 16 — CODE REFERENCES', 0.5, cy);
+  cy += 0.15;
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
+  doc.setFontSize(8);
   doc.setTextColor(80, 80, 80);
 
-  ry += 0.22;
-  const specNotes = [
-    `* Concrete clear cover requirement: ${cover.toFixed(2)}" to tie/spiral cage (ACI Table 20.6.1.3.1).`,
-    `* Minimum longitudinal bar clear spacing: ${s_clear.toFixed(2)}" vs limit of ${minAllowedSpacing.toFixed(2)}" (ACI 25.2.1).`,
-    `* Transverse reinforcement sizing: ${tieBarSize} size satisfies minimum longitudinal bar containment.`,
-    `* Standard hook extension: Tie hook bend angle = 135 deg with a standard hook extension = ${hookExtension.toFixed(2)}" (ACI 25.3.2).`,
-    `* Development & splice lengths: Longitudinal bars must be spliced with a compression lap splice of at least ${l_splice.toFixed(1)}" (equivalent to 1.3 * ld_compression per ACI 25.5.5.1).`,
-    `* Shear Case class: Case ${shearCase} reinforcement details provided. Transverse spacing capped at ${s_final.toFixed(2)}".`
+  const isA = code === 'ACI 318-14';
+  const refs_list = isA ? [
+    '- ACI 318-14 §4.3.2 — Design loads and combinations',
+    '- ACI 318-14 §20.2 — Steel material properties',
+    '- ACI 318-14 §20.6.1 — Concrete cover requirements',
+    '- ACI 318-14 §21.2 — Strength reduction factors (ϕ)',
+    '- ACI 318-14 §22.2 — Assumptions for flexure and axial',
+    '- ACI 318-14 §22.4 — Axial strength: tied and spiral columns',
+    '- ACI 318-14 §22.5 — One-way shear strength',
+    '- ACI 318-14 §25.7.2 — Ties in compression members',
+    '- ACI 318-14 §25.7.3 — Spiral reinforcement',
+    '- ACI 318-14 §6.2.5 — Slenderness effects: moment magnification',
+    '- ACI 318-14 §26.4 — Specified concrete strength'
+  ] : [
+    '- BNBC 2020 Part 6 Ch 6 — Design loads and combinations',
+    '- BNBC 2020 Part 6 Ch 5 — Concrete and steel material properties',
+    '- BNBC 2020 Part 6 Ch 6 — Concrete cover requirements',
+    '- BNBC 2020 Part 6 Ch 6 — Strength reduction factors (ϕ)',
+    '- BNBC 2020 Part 6 Ch 6 — Assumptions for flexure and axial',
+    '- BNBC 2020 Part 6 Ch 6 — Axial strength: tied and spiral columns',
+    '- BNBC 2020 Part 6 Ch 6 — One-way shear strength',
+    '- BNBC 2020 Part 6 Ch 6 — Ties in compression members',
+    '- BNBC 2020 Part 6 Ch 6 — Spiral reinforcement',
+    '- BNBC 2020 Part 6 Ch 6 — Slenderness effects: moment magnification',
+    '- BNBC 2020 Part 6 Ch 5 — Specified concrete strength'
   ];
 
-  specNotes.forEach(note => {
-    const splitNote = doc.splitTextToSize(note, 7.0);
-    doc.text(splitNote, lx, ry);
-    ry += splitNote.length * 0.16;
+  refs_list.forEach(ref => {
+    doc.text(ref, 0.6, cy);
+    cy += 0.14;
   });
 
-  // Footer on page 2
-  doc.setFont('helvetica', 'italic');
-  doc.setFontSize(8);
-  doc.setTextColor(150, 150, 150);
-  doc.text('TwinAnalytic Engineering Group — Calculations Sheet S-101', 0.5, 10.5);
-  doc.text('Page 2 of 2', 7.2, 10.5);
+  cy += 0.15;
+  doc.setFont('times', 'bold');
+  doc.setFontSize(9.5);
+  doc.setTextColor(201, 168, 76);
+  doc.text(`Designed per ${code} | CE 317 Method | ${new Date().toLocaleDateString()}`, 0.5, cy);
 
   doc.save(`twinanalytic_column_report_${new Date().toISOString().split('T')[0]}.pdf`);
 }
 
-// Helper to draw clean common header
-function drawPDFHeader(doc, projName, projNum, designerInitials, reviewerInitials, Dim, type) {
-  doc.setDrawColor(30, 30, 30);
-  doc.setLineWidth(0.015);
-  doc.rect(0.25, 0.25, 8.0, 1.3, 'S');
-
-  doc.line(2.3, 0.25, 2.3, 1.55);
-  doc.line(5.6, 0.25, 5.6, 1.55);
-
-  doc.setTextColor(201, 168, 76);
-  doc.setFont('times', 'bold');
-  doc.setFontSize(18);
-  doc.text('TwinAnalytic', 0.4, 0.65);
-  
-  doc.setTextColor(80, 80, 80);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.text('STRUCTURAL MEMBER DESIGN SHEET', 0.4, 0.88);
-  doc.text('ACI 318-19 COMPLIANCE AUDIT', 0.4, 1.08);
-  doc.text('Calculations Sheet S-101', 0.4, 1.28);
-
-  doc.setTextColor(60, 60, 60);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.text('PROJECT:', 2.5, 0.5);
-  doc.setFont('helvetica', 'normal');
-  const splitProjName = doc.splitTextToSize(projName, 2.0);
-  doc.text(splitProjName, 3.4, 0.5);
-  
-  doc.setFont('helvetica', 'bold');
-  doc.text('PROJ. NO:', 2.5, 0.95);
-  doc.setFont('helvetica', 'normal');
-  doc.text(projNum, 3.4, 0.95);
-
-  doc.setFont('helvetica', 'bold');
-  doc.text('MEMBER:', 2.5, 1.35);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`${type === 'TIED' ? 'Tied Column' : 'Spiral Column'} (${Dim.toFixed(0)}" dia/side)`, 3.4, 1.35);
-
-  doc.line(5.6, 0.68, 8.25, 0.68);
-  doc.line(5.6, 1.11, 8.25, 1.11);
-
-  doc.setFont('helvetica', 'bold');
-  doc.text('DESIGNED BY:', 5.75, 0.52);
-  doc.setFont('helvetica', 'normal');
-  doc.text(designerInitials, 7.0, 0.52);
-
-  doc.setFont('helvetica', 'bold');
-  doc.text('CHECKED BY:', 5.75, 0.95);
-  doc.setFont('helvetica', 'normal');
-  doc.text(reviewerInitials, 7.0, 0.95);
-
-  doc.setFont('helvetica', 'bold');
-  doc.text('DATE:', 5.75, 1.38);
-  doc.setFont('helvetica', 'normal');
-  doc.text(new Date().toLocaleDateString(), 6.3, 1.38);
-
-  doc.setDrawColor(201, 168, 76);
-  doc.setLineWidth(0.015);
-  doc.rect(0.25, 0.25, 8.0, 10.5);
-}
