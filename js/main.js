@@ -147,52 +147,56 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 5. TESTIMONIALS CAROUSEL
   const track = document.getElementById('testimonials-track');
-  const slides = Array.from(track.children);
-  const dotsContainer = document.getElementById('carousel-dots');
-  let activeIndex = 0;
-  let carouselTimer;
+  if (track) {
+    const slides = Array.from(track.children);
+    const dotsContainer = document.getElementById('carousel-dots');
+    let activeIndex = 0;
+    let carouselTimer;
 
-  // Create dot buttons
-  slides.forEach((_, index) => {
-    const dot = document.createElement('button');
-    dot.classList.add('carousel-dot');
-    if (index === 0) dot.classList.add('active');
-    dot.setAttribute('aria-label', `Go to testimonial slide ${index + 1}`);
-    dotsContainer.appendChild(dot);
+    if (dotsContainer) {
+      // Create dot buttons
+      slides.forEach((_, index) => {
+        const dot = document.createElement('button');
+        dot.classList.add('carousel-dot');
+        if (index === 0) dot.classList.add('active');
+        dot.setAttribute('aria-label', `Go to testimonial slide ${index + 1}`);
+        dotsContainer.appendChild(dot);
 
-    dot.addEventListener('click', () => {
-      goToSlide(index);
-      resetAutoplay();
-    });
-  });
+        dot.addEventListener('click', () => {
+          goToSlide(index);
+          resetAutoplay();
+        });
+      });
+    }
 
-  const dots = Array.from(dotsContainer.children);
+    const dots = dotsContainer ? Array.from(dotsContainer.children) : [];
 
-  const goToSlide = (index) => {
-    activeIndex = index;
-    track.style.transform = `translateX(-${index * 100}%)`;
-    
-    dots.forEach(d => d.classList.remove('active'));
-    dots[index].classList.add('active');
-  };
+    const goToSlide = (index) => {
+      activeIndex = index;
+      track.style.transform = `translateX(-${index * 100}%)`;
+      
+      dots.forEach(d => d.classList.remove('active'));
+      if (dots[index]) dots[index].classList.add('active');
+    };
 
-  const startAutoplay = () => {
-    carouselTimer = setInterval(() => {
-      let nextIndex = activeIndex + 1;
-      if (nextIndex >= slides.length) {
-        nextIndex = 0;
-      }
-      goToSlide(nextIndex);
-    }, 6000); // Change slide every 6 seconds
-  };
+    const startAutoplay = () => {
+      carouselTimer = setInterval(() => {
+        let nextIndex = activeIndex + 1;
+        if (nextIndex >= slides.length) {
+          nextIndex = 0;
+        }
+        goToSlide(nextIndex);
+      }, 6000); // Change slide every 6 seconds
+    };
 
-  const resetAutoplay = () => {
-    clearInterval(carouselTimer);
-    startAutoplay();
-  };
+    const resetAutoplay = () => {
+      clearInterval(carouselTimer);
+      startAutoplay();
+    };
 
-  if (track && slides.length > 0) {
-    startAutoplay();
+    if (slides.length > 0) {
+      startAutoplay();
+    }
   }
 
   // 6. SCROLL FADE-UP INTERSECTION OBSERVER
@@ -212,4 +216,94 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   fadeUpElements.forEach(el => fadeUpObserver.observe(el));
+
+  // 7. CONTACT FORM VALIDATION & FEEDBACK
+  const contactForm = document.getElementById('contact-form');
+  if (contactForm) {
+    contactForm.removeAttribute('onsubmit');
+    contactForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      // Clear existing error messages
+      const existingErrors = contactForm.querySelectorAll('.inline-error-msg');
+      existingErrors.forEach(el => el.remove());
+      
+      const nameInput = document.getElementById('c-name');
+      const emailInput = document.getElementById('c-email');
+      const phoneInput = document.getElementById('c-phone');
+      const msgInput = document.getElementById('c-msg');
+      const typeSelect = document.getElementById('c-type');
+      
+      let isValid = true;
+      
+      const showError = (inputEl, message) => {
+        const errorSpan = document.createElement('span');
+        errorSpan.className = 'inline-error-msg';
+        errorSpan.style.color = '#F5222D';
+        errorSpan.style.fontSize = '0.75rem';
+        errorSpan.style.display = 'block';
+        errorSpan.style.marginTop = '0.25rem';
+        errorSpan.style.fontFamily = 'var(--font-mono)';
+        errorSpan.style.textAlign = 'left';
+        errorSpan.textContent = message;
+        inputEl.parentNode.appendChild(errorSpan);
+        isValid = false;
+      };
+      
+      if (!nameInput.value.trim()) {
+        showError(nameInput, 'Full Name is required.');
+      }
+      
+      const emailValue = emailInput.value.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailValue) {
+        showError(emailInput, 'Business Email is required.');
+      } else if (!emailRegex.test(emailValue)) {
+        showError(emailInput, 'Please enter a valid email address.');
+      }
+      
+      if (phoneInput && phoneInput.value.trim()) {
+        const phoneDigits = phoneInput.value.replace(/\D/g, '').length;
+        if (phoneDigits < 7 || phoneDigits > 15) {
+          showError(phoneInput, 'Please enter a valid phone number (7 to 15 digits).');
+        }
+      }
+      
+      if (!msgInput.value.trim()) {
+        showError(msgInput, 'Project Summary is required.');
+      }
+      
+      if (isValid) {
+        // Log submission locally to leads database
+        const leads = JSON.parse(localStorage.getItem('tools_leads') || '[]');
+        const scopeLabel = typeSelect ? typeSelect.options[typeSelect.selectedIndex].text : 'General Inquiry';
+        
+        leads.push({
+          name: nameInput.value.trim(),
+          email: emailInput.value.trim(),
+          phone: phoneInput ? phoneInput.value.trim() : 'N/A',
+          timestamp: new Date().toLocaleString(),
+          calcType: 'Contact: ' + scopeLabel,
+          geometry: 'N/A',
+          reinforcement: 'N/A',
+          status: 'N/A',
+          concreteVol: 'N/A',
+          steelWeight: 'N/A'
+        });
+        localStorage.setItem('tools_leads', JSON.stringify(leads));
+        
+        // Success feedback
+        const parent = contactForm.parentNode;
+        parent.innerHTML = `
+          <div style="text-align: center; padding: 3rem 1.5rem; color: #fff; background: rgba(79, 134, 198, 0.05); border: 1px solid var(--color-gold); border-radius: 8px;" class="fade-up-init fade-up-in">
+            <div style="font-size: 3rem; color: var(--color-gold); margin-bottom: 1.5rem;"><i class="fa-solid fa-circle-check"></i></div>
+            <h3 style="font-family: var(--font-serif); font-size: 1.8rem; margin-bottom: 1rem; color: var(--color-gold);">Proposal Received</h3>
+            <p style="color: var(--text-secondary); max-width: 450px; margin: 0 auto; line-height: 1.6; font-size: 0.95rem;">
+              Your proposal has been received. We'll be in touch within 24 hours.
+            </p>
+          </div>
+        `;
+      }
+    });
+  }
 });

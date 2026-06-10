@@ -8,6 +8,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Our Services — TwinAnalytic</title>
   <meta name="description" content="Explore TwinAnalytic's technical services, ranging from high-precision BIM Level 3 modeling and structural finite element analysis (FEA) to real-time digital twin integrations.">
+
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="Our Services — TwinAnalytic" />
+  <meta property="og:description" content="Explore TwinAnalytic's technical services, ranging from high-precision BIM Level 3 modeling and structural finite element analysis (FEA) to real-time digital twin integrations." />
+  <meta property="og:image" content="https://twinanalytic.com/assets/about_render.jpg" />
+  <meta property="og:url" content="https://twinanalytic.com/services.html" />
+  <meta property="og:type" content="website" />
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -80,7 +87,7 @@
         <li><a href="about.html">About</a></li>
         <li><a href="services.html" class="active">Services</a></li>
         <li><a href="bim-viewer.html">BIM Viewer</a></li>
-        <li><a href="tools.html">Tools</a></li>
+        <li><a href="tools.html">Calculators</a></li>
         <li><a href="projects.html">Projects</a></li>
         <li><a href="contact.html">Contact</a></li>
       </ul>
@@ -113,7 +120,7 @@
 
       <div class="services-expanded-grid">
         <!-- Service 1 -->
-        <div class="glass-card fade-up-init">
+        <div id="bim" class="glass-card fade-up-init">
           <div class="service-icon"><i class="fa-solid fa-cube"></i></div>
           <h3 style="font-family: var(--font-serif); font-size: 1.6rem; margin-bottom: 0.8rem; font-weight: 400;">BIM Modeling &amp; Coordination</h3>
           <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7;">End-to-end 3D modeling up to LOD 500, enabling precise clash detection, cost estimation, and asset lifecycle management.</p>
@@ -125,7 +132,7 @@
           <a href="bim-modeling.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-gold); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1.5rem;">Read Details <i class="fa-solid fa-arrow-right-long"></i></a>
         </div>
         <!-- Service 2 -->
-        <div class="glass-card fade-up-init">
+        <div id="structural" class="glass-card fade-up-init">
           <div class="service-icon"><i class="fa-solid fa-drafting-compass"></i></div>
           <h3 style="font-family: var(--font-serif); font-size: 1.6rem; margin-bottom: 0.8rem; font-weight: 400;">Structural Design &amp; Analysis</h3>
           <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7;">Advanced structural analysis under static, dynamic, wind, and seismic loads using finite element modeling (FEM) methods.</p>
@@ -137,7 +144,7 @@
           <a href="structural-design.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-gold); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1.5rem;">Read Details <i class="fa-solid fa-arrow-right-long"></i></a>
         </div>
         <!-- Service 3 -->
-        <div class="glass-card fade-up-init">
+        <div id="digital-twin" class="glass-card fade-up-init">
           <div class="service-icon"><i class="fa-solid fa-network-wired"></i></div>
           <h3 style="font-family: var(--font-serif); font-size: 1.6rem; margin-bottom: 0.8rem; font-weight: 400;">Digital Twin Integration</h3>
           <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7;">Connecting physical IoT strain gauges and accelerometer sensor data to high-fidelity 3D structural models.</p>
@@ -185,7 +192,7 @@
           <a href="feasibility-cost.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-gold); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1.5rem;">Read Details <i class="fa-solid fa-arrow-right-long"></i></a>
         </div>
         <!-- Service 7 -->
-        <div class="glass-card fade-up-init">
+        <div id="mep" class="glass-card fade-up-init">
           <div class="service-icon"><i class="fa-solid fa-bolt"></i></div>
           <h3 style="font-family: var(--font-serif); font-size: 1.6rem; margin-bottom: 0.8rem; font-weight: 400;">MEP Engineering</h3>
           <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7;">Integrated mechanical, electrical, and plumbing engineering optimized for thermal efficiency and smart-grid controls.</p>
@@ -210,6 +217,14 @@
         </div>
       </div>
 
+      <!-- WHO WE WORK WITH -->
+      <div class="glass-card fade-up-init" style="margin-top: 6rem; padding: 3rem 2.5rem; text-align: center;">
+        <h3 style="font-family: var(--font-serif); font-size: 2rem; font-weight: 400; color: var(--color-gold); margin-bottom: 1rem;">Who We Work With</h3>
+        <p style="color: var(--text-secondary); max-width: 700px; margin: 0 auto; line-height: 1.8; font-size: 1.05rem;">
+          We work with developers of high-rise commercial towers, bridge and infrastructure assets, large residential developments, and industrial facilities.
+        </p>
+      </div>
+
       <!-- CTA -->
       <div class="cta-card glass-card fade-up-init">
         <h3 style="font-family: var(--font-serif); font-size: 2.2rem; margin-bottom: 1.2rem; font-weight: 300;">Ready to Engineer with TwinAnalytic?</h3>
@@ -229,19 +244,19 @@
           <h3>Twin<span>Analytic</span></h3>
           <p>Precision building structures, high-fidelity BIM level 3 coordination modeling, and IoT-driven real-time structural performance tracking.</p>
           <div class="footer-socials">
-            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
-            <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
-            <a href="#"><i class="fa-brands fa-instagram"></i></a>
-            <a href="#"><i class="fa-brands fa-youtube"></i></a>
+            <a href="https://linkedin.com/company/twinanalytic" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="https://x.com/twinanalytic" target="_blank"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="#"><!-- TODO: add real URL --><i class="fa-brands fa-instagram"></i></a>
+            <a href="#"><!-- TODO: add real URL --><i class="fa-brands fa-youtube"></i></a>
           </div>
         </div>
         <div class="footer-col">
           <h3>Services</h3>
           <ul class="footer-links">
-            <li><a href="services.html">BIM Coordination</a></li>
-            <li><a href="services.html">Structural Design</a></li>
-            <li><a href="services.html">Digital Twin Analytics</a></li>
-            <li><a href="services.html">MEP Engineering</a></li>
+            <li><a href="services.html#bim">BIM Coordination</a></li>
+            <li><a href="services.html#structural">Structural Design</a></li>
+            <li><a href="services.html#digital-twin">Digital Twin Analytics</a></li>
+            <li><a href="services.html#mep">MEP Engineering</a></li>
           </ul>
         </div>
         <div class="footer-col">
@@ -265,11 +280,10 @@
       </div>
       
       <div class="footer-bottom">
-        <p>&copy; 2025 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
+        <p>&copy; 2026 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
         <div class="footer-bottom-links">
-          <a href="#">Privacy Protocol</a>
-          <a href="#">Security Audits</a>
-          <a href="#">Sitemap</a>
+          <a href="privacy.html">Privacy Protocol</a>
+          <a href="sitemap.html">Sitemap</a>
         </div>
       </div>
     </div>

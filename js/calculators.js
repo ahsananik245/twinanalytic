@@ -73,11 +73,9 @@ function initCalculators() {
   }
   if (btnSlab) {
     btnSlab.addEventListener('click', () => {
-      checkAuthAndRun(() => {
-        calculateSlab();
-        const resEl = document.getElementById('slab-results-container');
-        if (resEl) resEl.scrollIntoView({ behavior: 'smooth' });
-      }, 'Slab Design');
+      calculateSlab();
+      const resEl = document.getElementById('slab-results-container');
+      if (resEl) resEl.scrollIntoView({ behavior: 'smooth' });
     });
     // Auto-fill date
     const dateEl = document.getElementById('slab-date');
@@ -85,28 +83,21 @@ function initCalculators() {
       dateEl.value = new Date().toISOString().split('T')[0];
     }
     initSlabLiveUpdates();
-    // Initial run if already unlocked
-    if (localStorage.getItem('tools_user_unlocked') === 'true') {
-      calculateSlab();
-    }
+    // Initial run
+    calculateSlab();
   }
   const btnSlabPDFs = document.querySelectorAll('[id="btn-download-slab-pdf"]');
   btnSlabPDFs.forEach(btn => {
     btn.addEventListener('click', () => {
-      const isUnlocked = localStorage.getItem('tools_user_unlocked');
-      if (isUnlocked !== 'true') {
-        openAuthModal(downloadSlabPDF, 'Slab PDF Export');
-      } else {
-        downloadSlabPDF();
-      }
+      downloadSlabPDF();
     });
   });
   if (btnPile) {
-    btnPile.addEventListener('click', () => checkAuthAndRun(calculatePileCap, 'Pile Cap Design'));
+    btnPile.addEventListener('click', () => calculatePileCap());
     calculatePileCap();
   }
   if (btnFoot) {
-    btnFoot.addEventListener('click', () => checkAuthAndRun(calculateFooting, 'Footing Design'));
+    btnFoot.addEventListener('click', () => calculateFooting());
     calculateFooting();
   }
 
@@ -119,12 +110,7 @@ function initCalculators() {
 
 // Check if user is already authorized; if not, prompt modal form
 function checkAuthAndRun(callback, calcType) {
-  const isUnlocked = localStorage.getItem('tools_user_unlocked');
-  if (isUnlocked === 'true') {
-    callback();
-  } else {
-    openAuthModal(callback, calcType);
-  }
+  callback();
 }
 
 // Display the glassmorphic auth modal
@@ -1298,16 +1284,10 @@ function initSlabLiveUpdates() {
     const el = document.getElementById(id);
     if (el) {
       el.addEventListener('input', () => {
-        const isUnlocked = localStorage.getItem('tools_user_unlocked');
-        if (isUnlocked === 'true') {
-          calculateSlab();
-        }
+        calculateSlab();
       });
       el.addEventListener('change', () => {
-        const isUnlocked = localStorage.getItem('tools_user_unlocked');
-        if (isUnlocked === 'true') {
-          calculateSlab();
-        }
+        calculateSlab();
       });
     }
   });
@@ -1356,10 +1336,7 @@ function initSlabLiveUpdates() {
       const container = document.getElementById('slab-beams-inputs-container');
       if (container) container.style.display = 'none';
       
-      const isUnlocked = localStorage.getItem('tools_user_unlocked');
-      if (isUnlocked === 'true') {
-        calculateSlab();
-      }
+      calculateSlab();
     });
   }
 }
@@ -3749,12 +3726,6 @@ function downloadColumnPDF() {
 
   if (isNaN(pdl) || pdl <= 0 || isNaN(pll) || pll <= 0 || isNaN(fc) || fc <= 0 || isNaN(fy) || fy <= 0 || isNaN(p) || p < 0.01 || p > 0.08 || isNaN(colHeight) || colHeight <= 0) {
     alert('Please enter valid input parameters before downloading the PDF report.');
-    return;
-  }
-
-  const isUnlocked = localStorage.getItem('tools_user_unlocked');
-  if (isUnlocked !== 'true') {
-    openAuthModal(downloadColumnPDF, 'Column PDF Export');
     return;
   }
 

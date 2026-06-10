@@ -241,18 +241,26 @@ function initBimViewerScene() {
     'footing_2': { title: 'Footing Foundation F-2', tag: 'BIM-FTG-00F02', material: 'M25 Concrete / 16mm mesh', dimensions: '1.60m x 1.60m x 0.50m', load: '650.00 kN', shear: '10mm spacing @ 150mm', status: 'Completed ✓', statusClass: 'status-check' },
     'footing_3': { title: 'Footing Foundation F-3', tag: 'BIM-FTG-00F03', material: 'M25 Concrete / 16mm mesh', dimensions: '1.60m x 1.60m x 0.50m', load: '820.00 kN', shear: '12mm spacing @ 120mm', status: 'Completed ✓', statusClass: 'status-check' },
     'footing_4': { title: 'Footing Foundation F-4', tag: 'BIM-FTG-00F04', material: 'M25 Concrete / 16mm mesh', dimensions: '1.60m x 1.60m x 0.50m', load: '820.00 kN', shear: '12mm spacing @ 120mm', status: 'Completed ✓', statusClass: 'status-check' },
+    'footing_5': { title: 'Footing Foundation F-5', tag: 'BIM-FTG-00F05', material: 'M25 Concrete / 16mm mesh', dimensions: '1.60m x 1.60m x 0.50m', load: '650.00 kN', shear: '10mm spacing @ 150mm', status: 'Completed ✓', statusClass: 'status-check' },
+    'footing_f01': { title: 'Footing Foundation F-01', tag: 'BIM-FTG-0F01', material: 'M30 Concrete / 18mm mesh', dimensions: '1.80m x 1.80m x 0.60m', load: '900.00 kN', shear: '12mm spacing @ 100mm', status: 'Completed ✓', statusClass: 'status-check' },
     
     'column_1': { title: 'Structural Column C-10', tag: 'BIM-COL-00C10', material: 'Grade 60 Rebar / M25 Concrete', dimensions: '0.40m x 0.40m x 3.20m', load: '400.00 kN', shear: '10mm links @ 200mm c/c', status: 'Completed ✓', statusClass: 'status-check' },
     'column_2': { title: 'Structural Column C-11', tag: 'BIM-COL-00C11', material: 'Grade 60 Rebar / M25 Concrete', dimensions: '0.40m x 0.40m x 3.20m', load: '400.00 kN', shear: '10mm links @ 200mm c/c', status: 'Completed ✓', statusClass: 'status-check' },
     'column_3': { title: 'Structural Column C-12', tag: 'BIM-COL-00C12', material: 'Grade 60 Rebar / M25 Concrete', dimensions: '0.45m x 0.45m x 3.20m', load: '450.00 kN', shear: '10mm links @ 150mm c/c', status: 'Completed ✓', statusClass: 'status-check' },
     'column_4': { title: 'Structural Column C-13', tag: 'BIM-COL-00C13', material: 'Grade 60 Rebar / M25 Concrete', dimensions: '0.45m x 0.45m x 3.20m', load: '450.00 kN', shear: '10mm links @ 150mm c/c', status: 'Completed ✓', statusClass: 'status-check' },
+    'column_5': { title: 'Structural Column C-14', tag: 'BIM-COL-00C14', material: 'Grade 60 Rebar / M25 Concrete', dimensions: '0.40m x 0.40m x 3.20m', load: '400.00 kN', shear: '10mm links @ 200mm c/c', status: 'Completed ✓', statusClass: 'status-check' },
+    'column_c05': { title: 'Structural Column C-05', tag: 'BIM-COL-00C05', material: 'Grade 60 Rebar / M30 Concrete', dimensions: '0.50m x 0.50m x 3.20m', load: '550.00 kN', shear: '12mm links @ 120mm c/c', status: 'Completed ✓', statusClass: 'status-check' },
     
     'beam_1': { title: 'Structural Tie Beam TB-01', tag: 'BIM-BEAM-0TB01', material: 'Fe500 Rebar / M30 Concrete', dimensions: '0.30m x 0.50m x 4.00m', load: '120.00 kN/m', shear: '10mm rings @ 150mm', status: 'Completed ✓', statusClass: 'status-check' },
     'beam_2': { title: 'Structural Tie Beam TB-02', tag: 'BIM-BEAM-0TB02', material: 'Fe500 Rebar / M30 Concrete', dimensions: '0.30m x 0.50m x 4.00m', load: '120.00 kN/m', shear: '10mm rings @ 150mm', status: 'Completed ✓', statusClass: 'status-check' },
     'beam_3': { title: 'Structural Tie Beam TB-03', tag: 'BIM-BEAM-0TB03', material: 'Fe500 Rebar / M30 Concrete', dimensions: '0.30m x 0.50m x 4.00m', load: '150.00 kN/m', shear: '12mm rings @ 120mm', status: 'Completed ✓', statusClass: 'status-check' },
     'beam_4': { title: 'Structural Tie Beam TB-04', tag: 'BIM-BEAM-0TB04', material: 'Fe500 Rebar / M30 Concrete', dimensions: '0.30m x 0.50m x 4.00m', load: '150.00 kN/m', shear: '12mm rings @ 120mm', status: 'Completed ✓', statusClass: 'status-check' },
+    'beam_5': { title: 'Structural Tie Beam TB-05', tag: 'BIM-BEAM-0TB05', material: 'Fe500 Rebar / M30 Concrete', dimensions: '0.30m x 0.50m x 4.00m', load: '120.00 kN/m', shear: '10mm rings @ 150mm', status: 'Completed ✓', statusClass: 'status-check' },
+    'beam_b07': { title: 'Structural Beam B-07', tag: 'BIM-BEAM-0B07', material: 'Fe500 Rebar / M30 Concrete', dimensions: '0.35m x 0.60m x 4.00m', load: '180.00 kN/m', shear: '12mm rings @ 100mm', status: 'In Progress ⚠', statusClass: 'status-warning' },
+    'beam_6': { title: 'Structural Tie Beam TB-06', tag: 'BIM-BEAM-0TB06', material: 'Fe500 Rebar / M30 Concrete', dimensions: '0.30m x 0.50m x 4.00m', load: '120.00 kN/m', shear: '10mm rings @ 150mm', status: 'Completed ✓', statusClass: 'status-check' },
     
-    'slab_1': { title: 'Roof Slab Slab-S1', tag: 'BIM-SLB-000S1', material: 'Fe500 Mesh / M20 Concrete', dimensions: '4.30m x 4.30m x 0.15m', load: '5.50 kN/m²', shear: 'None (Bending Governed)', status: 'In Progress ⚠', statusClass: 'status-warning' }
+    'slab_1': { title: 'Roof Slab Slab-S1', tag: 'BIM-SLB-000S1', material: 'Fe500 Mesh / M20 Concrete', dimensions: '4.30m x 4.30m x 0.15m', load: '5.50 kN/m²', shear: 'None (Bending Governed)', status: 'In Progress ⚠', statusClass: 'status-warning' },
+    'slab_s03': { title: 'Roof Slab Slab-S3', tag: 'BIM-SLB-000S3', material: 'Fe500 Mesh / M25 Concrete', dimensions: '4.30m x 4.30m x 0.16m', load: '6.00 kN/m²', shear: 'None (Bending Governed)', status: 'Pending ◔', statusClass: 'status-warning' }
   };
 
   // Build the 3D Skeleton Model group
@@ -313,6 +321,9 @@ function initBimViewerScene() {
   addBimComponent('footing_2', footingGeom, 2, 0.25, -2);
   addBimComponent('footing_3', footingGeom, -2, 0.25, 2);
   addBimComponent('footing_4', footingGeom, 2, 0.25, 2);
+  // Second bay footing elements
+  addBimComponent('footing_5', footingGeom, 6, 0.25, -2);
+  addBimComponent('footing_f01', footingGeom, 6, 0.25, 2);
 
   // B. Create Columns
   const colGeom1 = new THREE.BoxGeometry(0.4, 3.2, 0.4);
@@ -321,6 +332,9 @@ function initBimViewerScene() {
   addBimComponent('column_2', colGeom1, 2, 2.1, -2);
   addBimComponent('column_3', colGeom2, -2, 2.1, 2);
   addBimComponent('column_4', colGeom2, 2, 2.1, 2);
+  // Second bay column elements
+  addBimComponent('column_5', colGeom1, 6, 2.1, -2);
+  addBimComponent('column_c05', colGeom2, 6, 2.1, 2);
 
   // C. Create Tie Beams
   const beamXGeom = new THREE.BoxGeometry(3.6, 0.5, 0.3);
@@ -330,13 +344,18 @@ function initBimViewerScene() {
   addBimComponent('beam_2', beamXGeom, 0, 3.45, 2);
   addBimComponent('beam_3', beamZGeom, -2, 3.45, 0);
   addBimComponent('beam_4', beamZGeom, 2, 3.45, 0);
+  // Second bay beam elements
+  addBimComponent('beam_5', beamXGeom, 4, 3.45, -2);
+  addBimComponent('beam_b07', beamXGeom, 4, 3.45, 2);
+  addBimComponent('beam_6', beamZGeom, 6, 3.45, 0);
 
   // D. Create Slab
   const slabGeom = new THREE.BoxGeometry(4.3, 0.15, 4.3);
   addBimComponent('slab_1', slabGeom, 0, 3.775, 0);
+  addBimComponent('slab_s03', slabGeom, 4, 3.775, 0);
 
-  // Adjust model vertical alignment
-  bimGroup.position.y = -0.5;
+  // Adjust model vertical alignment and offset X to center the expanded layout
+  bimGroup.position.set(-2, -0.5, 0);
 
   // RAYCASTING INTERACTIONS
   const raycaster = new THREE.Raycaster();
@@ -386,11 +405,15 @@ function initBimViewerScene() {
   function onMouseMove(event) {
     // Calculate mouse position in normalized device coordinates
     const rect = canvas.getBoundingClientRect();
-    mouse.x = ((event.clientX - rect.left) / width) * 2 - 1;
-    mouse.y = -((event.clientY - rect.top) / height) * 2 + 1;
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
   }
 
-  function onClick() {
+  function onClick(event) {
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
     raycaster.setFromCamera(mouse, camera);
     const intersects = raycaster.intersectObjects(selectableObjects);
 

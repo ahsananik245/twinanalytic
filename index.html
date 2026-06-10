@@ -8,6 +8,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TwinAnalytic — Engineering the Future. Digitally Twin.</title>
   <meta name="description" content="TwinAnalytic is a high-tech construction and BIM company fusing luxury architectural design with real-time digital twin intelligence and structural design engineering.">
+  
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="TwinAnalytic — Engineering the Future. Digitally Twin." />
+  <meta property="og:description" content="TwinAnalytic is a high-tech construction and BIM company fusing luxury architectural design with real-time digital twin intelligence and structural design engineering." />
+  <meta property="og:image" content="https://twinanalytic.com/assets/about_render.jpg" />
+  <meta property="og:url" content="https://twinanalytic.com/index.html" />
+  <meta property="og:type" content="website" />
   <link rel="stylesheet" href="css/style.css">
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -122,7 +129,7 @@
         <li><a href="about.html">About</a></li>
         <li><a href="services.html">Services</a></li>
         <li><a href="bim-viewer.html">BIM Viewer</a></li>
-        <li><a href="tools.html">Tools</a></li>
+        <li><a href="tools.html">Calculators</a></li>
         <li><a href="projects.html">Projects</a></li>
         <li><a href="contact.html">Contact</a></li>
       </ul>
@@ -168,20 +175,7 @@
           <p>TwinAnalytic stands at the intersection of luxury craftsmanship and cutting-edge digital twin technology. We don't just build structures; we create intelligent, living digital models that optimize operations, ensure structural stability, and redefine engineering limitations.</p>
           <p>By pairing high-fidelity Building Information Modeling (BIM) workflows with advanced simulation algorithms, we allow stakeholders to visualize, test, and interact with projects before a single brick is laid.</p>
           
-          <div class="about-stats">
-            <div class="stat-item">
-              <div class="stat-num" data-target="15">0</div>
-              <div class="stat-label">Years Experience</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-num" data-target="200">0</div>
-              <div class="stat-label">Projects Completed</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-num" data-target="12">0</div>
-              <div class="stat-label">Countries Active</div>
-            </div>
-          </div>
+          <p class="about-tagline" style="margin-top: 1.5rem; font-style: italic; color: var(--color-gold);">Currently delivering our first flagship projects — documentation coming soon.</p>
         </div>
       </div>
     </div>
@@ -854,29 +848,7 @@
     </div>
   </section>
 
-  <!-- ADMIN LEADS SECTION -->
-  <section class="section-padding" style="padding-top: 0; padding-bottom: 6rem; background-color: var(--bg-primary);">
-    <div class="container">
-      <div class="glass-card" style="max-width: 800px; margin: 0 auto; border-style: dashed;">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
-          <div>
-            <h3 style="font-family: var(--font-serif); font-size: 1.6rem; font-weight: 400; margin-bottom: 0.5rem; color: var(--color-gold);">Lead Database Export</h3>
-            <p style="color: var(--text-secondary); font-size: 0.9rem;">Generate and download a Microsoft Excel compatible (.csv) report containing all registered leads.</p>
-          </div>
-          <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-            <div style="text-align: right;">
-              <span class="text-mono" id="leads-count" style="font-size: 1.5rem; font-weight: bold; color: var(--color-gold);">0</span>
-              <p style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.1em; margin-top: 0.1rem;">Leads Logged</p>
-            </div>
-            <button class="btn btn-ghost" id="btn-export-leads" style="font-size: 0.75rem; padding: 0.7rem 1.5rem; min-height: auto;"><i class="fa-solid fa-file-excel" style="margin-right: 0.5rem;"></i> Export to Excel</button>
-            <button class="btn" id="btn-clear-leads" style="font-size: 0.75rem; padding: 0.7rem 1.5rem; background: rgba(245, 34, 45, 0.1); color: #F5222D; border: 1px solid rgba(245, 34, 45, 0.3); min-height: auto;">Clear Database</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <div class="divider"></div>
 
   <!-- PROJECTS / PORTFOLIO -->
   <section class="section-padding" id="projects">
@@ -896,43 +868,9 @@
       </div>
 
       <!-- Grid -->
-      <div class="portfolio-grid">
-        <!-- Project 1 -->
-        <div class="project-card fade-up-init" data-category="commercial">
-          <img src="assets/project_commercial.jpg" alt="Aether Helix Tower Commercial Headquarters Office Building Render" class="project-img">
-          <div class="project-overlay">
-            <span class="project-badge">BIM Level 3 | LOD 500</span>
-            <h3>Aether Helix Tower</h3>
-            <div class="project-loc"><i class="fa-solid fa-location-dot"></i> Frankfurt, Germany</div>
-          </div>
-        </div>
-        <!-- Project 2 -->
-        <div class="project-card fade-up-init" data-category="infrastructure">
-          <img src="assets/project_infra.jpg" alt="Valkyrie Arch Bridge Digital Twin infrastructure model render" class="project-img">
-          <div class="project-overlay">
-            <span class="project-badge">Structural FEM | IoT Twin</span>
-            <h3>Valkyrie Arch Bridge</h3>
-            <div class="project-loc"><i class="fa-solid fa-location-dot"></i> Oslo, Norway</div>
-          </div>
-        </div>
-        <!-- Project 3 -->
-        <div class="project-card fade-up-init" data-category="residential">
-          <img src="assets/project_residential.jpg" alt="Elysium Terraces Luxury Residential Development Render" class="project-img">
-          <div class="project-overlay">
-            <span class="project-badge">Green BIM | MEP Optimized</span>
-            <h3>Elysium Terraces</h3>
-            <div class="project-loc"><i class="fa-solid fa-location-dot"></i> Geneva, Switzerland</div>
-          </div>
-        </div>
-        <!-- Project 4 -->
-        <div class="project-card fade-up-init" data-category="industrial">
-          <img src="assets/project_industrial.jpg" alt="Nova Logix Facility automated factory plant render" class="project-img">
-          <div class="project-overlay">
-            <span class="project-badge">LOD 400 | Clash Resolved</span>
-            <h3>Nova Logix Facility</h3>
-            <div class="project-loc"><i class="fa-solid fa-location-dot"></i> Texas, USA</div>
-          </div>
-        </div>
+      <div style="text-align: center; padding: 4rem 1.5rem; border: 1px dashed var(--border-gold); background: rgba(255,255,255,0.02); border-radius: 8px; max-width: 600px; margin: 3rem auto 0 auto;" class="fade-up-init">
+        <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem; font-size: 1.1rem;">Our first projects are underway. Case studies will be published here upon completion.</p>
+        <a href="contact.html" class="btn btn-gold">Get in Touch</a>
       </div>
     </div>
   </section>
@@ -992,93 +930,30 @@
         <p>Our leadership blends computational geometry, structural engineering, and luxury architecture design execution.</p>
       </div>
 
-      <div class="team-grid">
+      <div class="team-grid" style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
         <!-- Team 1 -->
-        <div class="team-card fade-up-init">
+        <div class="team-card fade-up-init" style="max-width: 380px;">
           <div class="team-photo-wrap">
             <img src="assets/team_ceo.jpg" alt="CEO MD. AHSAN HABIB ANIK" class="team-photo">
           </div>
           <h3>MD. AHSAN HABIB ANIK</h3>
           <span class="team-role">Chief Executive Officer &amp; Founder</span>
+          <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 1rem; line-height: 1.6; text-align: justify; padding: 0 1rem;">
+            Ahsan is the founder of TwinAnalytic, bringing expertise in structural engineering and Building Information Modeling. He established the firm to bridge the gap between precision engineering and real-time digital intelligence in construction.
+          </p>
           <div class="team-social">
-            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
-            <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="https://linkedin.com/company/twinanalytic" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="https://x.com/twinanalytic" target="_blank"><i class="fa-brands fa-x-twitter"></i></a>
           </div>
         </div>
-        <!-- Team 2 -->
-        <div class="team-card fade-up-init">
-          <div class="team-photo-wrap">
-            <img src="assets/team_cto.jpg" alt="CTO Helena Rostova" class="team-photo">
-          </div>
-          <h3>Helena Rostova</h3>
-          <span class="team-role">Chief Technology Officer</span>
-          <div class="team-social">
-            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
-            <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
-          </div>
-        </div>
-        <!-- Team 3 -->
-        <div class="team-card fade-up-init">
-          <div class="team-photo-wrap">
-            <img src="assets/team_cso.jpg" alt="Chief Structural Engineer Arthur Pendelton" class="team-photo">
-          </div>
-          <h3>Arthur Pendelton</h3>
-          <span class="team-role">Principal Structural Engineer</span>
-          <div class="team-social">
-            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
-            <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
-          </div>
-        </div>
+      </div>
+      <div style="text-align: center; margin-top: 3rem;" class="fade-up-init">
+        <p style="color: var(--text-secondary); font-size: 0.95rem; font-style: italic;">We are growing. Engineering and technology roles open — <a href="contact.html" style="color: var(--color-gold); text-decoration: underline;">contact us</a>.</p>
       </div>
     </div>
   </section>
 
-  <div class="divider"></div>
 
-  <!-- TESTIMONIALS -->
-  <section class="section-padding testimonials-section" id="testimonials">
-    <div class="container">
-      <div class="section-header fade-up-init">
-        <h2><span>Client Reviews</span>Trusted Across Industries</h2>
-      </div>
-
-      <div class="testimonial-carousel-container fade-up-init">
-        <div class="testimonials-wrapper">
-          <div class="testimonials-track" id="testimonials-track">
-            <!-- Slide 1 -->
-            <div class="testimonial-slide">
-              <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
-              <p class="testimonial-text">"TwinAnalytic's BIM coordination saved us over $4.2M in material conflict re-runs on the Helix Tower. Their digital twin capability is unmatched."</p>
-              <div class="testimonial-rating">
-                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-              </div>
-              <div class="testimonial-author">
-                <h4>Lord Sterling Sterling</h4>
-                <p>Aether Developments, VP Planning</p>
-              </div>
-            </div>
-            <!-- Slide 2 -->
-            <div class="testimonial-slide">
-              <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
-              <p class="testimonial-text">"The real-time stress testing of the Valkyrie Bridge via their IoT twin platform gives our city engineers absolute peace of mind."</p>
-              <div class="testimonial-rating">
-                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-              </div>
-              <div class="testimonial-author">
-                <h4>Astrid Lindqvist</h4>
-                <p>Oslo Public Transit Authority, Director</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="carousel-dots" id="carousel-dots">
-          <!-- Dots will be added dynamically by JS -->
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <div class="divider"></div>
 
   <!-- BLOG / INSIGHTS -->
   <section class="section-padding" id="blog">
@@ -1088,43 +963,9 @@
         <p>Read detailed design breakdowns, BIM methodology workflows, and software integration strategies.</p>
       </div>
 
-      <div class="blog-grid">
-        <!-- Blog 1 -->
-        <div class="blog-card glass-card fade-up-init">
-          <div class="blog-img-wrap">
-            <img src="assets/blog_bim.jpg" alt="LOD 500 BIM Model Wireframe Render" class="blog-img">
-          </div>
-          <div class="blog-meta">
-            <span>BIM Tech</span> • <span>May 28, 2026</span>
-          </div>
-          <h3>Structuring LOD 500 Models for Asset Operations</h3>
-          <p>How developers can leverage detailed BIM files to configure facilities management automations and reduce annual maintenance overhead.</p>
-          <a href="#blog" class="blog-read-more">Read Breakdown <i class="fa-solid fa-arrow-right-long"></i></a>
-        </div>
-        <!-- Blog 2 -->
-        <div class="blog-card glass-card fade-up-init">
-          <div class="blog-img-wrap">
-            <img src="assets/blog_fem.jpg" alt="Finite Element Analysis structural grid heatmap render" class="blog-img">
-          </div>
-          <div class="blog-meta">
-            <span>Structural</span> • <span>Apr 15, 2026</span>
-          </div>
-          <h3>FEM Analysis Under Extreme Wind Vector Forces</h3>
-          <p>A technical guide detailing how we simulate non-linear dynamics of twisting tall towers under vortex shedding loads.</p>
-          <a href="#blog" class="blog-read-more">Read Breakdown <i class="fa-solid fa-arrow-right-long"></i></a>
-        </div>
-        <!-- Blog 3 -->
-        <div class="blog-card glass-card fade-up-init">
-          <div class="blog-img-wrap">
-            <img src="assets/blog_twin.jpg" alt="Digital Twin platform dashboard schematic render" class="blog-img">
-          </div>
-          <div class="blog-meta">
-            <span>IoT Integration</span> • <span>Mar 10, 2026</span>
-          </div>
-          <h3>Connecting IoT Sensor Hubs to 3D IFC Models</h3>
-          <p>Configuring telemetry feeds to highlight physical stresses on model sections dynamically for automated alarm systems.</p>
-          <a href="#blog" class="blog-read-more">Read Breakdown <i class="fa-solid fa-arrow-right-long"></i></a>
-        </div>
+      <!-- Grid -->
+      <div style="text-align: center; padding: 3rem 2rem; border: 1px dashed rgba(255,255,255,0.1); background: rgba(255,255,255,0.01); border-radius: 8px; max-width: 500px; margin: 3rem auto 0 auto;" class="fade-up-init">
+        <p style="color: var(--text-secondary); font-size: 1rem;">Technical articles and R&D breakdowns coming soon.</p>
       </div>
     </div>
   </section>
@@ -1173,7 +1014,7 @@
 
         <!-- Form -->
         <div class="contact-form-wrap glass-card fade-up-init">
-          <form class="contact-form" id="contact-form" onsubmit="event.preventDefault(); alert('Thank you! Our BIM coordination team will review your proposal details within 24 hours.'); this.reset();">
+          <form class="contact-form" id="contact-form">
             <div class="contact-form-row">
               <div class="form-group">
                 <label for="c-name">Full Name</label>
@@ -1210,30 +1051,7 @@
     </div>
   </section>
 
-  <!-- LEAD CAPTURE MODAL -->
-  <div class="modal-overlay" id="auth-modal">
-    <div class="modal-card glass-card">
-      <div class="modal-header">
-        <h3>Unlock Engineering Suite</h3>
-        <p>Enter your professional credentials to run limit-state design checks and download coordinate schematics.</p>
-      </div>
-      <form class="modal-form" id="modal-auth-form">
-        <div class="form-group">
-          <label for="lead-name">Full Name</label>
-          <input type="text" id="lead-name" placeholder="E.g., MD. AHSAN HABIB ANIK" required>
-        </div>
-        <div class="form-group">
-          <label for="lead-phone">Contact Number</label>
-          <input type="tel" id="lead-phone" placeholder="E.g., +1 (555) 123-4567" required>
-        </div>
-        <div class="form-group">
-          <label for="lead-email">Business Email</label>
-          <input type="email" id="lead-email" placeholder="anik@twinanalytic.com" required>
-        </div>
-        <button type="submit" class="btn btn-gold" style="width: 100%; margin-top: 1rem;">Unlock Calculators</button>
-      </form>
-    </div>
-  </div>
+
 
   <!-- FOOTER -->
   <footer class="footer">
@@ -1244,19 +1062,19 @@
           <h3>Twin<span>Analytic</span></h3>
           <p>Precision building structures, high-fidelity BIM level 3 coordination modeling, and IoT-driven real-time structural performance tracking.</p>
           <div class="footer-socials">
-            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
-            <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
-            <a href="#"><i class="fa-brands fa-instagram"></i></a>
-            <a href="#"><i class="fa-brands fa-youtube"></i></a>
+            <a href="https://linkedin.com/company/twinanalytic" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="https://x.com/twinanalytic" target="_blank"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="#"><!-- TODO: add real URL --><i class="fa-brands fa-instagram"></i></a>
+            <a href="#"><!-- TODO: add real URL --><i class="fa-brands fa-youtube"></i></a>
           </div>
         </div>
         <div class="footer-col">
           <h3>Services</h3>
           <ul class="footer-links">
-            <li><a href="services.html">BIM Coordination</a></li>
-            <li><a href="services.html">Structural Design</a></li>
-            <li><a href="services.html">Digital Twin Analytics</a></li>
-            <li><a href="services.html">MEP Engineering</a></li>
+            <li><a href="services.html#bim">BIM Coordination</a></li>
+            <li><a href="services.html#structural">Structural Design</a></li>
+            <li><a href="services.html#digital-twin">Digital Twin Analytics</a></li>
+            <li><a href="services.html#mep">MEP Engineering</a></li>
           </ul>
         </div>
         <div class="footer-col">
@@ -1280,11 +1098,10 @@
       </div>
       
       <div class="footer-bottom">
-        <p>&copy; 2025 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
+        <p>&copy; 2026 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
         <div class="footer-bottom-links">
-          <a href="#">Privacy Protocol</a>
-          <a href="#">Security Audits</a>
-          <a href="#">Sitemap</a>
+          <a href="privacy.html">Privacy Protocol</a>
+          <a href="sitemap.html">Sitemap</a>
         </div>
       </div>
     </div>

@@ -8,6 +8,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Structural Design Tools — TwinAnalytic</title>
   <meta name="description" content="Use TwinAnalytic's online engineering calculators to check reinforced concrete beams, columns, slabs, pile caps, and footing foundations.">
+
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="Structural Design Tools — TwinAnalytic" />
+  <meta property="og:description" content="Use TwinAnalytic's online engineering calculators to check reinforced concrete beams, columns, slabs, pile caps, and footing foundations." />
+  <meta property="og:image" content="https://twinanalytic.com/assets/about_render.jpg" />
+  <meta property="og:url" content="https://twinanalytic.com/tools.html" />
+  <meta property="og:type" content="website" />
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- jsPDF Library -->
@@ -147,7 +154,7 @@
         <li><a href="about.html">About</a></li>
         <li><a href="services.html">Services</a></li>
         <li><a href="bim-viewer.html">BIM Viewer</a></li>
-        <li><a href="tools.html" class="active">Tools</a></li>
+        <li><a href="tools.html" class="active">Calculators</a></li>
         <li><a href="projects.html">Projects</a></li>
         <li><a href="contact.html">Contact</a></li>
       </ul>
@@ -701,52 +708,7 @@
     </div>
   </section>
 
-  <!-- ADMIN LEADS SECTION -->
-  <section class="section-padding" style="padding-top: 0; padding-bottom: 6rem; background-color: var(--bg-primary);">
-    <div class="container">
-      <div class="glass-card" style="max-width: 800px; margin: 0 auto; border-style: dashed;">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
-          <div>
-            <h3 style="font-family: var(--font-serif); font-size: 1.6rem; font-weight: 400; margin-bottom: 0.5rem; color: var(--color-gold);">Lead Database Export</h3>
-            <p style="color: var(--text-secondary); font-size: 0.9rem;">Generate and download a Microsoft Excel compatible (.csv) report containing all registered leads.</p>
-          </div>
-          <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-            <div style="text-align: right;">
-              <span class="text-mono" id="leads-count" style="font-size: 1.5rem; font-weight: bold; color: var(--color-gold);">0</span>
-              <p style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.1em; margin-top: 0.1rem;">Leads Logged</p>
-            </div>
-            <button class="btn btn-ghost" id="btn-export-leads" style="font-size: 0.75rem; padding: 0.7rem 1.5rem; min-height: auto;"><i class="fa-solid fa-file-excel" style="margin-right: 0.5rem;"></i> Export to Excel</button>
-            <button class="btn" id="btn-clear-leads" style="font-size: 0.75rem; padding: 0.7rem 1.5rem; background: rgba(245, 34, 45, 0.1); color: #F5222D; border: 1px solid rgba(245, 34, 45, 0.3); min-height: auto;">Clear Database</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- LEAD CAPTURE MODAL -->
-  <div class="modal-overlay" id="auth-modal">
-    <div class="modal-card glass-card">
-      <div class="modal-header">
-        <h3>Unlock Engineering Suite</h3>
-        <p>Enter your professional credentials to run limit-state design checks and download coordinate schematics.</p>
-      </div>
-      <form class="modal-form" id="modal-auth-form">
-        <div class="form-group">
-          <label for="lead-name">Full Name</label>
-          <input type="text" id="lead-name" placeholder="E.g., MD. AHSAN HABIB ANIK" required>
-        </div>
-        <div class="form-group">
-          <label for="lead-phone">Contact Number</label>
-          <input type="tel" id="lead-phone" placeholder="E.g., +1 (555) 123-4567" required>
-        </div>
-        <div class="form-group">
-          <label for="lead-email">Business Email</label>
-          <input type="email" id="lead-email" placeholder="anik@twinanalytic.com" required>
-        </div>
-        <button type="submit" class="btn btn-gold" style="width: 100%; margin-top: 1rem;">Unlock Calculators</button>
-      </form>
-    </div>
-  </div>
 
   <!-- FOOTER -->
   <footer class="footer">
@@ -757,19 +719,19 @@
           <h3>Twin<span>Analytic</span></h3>
           <p>Precision building structures, high-fidelity BIM level 3 coordination modeling, and IoT-driven real-time structural performance tracking.</p>
           <div class="footer-socials">
-            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
-            <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
-            <a href="#"><i class="fa-brands fa-instagram"></i></a>
-            <a href="#"><i class="fa-brands fa-youtube"></i></a>
+            <a href="https://linkedin.com/company/twinanalytic" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="https://x.com/twinanalytic" target="_blank"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="#"><!-- TODO: add real URL --><i class="fa-brands fa-instagram"></i></a>
+            <a href="#"><!-- TODO: add real URL --><i class="fa-brands fa-youtube"></i></a>
           </div>
         </div>
         <div class="footer-col">
           <h3>Services</h3>
           <ul class="footer-links">
-            <li><a href="services.html">BIM Coordination</a></li>
-            <li><a href="services.html">Structural Design</a></li>
-            <li><a href="services.html">Digital Twin Analytics</a></li>
-            <li><a href="services.html">MEP Engineering</a></li>
+            <li><a href="services.html#bim">BIM Coordination</a></li>
+            <li><a href="services.html#structural">Structural Design</a></li>
+            <li><a href="services.html#digital-twin">Digital Twin Analytics</a></li>
+            <li><a href="services.html#mep">MEP Engineering</a></li>
           </ul>
         </div>
         <div class="footer-col">
@@ -793,11 +755,10 @@
       </div>
       
       <div class="footer-bottom">
-        <p>&copy; 2025 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
+        <p>&copy; 2026 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
         <div class="footer-bottom-links">
-          <a href="#">Privacy Protocol</a>
-          <a href="#">Security Audits</a>
-          <a href="#">Sitemap</a>
+          <a href="privacy.html">Privacy Protocol</a>
+          <a href="sitemap.html">Sitemap</a>
         </div>
       </div>
     </div>

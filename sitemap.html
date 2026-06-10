@@ -6,15 +6,8 @@
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Our Portfolio — TwinAnalytic</title>
-  <meta name="description" content="Explore TwinAnalytic's architectural landmarks. A gallery of our commercial, residential, industrial, and infrastructure designs, optimized via digital twins.">
-
-  <!-- Open Graph Meta Tags -->
-  <meta property="og:title" content="Our Portfolio — TwinAnalytic" />
-  <meta property="og:description" content="Explore TwinAnalytic's architectural landmarks. A gallery of our commercial, residential, industrial, and infrastructure designs, optimized via digital twins." />
-  <meta property="og:image" content="https://twinanalytic.com/assets/about_render.jpg" />
-  <meta property="og:url" content="https://twinanalytic.com/projects.html" />
-  <meta property="og:type" content="website" />
+  <title>Sitemap — TwinAnalytic</title>
+  <meta name="description" content="View the full structural map of all pages and services provided by TwinAnalytic.">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -39,9 +32,50 @@
       text-transform: uppercase;
       letter-spacing: 0.2em;
     }
-    .projects-gallery-section {
+    .sitemap-section {
       padding: 4rem 0 8rem 0;
       background-color: var(--bg-primary);
+    }
+    .sitemap-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3rem;
+    }
+    @media (max-width: 992px) {
+      .sitemap-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .sitemap-grid { grid-template-columns: 1fr; }
+    }
+    .sitemap-col h3 {
+      font-family: var(--font-serif);
+      font-size: 1.4rem;
+      color: var(--color-gold);
+      margin-bottom: 1.2rem;
+      border-bottom: 1px solid rgba(251,251,251,0.05);
+      padding-bottom: 0.5rem;
+      font-weight: 400;
+    }
+    .sitemap-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+    .sitemap-links a {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      transition: var(--transition-quick);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .sitemap-links a:hover {
+      color: #fff;
+      padding-left: 0.3rem;
+    }
+    .sitemap-links a i {
+      font-size: 0.75rem;
+      color: var(--color-gold);
     }
   </style>
 </head>
@@ -60,7 +94,7 @@
         <li><a href="services.html">Services</a></li>
         <li><a href="bim-viewer.html">BIM Viewer</a></li>
         <li><a href="tools.html">Calculators</a></li>
-        <li><a href="projects.html" class="active">Projects</a></li>
+        <li><a href="projects.html">Projects</a></li>
         <li><a href="contact.html">Contact</a></li>
       </ul>
       <div class="nav-actions">
@@ -77,17 +111,58 @@
   <!-- BANNER -->
   <header class="page-banner">
     <div class="container">
-      <p>Landmark Architecture</p>
-      <h1>Project Portfolio</h1>
+      <p>Crawling Index</p>
+      <h1>Website Sitemap</h1>
     </div>
   </header>
 
-  <!-- PROJECTS PORTFOLIO GRID -->
-  <section class="projects-gallery-section">
+  <!-- CONTENT -->
+  <section class="sitemap-section">
     <div class="container">
-      <div style="text-align: center; padding: 6rem 1.5rem; border: 1px dashed var(--border-gold); background: rgba(255,255,255,0.02); border-radius: 8px; max-width: 600px; margin: 4rem auto 0 auto;" class="fade-up-init">
-        <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 2rem; font-size: 1.15rem;">Our first projects are underway. Case studies will be published here upon completion.</p>
-        <a href="contact.html" class="btn btn-gold">Get in Touch</a>
+      <div class="glass-card" style="padding: 4rem 3rem;">
+        <div class="sitemap-grid">
+          <!-- Col 1: Main Pages -->
+          <div class="sitemap-col">
+            <h3>Core Environment</h3>
+            <div class="sitemap-links">
+              <a href="index.html"><i class="fa-solid fa-chevron-right"></i> Home Portal</a>
+              <a href="about.html"><i class="fa-solid fa-chevron-right"></i> About Our Firm</a>
+              <a href="services.html"><i class="fa-solid fa-chevron-right"></i> Services &amp; Pillars</a>
+              <a href="bim-viewer.html"><i class="fa-solid fa-chevron-right"></i> BIM Viewer Portal</a>
+              <a href="tools.html"><i class="fa-solid fa-chevron-right"></i> Calculators Index</a>
+              <a href="projects.html"><i class="fa-solid fa-chevron-right"></i> Project Portfolio</a>
+              <a href="contact.html"><i class="fa-solid fa-chevron-right"></i> Contact Offices</a>
+              <a href="privacy.html"><i class="fa-solid fa-chevron-right"></i> Privacy Protocol</a>
+            </div>
+          </div>
+
+          <!-- Col 2: Services Detail -->
+          <div class="sitemap-col">
+            <h3>Services Detail</h3>
+            <div class="sitemap-links">
+              <a href="bim-modeling.html"><i class="fa-solid fa-chevron-right"></i> BIM Modeling</a>
+              <a href="structural-design.html"><i class="fa-solid fa-chevron-right"></i> Structural Analysis</a>
+              <a href="digital-twin.html"><i class="fa-solid fa-chevron-right"></i> Digital Twins</a>
+              <a href="project-management.html"><i class="fa-solid fa-chevron-right"></i> Project Management</a>
+              <a href="construction-supervision.html"><i class="fa-solid fa-chevron-right"></i> Site Supervision</a>
+              <a href="feasibility-cost.html"><i class="fa-solid fa-chevron-right"></i> Cost Sizing</a>
+              <a href="mep-engineering.html"><i class="fa-solid fa-chevron-right"></i> MEP Engineering</a>
+              <a href="3d-visualization.html"><i class="fa-solid fa-chevron-right"></i> 3D Rendering &amp; VR</a>
+            </div>
+          </div>
+
+          <!-- Col 3: Interactive Suite -->
+          <div class="sitemap-col">
+            <h3>Calculators Suite</h3>
+            <div class="sitemap-links">
+              <a href="beam-design.html"><i class="fa-solid fa-chevron-right"></i> Beam Design Calculator</a>
+              <a href="tools.html#panel-column"><i class="fa-solid fa-chevron-right"></i> Column Design Sizer</a>
+              <a href="tools.html#panel-slab"><i class="fa-solid fa-chevron-right"></i> Slab Thickness Calculator</a>
+              <a href="tools.html#panel-pile-cap"><i class="fa-solid fa-chevron-right"></i> Pile Cap Sizer</a>
+              <a href="tools.html#panel-footing"><i class="fa-solid fa-chevron-right"></i> Isolated Footing Sizer</a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
