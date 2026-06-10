@@ -140,34 +140,39 @@
                 <input type="tel" id="c-phone" placeholder="+49 170 1234567">
               </div>
               <div class="form-group">
-                <label for="c-type">Project Scope</label>
+                <label for="c-type">Project Type</label>
                 <select id="c-type">
-                  <option value="bim">Full BIM modeling &amp; Coordination</option>
-                  <option value="twin">Digital Twin Setup &amp; IoT Sync</option>
-                  <option value="structural">Structural Design &amp; FEM Analysis</option>
-                  <option value="all">Turnkey Tech Construction Management</option>
+                  <option value="structural">Structural Engineering</option>
+                  <option value="bim">BIM &amp; Digital Engineering</option>
+                  <option value="support">Construction Support</option>
+                  <option value="consultancy">Engineering Consultancy</option>
                 </select>
               </div>
             </div>
             <div class="form-group">
-              <label for="c-msg">Project Summary &amp; Load Requirements</label>
-              <textarea id="c-msg" placeholder="Tell us about the project layout, location, number of floors, and structural load constraints..." required></textarea>
+              <label for="c-location">Location</label>
+              <input type="text" id="c-location" placeholder="E.g., Frankfurt, Germany" required>
             </div>
-            <button type="submit" class="btn btn-gold" style="width: 100%; margin-top: 1rem;">Transmit Proposal Specifications</button>
+            <div class="form-group">
+              <label for="c-msg">Message</label>
+              <textarea id="c-msg" placeholder="Tell us about the project layout, size, and specific engineering requirements..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-gold" style="width: 100%; margin-top: 1rem;">Start Your Project With Us</button>
           </form>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- FOOTER -->
+    <!-- FOOTER -->
   <footer class="footer">
     <div class="footer-top-gradient"></div>
     <div class="container">
       <div class="footer-grid">
         <div class="footer-col brand">
           <h3>Twin<span>Analytic</span></h3>
-          <p>Precision building structures, high-fidelity BIM level 3 coordination modeling, and IoT-driven real-time structural performance tracking.</p>
+          <p style="color: var(--color-gold); font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; margin-top: -0.5rem;">Construction &amp; Engineering</p>
+          <p>We combine engineering expertise with digital technologies to create safe, optimized, and reliable structures.</p>
           <div class="footer-socials">
             <a href="https://linkedin.com/company/twinanalytic" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
             <a href="https://x.com/twinanalytic" target="_blank"><i class="fa-brands fa-x-twitter"></i></a>
@@ -178,10 +183,10 @@
         <div class="footer-col">
           <h3>Services</h3>
           <ul class="footer-links">
-            <li><a href="services.html#bim">BIM Coordination</a></li>
-            <li><a href="services.html#structural">Structural Design</a></li>
-            <li><a href="services.html#digital-twin">Digital Twin Analytics</a></li>
-            <li><a href="services.html#mep">MEP Engineering</a></li>
+            <li><a href="services.html#structural">Structural Engineering</a></li>
+            <li><a href="services.html#bim">BIM &amp; Digital Engineering</a></li>
+            <li><a href="services.html#support">Construction Support</a></li>
+            <li><a href="services.html#consultancy">Engineering Consultancy</a></li>
           </ul>
         </div>
         <div class="footer-col">
@@ -194,12 +199,13 @@
           </ul>
         </div>
         <div class="footer-col">
-          <h3>Company</h3>
+          <h3>Navigation</h3>
           <ul class="footer-links">
-            <li><a href="about.html">About Our Firm</a></li>
-            <li><a href="projects.html">Project Portfolio</a></li>
-            <li><a href="index.html#blog">Research R&amp;D</a></li>
-            <li><a href="contact.html">Contact Offices</a></li>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="projects.html">Projects</a></li>
+            <li><a href="contact.html">Contact</a></li>
           </ul>
         </div>
       </div>

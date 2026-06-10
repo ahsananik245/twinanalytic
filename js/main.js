@@ -231,6 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const nameInput = document.getElementById('c-name');
       const emailInput = document.getElementById('c-email');
       const phoneInput = document.getElementById('c-phone');
+      const locationInput = document.getElementById('c-location');
       const msgInput = document.getElementById('c-msg');
       const typeSelect = document.getElementById('c-type');
       
@@ -269,22 +270,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
       
+      if (locationInput && !locationInput.value.trim()) {
+        showError(locationInput, 'Location is required.');
+      }
+      
       if (!msgInput.value.trim()) {
-        showError(msgInput, 'Project Summary is required.');
+        showError(msgInput, 'Message is required.');
       }
       
       if (isValid) {
         // Log submission locally to leads database
         const leads = JSON.parse(localStorage.getItem('tools_leads') || '[]');
         const scopeLabel = typeSelect ? typeSelect.options[typeSelect.selectedIndex].text : 'General Inquiry';
+        const locationText = locationInput ? locationInput.value.trim() : 'N/A';
         
         leads.push({
           name: nameInput.value.trim(),
           email: emailInput.value.trim(),
           phone: phoneInput ? phoneInput.value.trim() : 'N/A',
           timestamp: new Date().toLocaleString(),
-          calcType: 'Contact: ' + scopeLabel,
-          geometry: 'N/A',
+          calcType: `Contact [${locationText}]: ` + scopeLabel,
+          location: locationText,
+          geometry: locationText, // mapping to geometry to show on dashboard if needed
           reinforcement: 'N/A',
           status: 'N/A',
           concreteVol: 'N/A',
