@@ -39,8 +39,6 @@ function triggerCanvasRedraw(tabId) {
     case 'beam': calculateBeam(); break;
     case 'column': calculateColumn(); break;
     case 'slab': calculateSlab(); break;
-    case 'pile-cap': calculatePileCap(); break;
-    case 'footing': calculateFooting(); break;
   }
 }
 
@@ -55,8 +53,6 @@ function initCalculators() {
   const btnBeam = document.getElementById('btn-calc-beam');
   const btnCol = document.getElementById('btn-calc-column');
   const btnSlab = document.getElementById('btn-calc-slab');
-  const btnPile = document.getElementById('btn-calc-pile-cap');
-  const btnFoot = document.getElementById('btn-calc-footing');
 
   if (btnBeam) {
     btnBeam.addEventListener('click', () => checkAuthAndRun(calculateBeam, 'Beam Design'));
@@ -92,14 +88,7 @@ function initCalculators() {
       downloadSlabPDF();
     });
   });
-  if (btnPile) {
-    btnPile.addEventListener('click', () => calculatePileCap());
-    calculatePileCap();
-  }
-  if (btnFoot) {
-    btnFoot.addEventListener('click', () => calculateFooting());
-    calculateFooting();
-  }
+
 
   // Bind auth modal form submission
   const authForm = document.getElementById('modal-auth-form');
@@ -299,32 +288,6 @@ function calculateMetricsInternally(calcType) {
       metrics.status = allPassed ? "PASS" : "FAIL";
       metrics.concreteVol = `${concreteVol.toFixed(2)} m³`;
       metrics.steelWeight = `${steelWeight.toFixed(1)} kg`;
-    } else if (calcType.includes("Pile Cap")) {
-      const dia = parseFloat(document.getElementById('pile-dia').value) || 0;
-      const count = parseInt(document.getElementById('pile-count').value, 10) || 4;
-      const load = parseFloat(document.getElementById('pile-load').value) || 0;
-      const depth = parseFloat(document.getElementById('pile-depth').value) || 0;
-      const fck = parseFloat(document.getElementById('pile-concrete').value) || 25;
-
-      const d = depth - 100;
-      const punchingStress = (load * 1e3) / (4 * 500 * d);
-      const permissibleShear = 0.25 * Math.sqrt(fck);
-      const ratio = punchingStress / permissibleShear;
-
-      metrics.geometry = `depth: ${depth} mm`;
-      metrics.reinforcement = `${count} piles (${dia}mm)`;
-      metrics.status = ratio <= 1.0 ? "PASS" : "FAIL (Shear)";
-    } else if (calcType.includes("Footing")) {
-      const load = parseFloat(document.getElementById('footing-load').value) || 0;
-      const sbc = parseFloat(document.getElementById('footing-sbc').value) || 150;
-      const colSize = parseFloat(document.getElementById('footing-col').value) || 300;
-
-      const reqArea = (load * 1.1) / sbc;
-      const width = Math.ceil(Math.sqrt(reqArea) * 20) / 20;
-
-      metrics.geometry = `${width.toFixed(2)}m x ${width.toFixed(2)}m`;
-      metrics.reinforcement = `Col: ${colSize}mm`;
-      metrics.status = "PASS";
     }
   } catch (err) {
     console.error("Internal calculation failed:", err);
@@ -3449,254 +3412,7 @@ function downloadSlabPDF() {
 }
 
 
-// ==========================================
-// 6. PILE CAP DESIGN LOGIC
-// ==========================================
-function calculatePileCap() {
-  const dia = parseFloat(document.getElementById('pile-dia').value);
-  const count = parseInt(document.getElementById('pile-count').value, 10);
-  const load = parseFloat(document.getElementById('pile-load').value);
-  const depth = document.getElementById('pile-depth').value;
-  const fck = parseFloat(document.getElementById('pile-concrete').value);
 
-  const outTension = document.getElementById('pile-out-tension');
-  const outAst = document.getElementById('pile-out-ast');
-  const outBars = document.getElementById('pile-out-bars');
-  const outPileLoad = document.getElementById('pile-out-pileload');
-  const outShear = document.getElementById('pile-out-shear');
-  const outShearCheck = document.getElementById('pile-out-shearcheck');
-  const badge = document.getElementById('pile-cap-status-badge');
-
-  // Load per pile (with self weight 1.05 factor)
-  const pileLoad = (load * 1.05) / count;
-  outPileLoad.textContent = `${pileLoad.toFixed(1)} kN`;
-
-  const spacing = 3 * dia; // standard spacing
-  const d = depth - 100; // effective depth
-
-  // Calculate tension based on simple strut-and-tie models
-  // 2 piles: T = Fpile * a / d where a = spacing/2
-  // 4 piles: T = Fpile * spacing / (2 * d)
-  let tension = 0;
-  if (count === 2) {
-    tension = (pileLoad * (spacing / 2)) / d;
-  } else if (count === 3) {
-    tension = (pileLoad * (spacing / Math.sqrt(3))) / d;
-  } else { // 4 piles
-    tension = (pileLoad * spacing) / (2 * d);
-  }
-  outTension.textContent = `${tension.toFixed(1)} kN`;
-
-  // Required steel
-  const ast = (tension * 1e3) / (0.87 * 500); // using Fe500
-  outAst.textContent = `${Math.round(ast)} mm²`;
-
-  const numBars = Math.max(4, Math.ceil(ast / (Math.PI * 20 * 20 / 4)));
-  outBars.textContent = `${numBars} Nos - 20mm dia`;
-
-  // Punching shear checks
-  const punchingStress = (load * 1e3) / (4 * 500 * d); // simplified column face punching
-  outShear.textContent = `${punchingStress.toFixed(2)} MPa`;
-
-  const permissibleShear = 0.25 * Math.sqrt(fck);
-  const ratio = punchingStress / permissibleShear;
-  outShearCheck.textContent = ratio <= 1.0 ? `${ratio.toFixed(2)} (Safe)` : `${ratio.toFixed(2)} (Fail)`;
-
-  if (ratio <= 1.0) {
-    badge.className = 'tool-status-badge pass';
-    badge.textContent = 'PASS';
-  } else {
-    badge.className = 'tool-status-badge fail';
-    badge.textContent = 'RESIZE';
-  }
-
-  drawPileCapCanvas(count);
-}
-
-function drawPileCapCanvas(count) {
-  const canvas = document.getElementById('pile-cap-canvas');
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  ctx.fillStyle = '#0D1117';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  const capSize = 130;
-  const startX = (canvas.width - capSize) / 2;
-  const startY = (canvas.height - capSize) / 2;
-
-  // Outer cap (Steel blue)
-  ctx.strokeStyle = '#2a6496';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(startX, startY, capSize, capSize);
-
-  // Draw Piles as gray circles
-  ctx.fillStyle = 'rgba(255,255,255,0.15)';
-  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-  ctx.lineWidth = 1;
-  const pileR = 15;
-
-  const positions = [];
-  if (count === 2) {
-    positions.push({ x: startX + 25, y: startY + capSize/2 });
-    positions.push({ x: startX + capSize - 25, y: startY + capSize/2 });
-  } else if (count === 3) {
-    positions.push({ x: startX + capSize/2, y: startY + 25 });
-    positions.push({ x: startX + 25, y: startY + capSize - 25 });
-    positions.push({ x: startX + capSize - 25, y: startY + capSize - 25 });
-  } else { // 4 piles
-    positions.push({ x: startX + 25, y: startY + 25 });
-    positions.push({ x: startX + capSize - 25, y: startY + 25 });
-    positions.push({ x: startX + 25, y: startY + capSize - 25 });
-    positions.push({ x: startX + capSize - 25, y: startY + capSize - 25 });
-  }
-
-  positions.forEach(pos => {
-    ctx.beginPath();
-    ctx.arc(pos.x, pos.y, pileR, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-  });
-
-  // Draw Column in center (Gold square)
-  ctx.fillStyle = '#C9A84C';
-  ctx.fillRect(startX + capSize/2 - 12, startY + capSize/2 - 12, 24, 24);
-}
-
-
-// ==========================================
-// 7. FOOTING DESIGN LOGIC
-// ==========================================
-function calculateFooting() {
-  const load = parseFloat(document.getElementById('footing-load').value);
-  const sbc = parseFloat(document.getElementById('footing-sbc').value);
-  const colSize = parseFloat(document.getElementById('footing-col').value);
-  const fck = parseFloat(document.getElementById('footing-concrete').value);
-  const fy = parseFloat(document.getElementById('footing-steel').value);
-
-  const outArea = document.getElementById('footing-out-area');
-  const outDim = document.getElementById('footing-out-dim');
-  const outThickness = document.getElementById('footing-out-thickness');
-  const outAst = document.getElementById('footing-out-ast');
-  const outMesh = document.getElementById('footing-out-mesh');
-  const outShear = document.getElementById('footing-out-shear');
-  const badge = document.getElementById('footing-status-badge');
-
-  // Footing Area (including 10% self weight)
-  const reqArea = (load * 1.1) / sbc;
-  outArea.textContent = `${reqArea.toFixed(2)} m²`;
-
-  const width = Math.ceil(Math.sqrt(reqArea) * 20) / 20; // round up to 0.05m
-  outDim.textContent = `${width.toFixed(2)}m x ${width.toFixed(2)}m`;
-
-  // Thickness estimation based on punching shear (simplified)
-  const netPressure = (load * 1.5) / (width * width); // Factored pressure
-  let d = 350; // default d
-  let checkPassed = false;
-  let loops = 0;
-
-  // Punching shear equation solver
-  while (!checkPassed && loops < 100) {
-    const colSizeM = colSize / 1000;
-    const punchingPerimeter = 4 * (colSizeM + d/1000);
-    const punchingArea = Math.pow(colSizeM + d/1000, 2);
-    const shearForce = netPressure * (width * width - punchingArea);
-    const shearStress = (shearForce * 1e3) / (punchingPerimeter * d * 1000);
-    const permissibleStress = 0.25 * Math.sqrt(fck); // limit state
-
-    if (shearStress <= permissibleStress) {
-      checkPassed = true;
-    } else {
-      d += 10;
-    }
-    loops++;
-  }
-
-  const thick = d + 50; // clear cover 50mm
-  outThickness.textContent = `${thick} mm`;
-
-  // Bending Steel Calculation at face of column
-  const cantilever = (width - colSize/1000) / 2;
-  const moment = (netPressure * cantilever * cantilever) / 2; // kNm per meter width
-  const totalMoment = moment * width;
-
-  const ast = (0.5 * fck * width * 1000 * d / fy) * (1 - Math.sqrt(1 - (4.6 * totalMoment * 1e6) / (fck * width * 1000 * d * d)));
-  outAst.textContent = `${Math.round(ast)} mm²`;
-
-  const spacing = Math.min(300, Math.floor((1000 * (Math.PI * 12 * 12 / 4)) / (ast / width)));
-  outMesh.textContent = `12mm dia @ ${Math.round(spacing)}mm c/c`;
-
-  // One-way shear check
-  const criticalSection = cantilever - d/1000;
-  const oneWayShearForce = netPressure * width * Math.max(0, criticalSection);
-  const oneWayShearStress = (oneWayShearForce * 1e3) / (width * 1000 * d);
-  outShear.textContent = `${oneWayShearStress.toFixed(2)} MPa (Safe)`;
-
-  badge.className = 'tool-status-badge pass';
-  badge.textContent = 'PASS';
-
-  drawFootingCanvas();
-}
-
-function drawFootingCanvas() {
-  const canvas = document.getElementById('footing-canvas');
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  ctx.fillStyle = '#0D1117';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  const startX = 40;
-  const footingW = canvas.width - 80;
-  const footingH = 35;
-  const footingY = canvas.height - 70;
-
-  // Draw Soil pressure arrows
-  ctx.strokeStyle = '#2a6496';
-  ctx.lineWidth = 1.5;
-  for (let i = 0; i < 9; i++) {
-    const arrowX = startX + 10 + i * (footingW - 20) / 8;
-    ctx.beginPath();
-    ctx.moveTo(arrowX, canvas.height - 15);
-    ctx.lineTo(arrowX, footingY + footingH + 2);
-    ctx.stroke();
-
-    // arrow head
-    ctx.beginPath();
-    ctx.moveTo(arrowX - 3, footingY + footingH + 6);
-    ctx.lineTo(arrowX, footingY + footingH + 2);
-    ctx.lineTo(arrowX + 3, footingY + footingH + 6);
-    ctx.stroke();
-  }
-
-  // Draw Footing Base (Steel blue border)
-  ctx.strokeStyle = '#2a6496';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(startX, footingY, footingW, footingH);
-
-  // Draw Column sticking out
-  ctx.strokeRect(canvas.width/2 - 15, footingY - 60, 30, 60);
-
-  // Draw Tension reinforcement mesh at base (Gold lines)
-  ctx.strokeStyle = '#C9A84C';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(startX + 12, footingY + footingH - 12);
-  ctx.lineTo(startX + footingW - 12, footingY + footingH - 12);
-  ctx.stroke();
-
-  // Mesh dots
-  ctx.fillStyle = '#4f86c6';
-  for (let i = 0; i < 11; i++) {
-    ctx.beginPath();
-    ctx.arc(startX + 18 + i * (footingW - 36)/10, footingY + footingH - 12, 3, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  ctx.fillStyle = '#9AA0A6';
-  ctx.font = '9px JetBrains Mono';
-  ctx.fillText('Mesh reinforcement at base', canvas.width/2 - 68, footingY + footingH + 20);
-}
 
 
 // ==========================================
