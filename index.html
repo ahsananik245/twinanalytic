@@ -364,8 +364,6 @@
           <button class="tool-tab-btn active" data-tab="beam">Beam Design</button>
           <button class="tool-tab-btn" data-tab="column">Column Design</button>
           <button class="tool-tab-btn" data-tab="slab">Slab Design</button>
-          <button class="tool-tab-btn" data-tab="pile-cap">Pile Cap</button>
-          <button class="tool-tab-btn" data-tab="footing">Footing</button>
         </div>
 
         <!-- Panel 1: BEAM -->
@@ -776,112 +774,7 @@
           </div>
         </div>
 
-        <!-- Panel 4: PILE CAP -->
-        <div class="tool-content-panel" id="panel-pile-cap">
-          <div class="tool-inputs-card glass-card">
-            <h3>Input Parameters</h3>
-            <div class="input-grid">
-              <div class="input-field">
-                <label>Pile Diameter (mm)</label>
-                <input type="number" id="pile-dia" value="600" min="400" max="1500">
-              </div>
-              <div class="input-field">
-                <label>Number of Piles</label>
-                <select id="pile-count">
-                  <option value="2">2 Piles (Linear Layout)</option>
-                  <option value="3">3 Piles (Triangular Layout)</option>
-                  <option value="4" selected>4 Piles (Square Layout)</option>
-                </select>
-              </div>
-              <div class="input-field">
-                <label>Axial Column Load (kN)</label>
-                <input type="number" id="pile-load" value="2500" min="500" max="10000">
-              </div>
-              <div class="input-field">
-                <label>Cap Depth, H (mm)</label>
-                <input type="number" id="pile-depth" value="900" min="600" max="2000">
-              </div>
-              <div class="input-field">
-                <label>Concrete Grade</label>
-                <select id="pile-concrete">
-                  <option value="25" selected>M25 (fck = 25 MPa)</option>
-                  <option value="30">M30 (fck = 30 MPa)</option>
-                  <option value="35">M35 (fck = 35 MPa)</option>
-                </select>
-              </div>
-            </div>
-            <button class="btn btn-gold btn-calc" id="btn-calc-pile-cap" style="margin-top: 1.5rem;">Calculate Member</button>
-          </div>
-          
-          <div class="tool-outputs-card glass-card">
-            <h3>Analysis Output <span class="tool-status-badge pass" id="pile-cap-status-badge">PASS</span></h3>
-            <div class="results-console text-mono">
-              <div class="console-line"><span class="console-label">Truss Model Tension (T)</span><span class="console-val" id="pile-out-tension">781.3 kN</span></div>
-              <div class="console-line"><span class="console-label">Required Main Steel Area (Ast)</span><span class="console-val" id="pile-out-ast">1797 mm²</span></div>
-              <div class="console-line"><span class="console-label">Main Rebars Arrangement</span><span class="console-val" id="pile-out-bars">6 Nos - 20mm dia (each direction)</span></div>
-              <div class="console-line"><span class="console-label">Load Per Pile (Fpile)</span><span class="console-val" id="pile-out-pileload">625.0 kN</span></div>
-              <div class="console-line"><span class="console-label">Punching Shear Stress</span><span class="console-val" id="pile-out-shear">1.12 MPa</span></div>
-              <div class="console-line"><span class="console-label">Punching Shear Check</span><span class="console-val" id="pile-out-shearcheck">0.82 (Safe)</span></div>
-            </div>
-            <div class="schematic-box">
-              <h4>Top Plan Layout</h4>
-              <canvas id="pile-cap-canvas" class="schematic-canvas"></canvas>
-            </div>
-          </div>
-        </div>
 
-        <!-- Panel 5: FOOTING -->
-        <div class="tool-content-panel" id="panel-footing">
-          <div class="tool-inputs-card glass-card">
-            <h3>Input Parameters</h3>
-            <div class="input-grid">
-              <div class="input-field">
-                <label>Axial Column Load (kN)</label>
-                <input type="number" id="footing-load" value="800" min="200" max="5000">
-              </div>
-              <div class="input-field">
-                <label>Soil Bearing Capacity (kN/m²)</label>
-                <input type="number" id="footing-sbc" value="150" min="50" max="400">
-              </div>
-              <div class="input-field">
-                <label>Column Size (mm)</label>
-                <input type="number" id="footing-col" value="300" min="150" max="600">
-              </div>
-              <div class="input-field">
-                <label>Concrete Grade</label>
-                <select id="footing-concrete">
-                  <option value="20" selected>M20 (fck = 20 MPa)</option>
-                  <option value="25">M25 (fck = 25 MPa)</option>
-                  <option value="30">M30 (fck = 30 MPa)</option>
-                </select>
-              </div>
-              <div class="input-field">
-                <label>Steel Rebar Grade</label>
-                <select id="footing-steel">
-                  <option value="415">Fe415 (fy = 415 MPa)</option>
-                  <option value="500" selected>Fe500 (fy = 500 MPa)</option>
-                </select>
-              </div>
-            </div>
-            <button class="btn btn-gold btn-calc" id="btn-calc-footing" style="margin-top: 1.5rem;">Calculate Member</button>
-          </div>
-          
-          <div class="tool-outputs-card glass-card">
-            <h3>Analysis Output <span class="tool-status-badge pass" id="footing-status-badge">PASS</span></h3>
-            <div class="results-console text-mono">
-              <div class="console-line"><span class="console-label">Required Base Area (Af)</span><span class="console-val" id="footing-out-area">5.87 m²</span></div>
-              <div class="console-line"><span class="console-label">Footing Dimensions (L x W)</span><span class="console-val" id="footing-out-dim">2.45m x 2.45m</span></div>
-              <div class="console-line"><span class="console-label">Required Thickness (H)</span><span class="console-val" id="footing-out-thickness">450 mm</span></div>
-              <div class="console-line"><span class="console-label">Tension Steel Area (Ast)</span><span class="console-val" id="footing-out-ast">1245 mm²</span></div>
-              <div class="console-line"><span class="console-label">Required Base Mesh</span><span class="console-val" id="footing-out-mesh">12mm dia @ 150mm c/c</span></div>
-              <div class="console-line"><span class="console-label">One-Way Shear Check</span><span class="console-val" id="footing-out-shear">0.31 MPa (Safe)</span></div>
-            </div>
-            <div class="schematic-box">
-              <h4>Isolated Footing Elevation</h4>
-              <canvas id="footing-canvas" class="schematic-canvas"></canvas>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </section>
