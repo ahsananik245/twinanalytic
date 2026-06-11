@@ -1642,7 +1642,7 @@ input, select, textarea, button {
 }
 
 /* Mobile Nav Overlay */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .navbar .container {
     padding: 0 1.5rem;
   }

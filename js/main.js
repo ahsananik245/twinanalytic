@@ -66,6 +66,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Close mobile menu when a link is clicked
+  const menuLinks = mobileMenu.querySelectorAll('a');
+  menuLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      hamburger.classList.remove('active');
+      mobileMenu.classList.remove('active');
+    });
+  });
+
   // 3. STATS COUNT-UP ANIMATION
   const statsSection = document.querySelector('.about-stats');
   const statNums = document.querySelectorAll('.stat-num');
