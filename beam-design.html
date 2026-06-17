@@ -6,8 +6,8 @@
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RC Beam Flexural Design Calculator per ACI 318 / BNBC 2020</title>
-  <meta name="description" content="Online structural engineering check for reinforced concrete beams. Singly, doubly, and T-beam calculators with live SVG drawings.">
+  <title>Free RC Beam Flexural Design Calculator per ACI 318 / BNBC 2020</title>
+  <meta name="description" content="Free online structural engineering check for reinforced concrete beams. Singly, doubly, and T-beam calculators with live SVG drawings.">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- jsPDF & html2pdf Library -->
@@ -1118,9 +1118,9 @@
         <div class="footer-col">
           <h3>Interactive</h3>
           <ul class="footer-links">
-            <li><a href="beam-design.html">Beam Design Calculator</a></li>
-            <li><a href="column-design.html">Column Design Calculator</a></li>
-            <li><a href="slab-design.html">Slab Spans Calculator</a></li>
+            <li><a href="beam-design.html">Free Beam Design Calculator</a></li>
+            <li><a href="column-design.html">Free Column Design Calculator</a></li>
+            <li><a href="slab-design.html">Free Slab Spans Calculator</a></li>
           </ul>
         </div>
         <div class="footer-col">
@@ -1167,7 +1167,7 @@
       // Calculate Button
       document.getElementById('btn-calculate').addEventListener('click', (e) => {
         e.preventDefault();
-        runAnalysis();
+        checkAuthAndRun(runAnalysis, 'Beam Design');
       });
 
       // Reset Button
@@ -1243,6 +1243,7 @@
 
       // Initial run
       runAnalysis();
+      updateLockUI();
     });
 
     function toggleConditionalFields(type) {
@@ -1790,28 +1791,34 @@
     let pendingType = '';
 
     function checkAuthAndRun(callback, calcType) {
-      callback();
+      const unlocked = localStorage.getItem('tools_user_unlocked') === 'true';
+      if (unlocked) {
+        callback();
+      } else {
+        openAuthModal(callback, calcType);
+      }
     }
 
     function openAuthModal(callback, calcType) {
-      callback();
+      pendingCallback = callback;
+      pendingType = calcType;
+      const modal = document.getElementById('auth-modal');
+      if (modal) {
+        modal.classList.add('active');
+      }
     }
 
     function handleAuthSubmit(event) {
       event.preventDefault();
       const name = document.getElementById('lead-name').value.trim();
-      const phone = document.getElementById('lead-phone').value.trim();
+      const country = document.getElementById('lead-country').value.trim();
       const email = document.getElementById('lead-email').value.trim();
       const timestamp = new Date().toLocaleString();
 
       if (!name) { alert("Please enter your full name."); return; }
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) { alert("Please enter a valid business email address."); return; }
-      const digitCount = phone.replace(/\D/g, '').length;
-      if (digitCount < 7 || digitCount > 15) {
-        alert("Please enter a valid contact number (7 to 15 digits, e.g., +1 (555) 123-4567).");
-        return;
-      }
+      if (!country) { alert("Please enter your country."); return; }
 
       const submitBtn = event.target.querySelector('button[type="submit"]');
       const originalBtnText = submitBtn.innerHTML;
@@ -1822,7 +1829,8 @@
       const payload = {
         name: name,
         email: email,
-        phone: phone,
+        phone: country, // map country to phone for compatibility
+        country: country,
         timestamp: timestamp,
         calcType: pendingType,
         geometry: calculatedMetrics.geometry,
@@ -1837,6 +1845,7 @@
         leads.push({ ...payload, timestamp });
         localStorage.setItem('tools_leads', JSON.stringify(leads));
         localStorage.setItem('tools_user_unlocked', 'true');
+        updateLockUI();
 
         const modal = document.getElementById('auth-modal');
         if (modal) modal.classList.remove('active');
@@ -1882,6 +1891,59 @@
         concreteVol: `${(b * h * 1e-6 * (r.L || 6)).toFixed(3)} m³`,
         steelWeight: `${(n_bars * (Math.PI/4) * db * db * 7850 * 1e-6 * (r.L || 6)).toFixed(1)} kg`
       };
+    }
+
+    function updateLockUI() {
+      const unlocked = localStorage.getItem('tools_user_unlocked') === 'true';
+      const colMid = document.querySelector('.col-middle');
+      const colRight = document.querySelector('.col-right');
+      
+      if (colMid) {
+        if (!unlocked) {
+          colMid.style.position = 'relative';
+          let overlay = colMid.querySelector('.lock-overlay');
+          if (!overlay) {
+            let children = Array.from(colMid.children).filter(child => !child.classList.contains('modal-overlay') && !child.classList.contains('lock-overlay'));
+            let wrapper = colMid.querySelector('.lock-blur-wrapper');
+            if (!wrapper) {
+              wrapper = document.createElement('div');
+              wrapper.className = 'lock-blur-wrapper locked-blur';
+              children.forEach(child => wrapper.appendChild(child));
+              colMid.appendChild(wrapper);
+            } else {
+              wrapper.classList.add('locked-blur');
+            }
+            
+            overlay = document.createElement('div');
+            overlay.className = 'lock-overlay';
+            overlay.innerHTML = `
+              <div class="lock-overlay-content">
+                <i class="fa-solid fa-lock"></i>
+                <h4>Calculation Locked</h4>
+                <p>Please enter your name, email, and country to unlock all calculators and download reports.</p>
+                <button class="btn btn-gold btn-sm" onclick="document.getElementById('btn-calculate')?.click() || checkAuthAndRun(null, 'Beam Design')">Unlock Now</button>
+              </div>
+            `;
+            colMid.appendChild(overlay);
+          }
+          if (colRight) {
+            colRight.classList.add('locked-blur');
+          }
+        } else {
+          const overlay = colMid.querySelector('.lock-overlay');
+          if (overlay) overlay.remove();
+          
+          const wrapper = colMid.querySelector('.lock-blur-wrapper');
+          if (wrapper) {
+            const children = Array.from(wrapper.children);
+            children.forEach(child => colMid.appendChild(child));
+            wrapper.remove();
+          }
+          if (colRight) {
+            colRight.classList.remove('locked-blur');
+          }
+        }
+      }
     }
 
     function createReportPage(pageNum, contentHtml) {
@@ -3386,6 +3448,31 @@ ${detailTable}
       <div class="report-modal-body" id="report-preview-container">
         <!-- 9 Pages will be dynamically loaded here in white A4 containers -->
       </div>
+    </div>
+  </div>
+
+  <!-- LEAD CAPTURE MODAL -->
+  <div class="modal-overlay" id="auth-modal">
+    <div class="modal-card glass-card">
+      <div class="modal-header">
+        <h3>Unlock Free Engineering Suite</h3>
+        <p>Enter your professional credentials to run limit-state design checks and download coordinate schematics.</p>
+      </div>
+      <form class="modal-form" id="modal-auth-form">
+        <div class="form-group">
+          <label for="lead-name">Full Name</label>
+          <input type="text" id="lead-name" placeholder="E.g., MD. AHSAN HABIB ANIK" required>
+        </div>
+        <div class="form-group">
+          <label for="lead-email">Business Email</label>
+          <input type="email" id="lead-email" placeholder="anik@twinanalytic.com" required>
+        </div>
+        <div class="form-group">
+          <label for="lead-country">Country</label>
+          <input type="text" id="lead-country" placeholder="E.g., Germany" required>
+        </div>
+        <button type="submit" class="btn btn-gold" style="width: 100%; margin-top: 1rem;">Unlock Calculators</button>
+      </form>
     </div>
   </div>
 </body>

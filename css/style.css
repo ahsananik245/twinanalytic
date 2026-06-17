@@ -1776,3 +1776,60 @@ input, select, textarea, button {
     max-width: 100%;
   }
 }
+
+/* --- CALCULATOR LOCK OVERLAY STYLING --- */
+.locked-blur {
+  filter: blur(8px) !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  opacity: 0.45;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.lock-overlay {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(10, 10, 10, 0.4) !important;
+  z-index: 100 !important;
+  text-align: center !important;
+  padding: 1.5rem !important;
+  backdrop-filter: blur(2px) !important;
+  -webkit-backdrop-filter: blur(2px) !important;
+  border-radius: 8px !important;
+}
+.lock-overlay-content {
+  background: rgba(20, 20, 20, 0.9) !important;
+  border: 1px solid var(--color-gold) !important;
+  padding: 2.5rem 2rem !important;
+  border-radius: 8px !important;
+  max-width: 380px !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+.lock-overlay-content i {
+  font-size: 2.8rem !important;
+  color: var(--color-gold) !important;
+  margin-bottom: 1.2rem !important;
+  display: inline-block !important;
+}
+.lock-overlay-content h4 {
+  font-family: var(--font-serif) !important;
+  font-size: 1.4rem !important;
+  color: #fff !important;
+  margin-bottom: 0.8rem !important;
+  font-weight: 400 !important;
+}
+.lock-overlay-content p {
+  font-size: 0.9rem !important;
+  color: var(--text-secondary) !important;
+  margin-bottom: 1.8rem !important;
+  line-height: 1.5 !important;
+}
+

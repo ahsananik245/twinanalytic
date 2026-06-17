@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initCalculators();
   initAdminPanel();
   updateLeadsCount();
+  updateLockUI();
 });
 
 // ==========================================
@@ -75,14 +76,14 @@ function initCalculators() {
   }
   const btnPDF = document.getElementById('btn-download-pdf');
   if (btnPDF) {
-    btnPDF.addEventListener('click', downloadColumnPDF);
+    btnPDF.addEventListener('click', () => checkAuthAndRun(downloadColumnPDF, 'Column Report Export'));
   }
   if (btnSlab) {
-    btnSlab.addEventListener('click', () => {
+    btnSlab.addEventListener('click', () => checkAuthAndRun(() => {
       calculateSlab();
       const resEl = document.getElementById('slab-results-container');
       if (resEl) resEl.scrollIntoView({ behavior: 'smooth' });
-    });
+    }, 'Slab Design'));
     // Auto-fill date
     const dateEl = document.getElementById('slab-date');
     if (dateEl && !dateEl.value) {
@@ -95,7 +96,7 @@ function initCalculators() {
   const btnSlabPDFs = document.querySelectorAll('[id="btn-download-slab-pdf"]');
   btnSlabPDFs.forEach(btn => {
     btn.addEventListener('click', () => {
-      downloadSlabPDF();
+      checkAuthAndRun(downloadSlabPDF, 'Slab Report Export');
     });
   });
 
@@ -109,7 +110,12 @@ function initCalculators() {
 
 // Check if user is already authorized; if not, prompt modal form
 function checkAuthAndRun(callback, calcType) {
-  callback();
+  const unlocked = localStorage.getItem('tools_user_unlocked') === 'true';
+  if (unlocked) {
+    if (callback) callback();
+  } else {
+    openAuthModal(callback, calcType);
+  }
 }
 
 // Display the glassmorphic auth modal
@@ -120,6 +126,66 @@ function openAuthModal(callback, calcType) {
   const modal = document.getElementById('auth-modal');
   if (modal) {
     modal.classList.add('active');
+  }
+}
+
+// Update lock blur and lock overlay UI based on authorization state
+function updateLockUI() {
+  const unlocked = localStorage.getItem('tools_user_unlocked') === 'true';
+  const colOutput = document.querySelector('.tool-outputs-card');
+  
+  if (colOutput) {
+    if (!unlocked) {
+      colOutput.style.position = 'relative';
+      let overlay = colOutput.querySelector('.lock-overlay');
+      if (!overlay) {
+        // Wrap existing children of colOutput in a blur container (excluding modal overlay if it happens to be here)
+        let children = Array.from(colOutput.children).filter(child => !child.classList.contains('modal-overlay') && !child.classList.contains('lock-overlay'));
+        let wrapper = colOutput.querySelector('.lock-blur-wrapper');
+        if (!wrapper) {
+          wrapper = document.createElement('div');
+          wrapper.className = 'lock-blur-wrapper locked-blur';
+          children.forEach(child => wrapper.appendChild(child));
+          colOutput.appendChild(wrapper);
+        } else {
+          wrapper.classList.add('locked-blur');
+        }
+        
+        overlay = document.createElement('div');
+        overlay.className = 'lock-overlay';
+        overlay.innerHTML = `
+          <div class="lock-overlay-content">
+            <i class="fa-solid fa-lock"></i>
+            <h4>Calculation Locked</h4>
+            <p>Please enter your name, email, and country to unlock all calculators and download reports.</p>
+            <button class="btn btn-gold btn-sm" onclick="triggerUnlockFlow()">Unlock Now</button>
+          </div>
+        `;
+        colOutput.appendChild(overlay);
+      }
+    } else {
+      const overlay = colOutput.querySelector('.lock-overlay');
+      if (overlay) overlay.remove();
+      
+      const wrapper = colOutput.querySelector('.lock-blur-wrapper');
+      if (wrapper) {
+        const children = Array.from(wrapper.children);
+        children.forEach(child => colOutput.appendChild(child));
+        wrapper.remove();
+      }
+    }
+  }
+}
+
+function triggerUnlockFlow() {
+  const btnCol = document.getElementById('btn-calc-column');
+  const btnSlab = document.getElementById('btn-calc-slab');
+  if (btnCol) {
+    btnCol.click();
+  } else if (btnSlab) {
+    btnSlab.click();
+  } else {
+    openAuthModal(null, 'Calculator Unlock');
   }
 }
 
@@ -311,7 +377,7 @@ function handleAuthSubmit(event) {
   event.preventDefault();
 
   const name = document.getElementById('lead-name').value.trim();
-  const phone = document.getElementById('lead-phone').value.trim();
+  const country = document.getElementById('lead-country').value.trim();
   const email = document.getElementById('lead-email').value.trim();
   const timestamp = new Date().toLocaleString();
 
@@ -327,10 +393,8 @@ function handleAuthSubmit(event) {
     return;
   }
 
-  // Validate Phone (accepting international E.164 formats, checking for 7 to 15 digits)
-  const digitCount = phone.replace(/\D/g, '').length;
-  if (digitCount < 7 || digitCount > 15) {
-    alert("Please enter a valid contact number (7 to 15 digits, e.g., +1 (555) 123-4567).");
+  if (!country) {
+    alert("Please enter your country.");
     return;
   }
 
@@ -346,7 +410,8 @@ function handleAuthSubmit(event) {
   const payload = {
     name: name,
     email: email,
-    phone: phone, // preserve original formatting (including '+', spaces, and dashes)
+    phone: country, // map country to phone field for Sheets compatibility
+    country: country,
     timestamp: timestamp,
     calcType: pendingType,
     geometry: calculatedMetrics.geometry,
@@ -374,6 +439,7 @@ function handleAuthSubmit(event) {
 
     // Update lead indicators
     updateLeadsCount();
+    updateLockUI();
 
     // Run the blocked calculator callback (runs calculation or downloads PDF)
     if (pendingCallback) {
@@ -479,6 +545,7 @@ function clearLeadsDatabase() {
     localStorage.removeItem('tools_leads');
     localStorage.removeItem('tools_user_unlocked');
     updateLeadsCount();
+    updateLockUI();
     alert('Lead database successfully cleared.');
   }
 }

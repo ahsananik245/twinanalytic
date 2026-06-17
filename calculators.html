@@ -6,7 +6,7 @@
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Structural Design Calculators — TwinAnalytic</title>
+  <title>Free Structural Design Calculators — TwinAnalytic</title>
   <meta name="description" content="Use TwinAnalytic's online engineering calculators to check reinforced concrete beams, columns, and slabs.">
 
   <!-- Open Graph Meta Tags -->
@@ -173,7 +173,7 @@
   <header class="page-banner">
     <div class="container">
       <p>Precision Analysis Suite</p>
-      <h1>Structural Member Calculators</h1>
+      <h1>Free Structural Member Calculators</h1>
     </div>
   </header>
   <!-- CALCULATORS SUITE WORKSPACE -->
@@ -184,9 +184,9 @@
         <div class="glass-card launch-card" style="text-align: center; padding: 2.5rem 1.8rem; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
           <div>
             <div style="font-size: 2.8rem; margin-bottom: 1.2rem; color: var(--color-gold);"><i class="fa-solid fa-layer-group"></i></div>
-            <h3 style="font-family: var(--font-serif); font-size: 1.5rem; margin-bottom: 1rem; color: #fff; font-weight: 400;">RC Beam Designer</h3>
+            <h3 style="font-family: var(--font-serif); font-size: 1.5rem; margin-bottom: 1rem; color: #fff; font-weight: 400;">Free RC Beam Designer</h3>
             <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.9rem; margin-bottom: 2rem;">
-              Perform advanced reinforced concrete beam flexural design per ACI 318 & BNBC 2020. Supports Singly, Doubly, and T-Beam sections with live SVG scaling, stress block visualizations, and calculation breakdowns.
+              Perform free advanced reinforced concrete beam flexural design per ACI 318 & BNBC 2020. Supports Singly, Doubly, and T-Beam sections with live SVG scaling, stress block visualizations, and calculation breakdowns.
             </p>
           </div>
           <a href="beam-design.html" class="btn btn-gold btn-sm" style="display: inline-block; text-decoration: none; width: 100%;">Launch Beam Designer</a>
@@ -196,7 +196,7 @@
         <div class="glass-card launch-card" style="text-align: center; padding: 2.5rem 1.8rem; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
           <div>
             <div style="font-size: 2.8rem; margin-bottom: 1.2rem; color: var(--color-gold);"><i class="fa-solid fa-cube"></i></div>
-            <h3 style="font-family: var(--font-serif); font-size: 1.5rem; margin-bottom: 1rem; color: #fff; font-weight: 400;">RC Column Designer</h3>
+            <h3 style="font-family: var(--font-serif); font-size: 1.5rem; margin-bottom: 1rem; color: #fff; font-weight: 400;">Free RC Column Designer</h3>
             <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.9rem; margin-bottom: 2rem;">
               Calculate rectangular tied or circular spiral column capacity under axial loads and moments per ACI 318 code. Features live interaction diagrams and rebar layout drawings.
             </p>
@@ -208,9 +208,9 @@
         <div class="glass-card launch-card" style="text-align: center; padding: 2.5rem 1.8rem; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
           <div>
             <div style="font-size: 2.8rem; margin-bottom: 1.2rem; color: var(--color-gold);"><i class="fa-solid fa-border-all"></i></div>
-            <h3 style="font-family: var(--font-serif); font-size: 1.5rem; margin-bottom: 1rem; color: #fff; font-weight: 400;">RC Slab Designer</h3>
+            <h3 style="font-family: var(--font-serif); font-size: 1.5rem; margin-bottom: 1rem; color: #fff; font-weight: 400;">Free RC Slab Designer</h3>
             <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.9rem; margin-bottom: 2rem;">
-              Design reinforced concrete two-way slabs using ACI Direct Design Method (DDM). Automatically calculates minimum thickness, service loads, punching shear, and reinforcement layouts.
+              Design free reinforced concrete two-way slabs using ACI Direct Design Method (DDM). Automatically calculates minimum thickness, service loads, punching shear, and reinforcement layouts.
             </p>
           </div>
           <a href="slab-design.html" class="btn btn-gold btn-sm" style="display: inline-block; text-decoration: none; width: 100%;">Launch Slab Designer</a>
@@ -246,9 +246,9 @@
         <div class="footer-col">
           <h3>Interactive</h3>
           <ul class="footer-links">
-            <li><a href="beam-design.html">Beam Design Calculator</a></li>
-            <li><a href="column-design.html">Column Design Calculator</a></li>
-            <li><a href="slab-design.html">Slab Spans Calculator</a></li>
+            <li><a href="beam-design.html">Free Beam Design Calculator</a></li>
+            <li><a href="column-design.html">Free Column Design Calculator</a></li>
+            <li><a href="slab-design.html">Free Slab Spans Calculator</a></li>
           </ul>
         </div>
         <div class="footer-col">
@@ -275,5 +275,30 @@
 
   <script src="js/main.js"></script>
   <script src="js/calculators.js"></script>
+
+  <!-- LEAD CAPTURE MODAL -->
+  <div class="modal-overlay" id="auth-modal">
+    <div class="modal-card glass-card">
+      <div class="modal-header">
+        <h3>Unlock Free Engineering Suite</h3>
+        <p>Enter your professional credentials to run limit-state design checks and download coordinate schematics.</p>
+      </div>
+      <form class="modal-form" id="modal-auth-form">
+        <div class="form-group">
+          <label for="lead-name">Full Name</label>
+          <input type="text" id="lead-name" placeholder="E.g., MD. AHSAN HABIB ANIK" required>
+        </div>
+        <div class="form-group">
+          <label for="lead-email">Business Email</label>
+          <input type="email" id="lead-email" placeholder="anik@twinanalytic.com" required>
+        </div>
+        <div class="form-group">
+          <label for="lead-country">Country</label>
+          <input type="text" id="lead-country" placeholder="E.g., Germany" required>
+        </div>
+        <button type="submit" class="btn btn-gold" style="width: 100%; margin-top: 1rem;">Unlock Calculators</button>
+      </form>
+    </div>
+  </div>
 </body>
 </html>

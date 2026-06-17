@@ -136,7 +136,7 @@
                 <tr>
                   <th>Full Name</th>
                   <th>Business Email</th>
-                  <th>Contact Number</th>
+                  <th>Country</th>
                   <th>Logged Date</th>
                   <th>Action Source</th>
                 </tr>
@@ -181,9 +181,9 @@
         <div class="footer-col">
           <h3>Interactive</h3>
           <ul class="footer-links">
-            <li><a href="beam-design.html">Beam Design Calculator</a></li>
-            <li><a href="column-design.html">Column Design Calculator</a></li>
-            <li><a href="slab-design.html">Slab Spans Calculator</a></li>
+            <li><a href="beam-design.html">Free Beam Design Calculator</a></li>
+            <li><a href="column-design.html">Free Column Design Calculator</a></li>
+            <li><a href="slab-design.html">Free Slab Spans Calculator</a></li>
           </ul>
         </div>
         <div class="footer-col">
@@ -258,7 +258,7 @@
         <tr>
           <td><strong>${escapeHtml(l.name || 'N/A')}</strong></td>
           <td><a href="mailto:${escapeHtml(l.email || '')}" style="color: var(--color-gold);">${escapeHtml(l.email || 'N/A')}</a></td>
-          <td>${escapeHtml(l.phone || 'N/A')}</td>
+          <td>${escapeHtml(l.country || l.phone || 'N/A')}</td>
           <td>${escapeHtml(l.timestamp || 'N/A')}</td>
           <td><span style="font-size: 0.75rem; background: rgba(201, 168, 76, 0.1); border: 1px solid rgba(201, 168, 76, 0.2); padding: 0.2rem 0.5rem; border-radius: 4px; color: var(--color-gold);">${escapeHtml(l.calcType || 'N/A')}</span></td>
         </tr>
