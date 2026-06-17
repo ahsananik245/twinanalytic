@@ -32,6 +32,16 @@ function initTabs() {
       }
     });
   });
+
+  // Check URL hash on page load
+  const hash = window.location.hash;
+  if (hash) {
+    const tabName = hash.replace('#panel-', '');
+    const matchingTab = document.querySelector(`.tool-tab-btn[data-tab="${tabName}"]`);
+    if (matchingTab) {
+      matchingTab.click();
+    }
+  }
 }
 
 function triggerCanvasRedraw(tabId) {
