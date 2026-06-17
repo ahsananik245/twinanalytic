@@ -354,16 +354,16 @@
   <section class="section-padding tools-section" id="tools">
     <div class="container">
       <div class="section-header fade-up-init">
-        <h2><span>Interactive Suite</span>Structural Design Tools</h2>
+        <h2><span>Interactive Suite</span>Free Structural Design Tools</h2>
         <p>Test standard structural members online. Run analysis calculations and view layout sketches instantly.</p>
       </div>
 
       <div class="tools-container fade-up-init">
         <!-- Tabs -->
         <div class="tools-tabs">
-          <button class="tool-tab-btn active" data-tab="beam">Beam Design</button>
-          <button class="tool-tab-btn" data-tab="column">Column Design</button>
-          <button class="tool-tab-btn" data-tab="slab">Slab Design</button>
+          <button class="tool-tab-btn active" data-tab="beam">Free Beam Design</button>
+          <button class="tool-tab-btn" data-tab="column">Free Column Design</button>
+          <button class="tool-tab-btn" data-tab="slab">Free Slab Design</button>
         </div>
 
         <!-- Panel 1: BEAM -->
@@ -533,7 +533,7 @@
         <!-- Panel 3: SLAB -->
         <div class="tool-content-panel" id="panel-slab">
           <div class="tool-inputs-card glass-card">
-            <h3>Two-Way Slab Thickness Calculator (ACI Code)</h3>
+            <h3>Free Two-Way Slab Thickness Calculator (ACI Code)</h3>
             
             <h4 class="text-gold border-b border-gray-700 pb-1 mb-3" style="font-family: var(--font-serif); font-size: 1.1rem; color: var(--color-gold);">Project Information</h4>
             <div class="input-grid mb-4">
@@ -1046,5 +1046,30 @@
   <script src="js/main.js"></script>
   <script src="js/calculators.js"></script>
   <script src="js/three-scene.js"></script>
+
+  <!-- LEAD CAPTURE MODAL -->
+  <div class="modal-overlay" id="auth-modal">
+    <div class="modal-card glass-card">
+      <div class="modal-header">
+        <h3>Unlock Free Engineering Suite</h3>
+        <p>Enter your professional credentials to run limit-state design checks and download coordinate schematics.</p>
+      </div>
+      <form class="modal-form" id="modal-auth-form">
+        <div class="form-group">
+          <label for="lead-name">Full Name</label>
+          <input type="text" id="lead-name" placeholder="E.g., MD. AHSAN HABIB ANIK" required>
+        </div>
+        <div class="form-group">
+          <label for="lead-email">Business Email</label>
+          <input type="email" id="lead-email" placeholder="anik@twinanalytic.com" required>
+        </div>
+        <div class="form-group">
+          <label for="lead-country">Country</label>
+          <input type="text" id="lead-country" placeholder="E.g., Germany" required>
+        </div>
+        <button type="submit" class="btn btn-gold" style="width: 100%; margin-top: 1rem;">Unlock Calculators</button>
+      </form>
+    </div>
+  </div>
 </body>
 </html>

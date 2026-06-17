@@ -132,9 +132,9 @@ function openAuthModal(callback, calcType) {
 // Update lock blur and lock overlay UI based on authorization state
 function updateLockUI() {
   const unlocked = localStorage.getItem('tools_user_unlocked') === 'true';
-  const colOutput = document.querySelector('.tool-outputs-card');
+  const colOutputs = document.querySelectorAll('.tool-outputs-card');
   
-  if (colOutput) {
+  colOutputs.forEach(colOutput => {
     if (!unlocked) {
       colOutput.style.position = 'relative';
       let overlay = colOutput.querySelector('.lock-overlay');
@@ -174,7 +174,7 @@ function updateLockUI() {
         wrapper.remove();
       }
     }
-  }
+  });
 }
 
 function triggerUnlockFlow() {
