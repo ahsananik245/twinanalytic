@@ -2,6 +2,9 @@
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOCu31hE-GRIvbTOH2HVb_PaAAFkDnyuqUZ1mRusZDll3NmeJ9JZ4ZBWxI_NRt1vCknQ/exec";
 
 document.addEventListener('DOMContentLoaded', () => {
+  if (window.location.search.includes('lock=1') || window.location.search.includes('reset=1')) {
+    localStorage.removeItem('tools_user_unlocked');
+  }
   initTabs();
   initCalculators();
   initAdminPanel();
@@ -482,12 +485,20 @@ function handleAuthSubmit(event) {
 function initAdminPanel() {
   const btnExport = document.getElementById('btn-export-leads');
   const btnClear = document.getElementById('btn-clear-leads');
+  const btnLock = document.getElementById('btn-lock-calculators');
 
   if (btnExport) {
     btnExport.addEventListener('click', exportLeadsToCSV);
   }
   if (btnClear) {
     btnClear.addEventListener('click', clearLeadsDatabase);
+  }
+  if (btnLock) {
+    btnLock.addEventListener('click', () => {
+      localStorage.removeItem('tools_user_unlocked');
+      updateLockUI();
+      alert('Calculators successfully locked! Refresh any calculator page to view the lock screen.');
+    });
   }
 }
 

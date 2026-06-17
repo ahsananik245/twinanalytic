@@ -1146,6 +1146,9 @@
   <script>
     // Event listeners and global initialization
     document.addEventListener('DOMContentLoaded', () => {
+      if (window.location.search.includes('lock=1') || window.location.search.includes('reset=1')) {
+        localStorage.removeItem('tools_user_unlocked');
+      }
       // Toggle inputs based on beam type selection
       const typeRadios = document.querySelectorAll('input[name="beam-type"]');
       typeRadios.forEach(radio => {
