@@ -73,7 +73,19 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://twinanalytic.com/tools.html</loc>
+    <loc>https://twinanalytic.com/calculators.html</loc>
+    <lastmod>2026-06-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://twinanalytic.com/column-design.html</loc>
+    <lastmod>2026-06-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://twinanalytic.com/slab-design.html</loc>
     <lastmod>2026-06-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>

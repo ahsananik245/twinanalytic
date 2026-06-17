@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Column Design Calculator — TwinAnalytic</title>
+  <meta name="description" content="Use TwinAnalytic's online engineering calculators to check reinforced concrete beams, columns, and slabs.">
+
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="Structural Design Tools — TwinAnalytic" />
+  <meta property="og:description" content="Use TwinAnalytic's online engineering calculators to check reinforced concrete beams, columns, and slabs." />
+  <meta property="og:image" content="https://twinanalytic.com/assets/about_render.jpg" />
+  <meta property="og:url" content="https://twinanalytic.com/tools.html" />
+  <meta property="og:type" content="website" />
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- jsPDF Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Tailwind CSS CDN Configured to disable preflight styles -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      corePlugins: {
+        preflight: false,
+      }
+    }
+  </script>
+  <style>
+    .page-banner {
+      padding: 10rem 0 4rem 0;
+      background: radial-gradient(circle at 10% 20%, rgba(13, 17, 23, 0.95) 0%, rgba(10, 10, 10, 0.98) 90%), 
+                  repeating-linear-gradient(45deg, rgba(201, 168, 76, 0.03) 0px, rgba(201, 168, 76, 0.03) 2px, transparent 2px, transparent 10px);
+      border-bottom: 1px solid var(--border-gold);
+      text-align: center;
+    }
+    .page-banner h1 {
+      font-family: var(--font-serif);
+      font-size: 3.5rem;
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+    .page-banner p {
+      color: var(--color-gold);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+    }
+    .tools-workspace-section {
+      padding: 4rem 0 8rem 0;
+      background-color: var(--bg-primary);
+    }
+
+    /* Modal Overlay & Card styling */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 10, 10, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition-smooth);
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 480px;
+      padding: 2.5rem;
+      transform: scale(0.9);
+      transition: var(--transition-smooth);
+      background: var(--bg-secondary);
+      border: 1px solid var(--color-gold);
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-header h3 {
+      font-family: var(--font-serif);
+      font-size: 1.8rem;
+      font-weight: 400;
+      color: var(--color-gold);
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-header p {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+
+    .modal-form .form-group {
+      margin-bottom: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      text-align: left;
+    }
+
+    .modal-form label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .modal-form input {
+      width: 100%;
+      background: rgba(10, 10, 10, 0.5);
+      border: 1px solid var(--border-gold);
+      border-radius: 4px;
+      padding: 0.8rem 1rem;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      transition: var(--transition-quick);
+    }
+
+    .modal-form input:focus {
+      outline: none;
+      border-color: var(--color-gold);
+      box-shadow: 0 0 10px rgba(201, 168, 76, 0.15);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVIGATION BAR -->
+  <nav class="navbar scrolled" id="navbar">
+    <div class="container">
+      <a href="index.html" class="logo">
+        <img src="assets/logo.png" alt="TwinAnalytic Logo" style="height: 38px; width: auto; border-radius: 4px; margin-right: 8px; vertical-align: middle;">
+        Twin<span>Analytic</span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="bim-viewer.html">BIM Viewer</a></li>
+        <li><a href="calculators.html" class="active">Calculators</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="contact.html" class="btn btn-gold btn-sm">Get a Quote</a>
+      </div>
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- BANNER -->
+  <header class="page-banner">
+    <div class="container">
+      <p>Precision Column Design</p>
+      <h1>RC Column Designer</h1>
+    </div>
+  </header>
+
+  <!-- CALCULATORS SUITE WORKSPACE -->
+  <section class="tools-workspace-section">
+    <div class="container">
+      <div class="tools-container">
+<!-- Panel 2: COLUMN -->
+        <div class="tool-content-panel active" id="panel-column">
+          <div class="tool-inputs-card glass-card">
+            <h3>Input Parameters</h3>
+            <div class="input-grid">
+              <div class="input-field">
+                <label>Project Name</label>
+                <input type="text" id="column-proj-name" value="TwinAnalytic Tower">
+              </div>
+              <div class="input-field">
+                <label>Project Number</label>
+                <input type="text" id="column-proj-num" value="2026-001">
+              </div>
+              <div class="input-field">
+                <label>Designer Initials</label>
+                <input type="text" id="column-designer" value="AH">
+              </div>
+              <div class="input-field">
+                <label>Reviewer Initials</label>
+                <input type="text" id="column-reviewer" value="MB">
+              </div>
+              <div class="input-field">
+                <label>Design Code</label>
+                <select id="column-code">
+                  <option value="ACI 318-14" selected>ACI 318-14</option>
+                  <option value="BNBC 2020">BNBC 2020</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Column Type</label>
+                <select id="column-type">
+                  <option value="TIED" selected>TIED (Rectangular/Square)</option>
+                  <option value="SPIRAL">SPIRAL (Circular)</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Column Height (ft)</label>
+                <input type="number" id="column-height" value="10" min="1" max="100" step="any">
+              </div>
+              <div class="input-field">
+                <label>Dead Load, PDL (k)</label>
+                <input type="number" id="column-pdl" value="300" min="0" step="any">
+              </div>
+              <div class="input-field">
+                <label>Live Load, PLL (k)</label>
+                <input type="number" id="column-pll" value="200" min="0" step="any">
+              </div>
+              <div class="input-field">
+                <label>Factored Moment, Mux (k-ft)</label>
+                <input type="number" id="column-mux" value="0" min="0" step="any">
+              </div>
+              <div class="input-field">
+                <label>Factored Moment, Muy (k-ft)</label>
+                <input type="number" id="column-muy" value="0" min="0" step="any">
+              </div>
+              <div class="input-field">
+                <label>Factored Shear, Vu (k)</label>
+                <input type="number" id="column-vu" value="0" min="0" step="any">
+              </div>
+              <div class="input-field">
+                <label>Concrete Strength, f'c (ksi)</label>
+                <input type="number" id="column-fc" value="4" min="0.1" step="any">
+              </div>
+              <div class="input-field">
+                <label>Steel Strength, fy (ksi)</label>
+                <input type="number" id="column-fy" value="60" min="0.1" step="any">
+              </div>
+              <div class="input-field">
+                <label>Transverse Steel, fyt (ksi)</label>
+                <input type="number" id="column-fyt" value="60" min="0.1" step="any">
+              </div>
+              <div class="input-field">
+                <label>Phi Factor, Ø</label>
+                <input type="number" id="column-phi" value="0.65" min="0.01" max="1.0" step="0.01" readonly style="opacity: 0.7; cursor: not-allowed; background-color: rgba(255,255,255,0.05);">
+              </div>
+              <div class="input-field">
+                <label>Target Steel Ratio, ρg</label>
+                <select id="column-p">
+                  <option value="0.01">0.01</option>
+                  <option value="0.02" selected>0.02</option>
+                  <option value="0.03">0.03</option>
+                  <option value="0.04">0.04</option>
+                  <option value="0.05">0.05</option>
+                  <option value="0.06">0.06</option>
+                  <option value="0.07">0.07</option>
+                  <option value="0.08">0.08</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Clear Cover (in)</label>
+                <input type="number" id="column-cover" value="1.5" min="0.5" step="any">
+              </div>
+              <div class="input-field">
+                <label>Main Bar Size</label>
+                <select id="column-main-bar">
+                  <option value="#5">#5 (0.31 in²)</option>
+                  <option value="#6">#6 (0.44 in²)</option>
+                  <option value="#7">#7 (0.60 in²)</option>
+                  <option value="#8" selected>#8 (0.79 in²)</option>
+                  <option value="#9">#9 (1.00 in²)</option>
+                  <option value="#10">#10 (1.27 in²)</option>
+                  <option value="#11">#11 (1.56 in²)</option>
+                  <option value="#14">#14 (2.25 in²)</option>
+                  <option value="#18">#18 (4.00 in²)</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Tie/Spiral Size</label>
+                <select id="column-tie-bar">
+                  <option value="#3" selected>#3 (3/8")</option>
+                  <option value="#4">#4 (1/2")</option>
+                  <option value="#5">#5 (5/8")</option>
+                </select>
+              </div>
+            </div>
+            <!-- Validation Message -->
+            <div id="column-validation-error" class="hidden" style="color: #f5222d; font-size: 0.8rem; margin-top: 1rem; font-family: var(--font-mono);">
+              Please ensure all values are positive and steel ratio is between 0.01 and 0.08.
+            </div>
+            <button class="btn btn-gold btn-calc" id="btn-calc-column" style="margin-top: 1.5rem;">Calculate Member</button>
+          </div>
+          
+          <div class="tool-outputs-card glass-card">
+            <h3>Analysis Output <span class="tool-status-badge pass" id="column-status-badge">PASS</span></h3>
+            <div class="results-console text-mono">
+              <div class="console-line"><span class="console-label">Factored Load (Pu)</span><span class="console-val" id="column-out-pu">0 k</span></div>
+              <div class="console-line"><span class="console-label">Gross Concrete Area Required (Ag)</span><span class="console-val" id="column-out-ag">0 in²</span></div>
+              <div class="console-line"><span class="console-label">Column Dimension (Dim)</span><span class="console-val" id="column-out-dim">0 in</span></div>
+              <div class="console-line"><span class="console-label">Final Column Area</span><span class="console-val" id="column-out-final-area">0 in²</span></div>
+              <div class="console-line"><span class="console-label">Required Steel Area (Ast)</span><span class="console-val" id="column-out-ast">0 in²</span></div>
+              <div class="console-line"><span class="console-label">Max Tie Spacing</span><span class="console-val" id="column-out-tie-spacing">0 in</span></div>
+              <div class="console-line"><span class="console-label">Std Tie Hook Extension</span><span class="console-val" id="column-out-hook-extension">0 in</span></div>
+              <div class="console-line"><span class="console-label">Nominal Strength (Pn,max)</span><span class="console-val" id="column-out-pn-max">0 k</span></div>
+              <div class="console-line"><span class="console-label">Design Strength (Phi Pn)</span><span class="console-val" id="column-out-phi-pn">0 k</span></div>
+              <div class="console-line"><span class="console-label">D/C Ratio</span><span class="console-val" id="column-out-dc-ratio">0.00</span></div>
+              <div class="console-line"><span class="console-label">Concrete Volume</span><span class="console-val" id="column-out-concrete-vol">0.00 m³</span></div>
+              <div class="console-line"><span class="console-label">Steel Weight</span><span class="console-val" id="column-out-steel-weight">0.00 kg</span></div>
+              <div class="console-line" id="column-row-warning" style="display: none; color: #f5222d; border-top: 1px dashed rgba(245, 34, 45, 0.3); padding-top: 0.5rem; margin-top: 0.5rem; flex-direction: column; align-items: flex-start; gap: 0.25rem;">
+                <span class="console-label" style="color: #f5222d; font-weight: bold;">ACI Compliance Alert</span>
+                <span class="console-val" id="column-out-warning-text" style="color: #f5222d; font-size: 0.75rem; text-align: left; white-space: normal;"></span>
+              </div>
+            </div>
+            <div class="schematic-box">
+              <h4>Cross-Section Layout</h4>
+              <canvas id="column-canvas" class="schematic-canvas"></canvas>
+            </div>
+            <button class="btn btn-ghost" id="btn-download-pdf" style="margin-top: 1.5rem; width: 100%;">
+              <i class="fa-solid fa-file-pdf" style="margin-right: 0.5rem;"></i> Download PDF Report
+            </button>
+          </div>
+        </div>
+
+        
+      </div>
+    </div>
+  </section>
+<!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-top-gradient"></div>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col brand">
+          <h3>Twin<span>Analytic</span></h3>
+          <p style="color: var(--color-gold); font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; margin-top: -0.5rem;">Construction &amp; Engineering</p>
+          <p>We combine engineering expertise with digital technologies to create safe, optimized, and reliable structures.</p>
+          <div class="footer-socials">
+            <a href="https://linkedin.com/company/twinanalytic" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="https://x.com/twinanalytic" target="_blank"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="#"><!-- TODO: add real URL --><i class="fa-brands fa-instagram"></i></a>
+            <a href="#"><!-- TODO: add real URL --><i class="fa-brands fa-youtube"></i></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h3>Services</h3>
+          <ul class="footer-links">
+            <li><a href="services.html#structural">Structural Engineering</a></li>
+            <li><a href="services.html#bim">BIM &amp; Digital Engineering</a></li>
+            <li><a href="services.html#support">Construction Support</a></li>
+            <li><a href="services.html#consultancy">Engineering Consultancy</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Interactive</h3>
+          <ul class="footer-links">
+            <li><a href="beam-design.html">Beam Design Calculator</a></li>
+            <li><a href="column-design.html">Column Design Calculator</a></li>
+            <li><a href="slab-design.html">Slab Spans Calculator</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Navigation</h3>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="projects.html">Projects</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2026 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
+        <div class="footer-bottom-links">
+          <a href="privacy.html">Privacy Protocol</a>
+          <a href="sitemap.html">Sitemap</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/calculators.js"></script>
+</body>
+</html>

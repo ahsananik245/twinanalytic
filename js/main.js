@@ -11,7 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (href === pageName || 
         (pageName === '' && href === 'index.html') ||
-        (pageName === 'index.html' && href === 'index.html')) {
+        (pageName === 'index.html' && href === 'index.html') ||
+        ((pageName === 'beam-design.html' || pageName === 'column-design.html' || pageName === 'slab-design.html') && href === 'calculators.html')) {
       link.classList.add('active');
     }
   });

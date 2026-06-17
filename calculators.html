@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Structural Design Calculators — TwinAnalytic</title>
+  <meta name="description" content="Use TwinAnalytic's online engineering calculators to check reinforced concrete beams, columns, and slabs.">
+
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="Structural Design Tools — TwinAnalytic" />
+  <meta property="og:description" content="Use TwinAnalytic's online engineering calculators to check reinforced concrete beams, columns, and slabs." />
+  <meta property="og:image" content="https://twinanalytic.com/assets/about_render.jpg" />
+  <meta property="og:url" content="https://twinanalytic.com/tools.html" />
+  <meta property="og:type" content="website" />
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- jsPDF Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Tailwind CSS CDN Configured to disable preflight styles -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      corePlugins: {
+        preflight: false,
+      }
+    }
+  </script>
+  <style>
+    .page-banner {
+      padding: 10rem 0 4rem 0;
+      background: radial-gradient(circle at 10% 20%, rgba(13, 17, 23, 0.95) 0%, rgba(10, 10, 10, 0.98) 90%), 
+                  repeating-linear-gradient(45deg, rgba(201, 168, 76, 0.03) 0px, rgba(201, 168, 76, 0.03) 2px, transparent 2px, transparent 10px);
+      border-bottom: 1px solid var(--border-gold);
+      text-align: center;
+    }
+    .page-banner h1 {
+      font-family: var(--font-serif);
+      font-size: 3.5rem;
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+    .page-banner p {
+      color: var(--color-gold);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+    }
+    .tools-workspace-section {
+      padding: 4rem 0 8rem 0;
+      background-color: var(--bg-primary);
+    }
+
+    /* Modal Overlay & Card styling */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 10, 10, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition-smooth);
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 480px;
+      padding: 2.5rem;
+      transform: scale(0.9);
+      transition: var(--transition-smooth);
+      background: var(--bg-secondary);
+      border: 1px solid var(--color-gold);
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-header h3 {
+      font-family: var(--font-serif);
+      font-size: 1.8rem;
+      font-weight: 400;
+      color: var(--color-gold);
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-header p {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+
+    .modal-form .form-group {
+      margin-bottom: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      text-align: left;
+    }
+
+    .modal-form label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .modal-form input {
+      width: 100%;
+      background: rgba(10, 10, 10, 0.5);
+      border: 1px solid var(--border-gold);
+      border-radius: 4px;
+      padding: 0.8rem 1rem;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      transition: var(--transition-quick);
+    }
+
+    .modal-form input:focus {
+      outline: none;
+      border-color: var(--color-gold);
+      box-shadow: 0 0 10px rgba(201, 168, 76, 0.15);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVIGATION BAR -->
+  <nav class="navbar scrolled" id="navbar">
+    <div class="container">
+      <a href="index.html" class="logo">
+        <img src="assets/logo.png" alt="TwinAnalytic Logo" style="height: 38px; width: auto; border-radius: 4px; margin-right: 8px; vertical-align: middle;">
+        Twin<span>Analytic</span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="bim-viewer.html">BIM Viewer</a></li>
+        <li><a href="calculators.html" class="active">Calculators</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="contact.html" class="btn btn-gold btn-sm">Get a Quote</a>
+      </div>
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- BANNER -->
+  <header class="page-banner">
+    <div class="container">
+      <p>Precision Analysis Suite</p>
+      <h1>Structural Member Calculators</h1>
+    </div>
+  </header>
+  <!-- CALCULATORS SUITE WORKSPACE -->
+  <section class="tools-workspace-section">
+    <div class="container">
+      <div class="about-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2.5rem; align-items: stretch;">
+        <!-- Card 1: Beam -->
+        <div class="glass-card launch-card" style="text-align: center; padding: 2.5rem 1.8rem; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
+          <div>
+            <div style="font-size: 2.8rem; margin-bottom: 1.2rem; color: var(--color-gold);"><i class="fa-solid fa-layer-group"></i></div>
+            <h3 style="font-family: var(--font-serif); font-size: 1.5rem; margin-bottom: 1rem; color: #fff; font-weight: 400;">RC Beam Designer</h3>
+            <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.9rem; margin-bottom: 2rem;">
+              Perform advanced reinforced concrete beam flexural design per ACI 318 & BNBC 2020. Supports Singly, Doubly, and T-Beam sections with live SVG scaling, stress block visualizations, and calculation breakdowns.
+            </p>
+          </div>
+          <a href="beam-design.html" class="btn btn-gold btn-sm" style="display: inline-block; text-decoration: none; width: 100%;">Launch Beam Designer</a>
+        </div>
+        
+        <!-- Card 2: Column -->
+        <div class="glass-card launch-card" style="text-align: center; padding: 2.5rem 1.8rem; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
+          <div>
+            <div style="font-size: 2.8rem; margin-bottom: 1.2rem; color: var(--color-gold);"><i class="fa-solid fa-cube"></i></div>
+            <h3 style="font-family: var(--font-serif); font-size: 1.5rem; margin-bottom: 1rem; color: #fff; font-weight: 400;">RC Column Designer</h3>
+            <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.9rem; margin-bottom: 2rem;">
+              Calculate rectangular tied or circular spiral column capacity under axial loads and moments per ACI 318 code. Features live interaction diagrams and rebar layout drawings.
+            </p>
+          </div>
+          <a href="column-design.html" class="btn btn-gold btn-sm" style="display: inline-block; text-decoration: none; width: 100%;">Launch Column Designer</a>
+        </div>
+        
+        <!-- Card 3: Slab -->
+        <div class="glass-card launch-card" style="text-align: center; padding: 2.5rem 1.8rem; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
+          <div>
+            <div style="font-size: 2.8rem; margin-bottom: 1.2rem; color: var(--color-gold);"><i class="fa-solid fa-border-all"></i></div>
+            <h3 style="font-family: var(--font-serif); font-size: 1.5rem; margin-bottom: 1rem; color: #fff; font-weight: 400;">RC Slab Designer</h3>
+            <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.9rem; margin-bottom: 2rem;">
+              Design reinforced concrete two-way slabs using ACI Direct Design Method (DDM). Automatically calculates minimum thickness, service loads, punching shear, and reinforcement layouts.
+            </p>
+          </div>
+          <a href="slab-design.html" class="btn btn-gold btn-sm" style="display: inline-block; text-decoration: none; width: 100%;">Launch Slab Designer</a>
+        </div>
+      </div>
+    </div>
+  </section>
+<!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-top-gradient"></div>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col brand">
+          <h3>Twin<span>Analytic</span></h3>
+          <p style="color: var(--color-gold); font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; margin-top: -0.5rem;">Construction &amp; Engineering</p>
+          <p>We combine engineering expertise with digital technologies to create safe, optimized, and reliable structures.</p>
+          <div class="footer-socials">
+            <a href="https://linkedin.com/company/twinanalytic" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="https://x.com/twinanalytic" target="_blank"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="#"><!-- TODO: add real URL --><i class="fa-brands fa-instagram"></i></a>
+            <a href="#"><!-- TODO: add real URL --><i class="fa-brands fa-youtube"></i></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h3>Services</h3>
+          <ul class="footer-links">
+            <li><a href="services.html#structural">Structural Engineering</a></li>
+            <li><a href="services.html#bim">BIM &amp; Digital Engineering</a></li>
+            <li><a href="services.html#support">Construction Support</a></li>
+            <li><a href="services.html#consultancy">Engineering Consultancy</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Interactive</h3>
+          <ul class="footer-links">
+            <li><a href="beam-design.html">Beam Design Calculator</a></li>
+            <li><a href="column-design.html">Column Design Calculator</a></li>
+            <li><a href="slab-design.html">Slab Spans Calculator</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Navigation</h3>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="projects.html">Projects</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2026 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
+        <div class="footer-bottom-links">
+          <a href="privacy.html">Privacy Protocol</a>
+          <a href="sitemap.html">Sitemap</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/calculators.js"></script>
+</body>
+</html>
