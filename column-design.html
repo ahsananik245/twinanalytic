@@ -138,6 +138,218 @@
       border-color: var(--color-gold);
       box-shadow: 0 0 10px rgba(201, 168, 76, 0.15);
     }
+
+    /* Design Guide Tab Styling */
+    .guide-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 2.5rem;
+      padding: 2.5rem;
+      border-radius: 8px;
+    }
+    
+    .guide-sidebar {
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+      padding-right: 2rem;
+    }
+    
+    .guide-nav-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .guide-nav-btn {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      padding: 0.75rem 1rem;
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+      border-left: 2px solid transparent;
+    }
+    
+    .guide-nav-btn:hover {
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text-primary);
+    }
+    
+    .guide-nav-btn.active {
+      background: rgba(201, 168, 76, 0.1);
+      color: var(--color-gold);
+      border-left-color: var(--color-gold);
+      font-weight: 500;
+    }
+    
+    .guide-content {
+      padding-left: 0.5rem;
+      min-height: 500px;
+      color: var(--text-primary);
+    }
+    
+    .guide-page-content {
+      display: none;
+    }
+    
+    .guide-page-content.active {
+      display: block;
+      animation: guideFadeIn 0.4s ease forwards;
+    }
+    
+    @keyframes guideFadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Guide Typography & Elements */
+    .guide-page-content h2 {
+      font-family: var(--font-serif);
+      color: var(--color-gold);
+      font-size: 2rem;
+      font-weight: 400;
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(201, 168, 76, 0.15);
+      padding-bottom: 0.75rem;
+    }
+    
+    .guide-page-content h3 {
+      font-family: var(--font-serif);
+      color: #fff;
+      font-size: 1.4rem;
+      font-weight: 400;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+    
+    .guide-page-content h4 {
+      font-family: var(--font-sans);
+      color: var(--color-gold);
+      font-size: 1rem;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .guide-page-content p {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      margin-bottom: 1.25rem;
+    }
+    
+    .guide-page-content ul {
+      margin-bottom: 1.5rem;
+      padding-left: 1.5rem;
+    }
+    
+    .guide-page-content li {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .guide-page-content strong {
+      color: #fff;
+    }
+    
+    /* Code block styling */
+    .guide-page-content pre {
+      background: rgba(10, 10, 10, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+      padding: 1rem;
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+    }
+    
+    .guide-page-content code {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--color-gold);
+    }
+    
+    /* Tables styling */
+    .guide-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+    }
+    
+    .guide-table th {
+      background: rgba(201, 168, 76, 0.1);
+      color: var(--color-gold);
+      text-align: left;
+      padding: 0.75rem 1rem;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(201, 168, 76, 0.3);
+    }
+    
+    .guide-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-secondary);
+    }
+    
+    .guide-table tr:hover td {
+      background: rgba(255, 255, 255, 0.01);
+      color: #fff;
+    }
+    
+    /* Alerts styling */
+    .guide-alert {
+      background: rgba(201, 168, 76, 0.05);
+      border-left: 4px solid var(--color-gold);
+      padding: 1rem 1.25rem;
+      border-radius: 0 4px 4px 0;
+      margin: 1.5rem 0;
+    }
+    
+    .guide-alert p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    @media (max-width: 992px) {
+      .guide-layout {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 1.5rem;
+      }
+      .guide-sidebar {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        padding-right: 0;
+        padding-bottom: 1.5rem;
+      }
+      .guide-nav-list {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+      }
+      .guide-nav-btn {
+        white-space: nowrap;
+        border-left: none;
+        border-bottom: 2px solid transparent;
+        padding: 0.5rem 1rem;
+      }
+      .guide-nav-btn.active {
+        border-bottom-color: var(--color-gold);
+      }
+    }
   </style>
 </head>
 <body>
@@ -178,6 +390,11 @@
   <section class="tools-workspace-section">
     <div class="container">
       <div class="tools-container">
+        <!-- TOP-LEVEL TABS SWITCHER -->
+        <div class="tools-tabs" style="margin-bottom: 2.5rem;">
+          <button class="tool-tab-btn active" id="tab-btn-calculator" onclick="switchMainTab('calculator')">Interactive Calculator</button>
+          <button class="tool-tab-btn" id="tab-btn-guide" onclick="switchMainTab('guide')">ACI 318-19 Design Guide</button>
+        </div>
 <!-- Panel 2: COLUMN -->
         <div class="tool-content-panel active" id="panel-column">
           <div class="tool-inputs-card glass-card">
@@ -202,7 +419,8 @@
               <div class="input-field">
                 <label>Design Code</label>
                 <select id="column-code">
-                  <option value="ACI 318-14" selected>ACI 318-14</option>
+                  <option value="ACI 318-19" selected>ACI 318-19</option>
+                  <option value="ACI 318-14">ACI 318-14</option>
                   <option value="BNBC 2020">BNBC 2020</option>
                 </select>
               </div>
@@ -313,6 +531,9 @@
               <div class="console-line"><span class="console-label">Nominal Strength (Pn,max)</span><span class="console-val" id="column-out-pn-max">0 k</span></div>
               <div class="console-line"><span class="console-label">Design Strength (Phi Pn)</span><span class="console-val" id="column-out-phi-pn">0 k</span></div>
               <div class="console-line"><span class="console-label">D/C Ratio</span><span class="console-val" id="column-out-dc-ratio">0.00</span></div>
+              <div class="console-line"><span class="console-label">Slenderness Ratio (kl/r)</span><span class="console-val" id="column-out-slenderness">0.00</span></div>
+              <div class="console-line"><span class="console-label">Slenderness Limit</span><span class="console-val" id="column-out-slenderness-limit">22.00</span></div>
+              <div class="console-line"><span class="console-label">Slenderness Status</span><span class="console-val" id="column-out-slenderness-status">OK</span></div>
               <div class="console-line"><span class="console-label">Concrete Volume</span><span class="console-val" id="column-out-concrete-vol">0.00 m³</span></div>
               <div class="console-line"><span class="console-label">Steel Weight</span><span class="console-val" id="column-out-steel-weight">0.00 kg</span></div>
               <div class="console-line" id="column-row-warning" style="display: none; color: #f5222d; border-top: 1px dashed rgba(245, 34, 45, 0.3); padding-top: 0.5rem; margin-top: 0.5rem; flex-direction: column; align-items: flex-start; gap: 0.25rem;">
@@ -327,6 +548,478 @@
             <button class="btn btn-ghost" id="btn-download-pdf" style="margin-top: 1.5rem; width: 100%;">
               <i class="fa-solid fa-file-pdf" style="margin-right: 0.5rem;"></i> Download PDF Report
             </button>
+        </div>
+
+        <!-- Panel: DESIGN GUIDE -->
+        <div class="tool-content-panel" id="panel-column-guide" style="display: none; grid-template-columns: 1fr; width: 100%;">
+          <div class="guide-layout glass-card">
+            <!-- Sidebar Navigation -->
+            <aside class="guide-sidebar">
+              <h4 style="color: var(--color-gold); font-family: var(--font-serif); margin-bottom: 1.5rem; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0;">Guide Sections</h4>
+              <ul class="guide-nav-list">
+                <li><button class="guide-nav-btn active" id="guide-btn-1" onclick="showGuidePage(1)">Page 1: Scope &amp; General</button></li>
+                <li><button class="guide-nav-btn" id="guide-btn-2" onclick="showGuidePage(2)">Page 2: Required Strength</button></li>
+                <li><button class="guide-nav-btn" id="guide-btn-3" onclick="showGuidePage(3)">Page 3: Design Strength</button></li>
+                <li><button class="guide-nav-btn" id="guide-btn-4" onclick="showGuidePage(4)">Page 4: Reinforcement Limits</button></li>
+                <li><button class="guide-nav-btn" id="guide-btn-5" onclick="showGuidePage(5)">Page 5: Tied Column Detailing</button></li>
+                <li><button class="guide-nav-btn" id="guide-btn-6" onclick="showGuidePage(6)">Page 6: Spiral Column Detailing</button></li>
+                <li><button class="guide-nav-btn" id="guide-btn-7" onclick="showGuidePage(7)">Page 7: Step-by-Step Procedure</button></li>
+                <li><button class="guide-nav-btn" id="guide-btn-8" onclick="showGuidePage(8)">Page 8: Worked Example</button></li>
+                <li><button class="guide-nav-btn" id="guide-btn-9" onclick="showGuidePage(9)">Page 9: Interaction &amp; Verification</button></li>
+                <li><button class="guide-nav-btn" id="guide-btn-10" onclick="showGuidePage(10)">Page 10: References</button></li>
+              </ul>
+            </aside>
+
+            <!-- Page Content Area -->
+            <main class="guide-content">
+              <!-- Page 1 -->
+              <article id="guide-page-1" class="guide-page-content active">
+                <h2>Page 1: Scope &amp; General Requirements (10.1 – 10.2)</h2>
+                
+                <h4>Applicability</h4>
+                <ul>
+                  <li>Chapter 10 applies to reinforced concrete columns that are part of a structural system.</li>
+                  <li>Cast-in-place, precast, and composite columns.</li>
+                  <li>Subject to axial load, moment, shear, and torsion.</li>
+                  <li>Must satisfy strength, serviceability, durability, and integrity (Chapter 4).</li>
+                </ul>
+
+                <h4>Column Types</h4>
+                <ul>
+                  <li><strong>Tied Columns:</strong> Longitudinal bars enclosed by separate ties. Most common for building columns.</li>
+                  <li><strong>Spiral Columns:</strong> Longitudinal bars enclosed by a continuous spiral. Better ductility and confinement.</li>
+                  <li><strong>Composite Columns:</strong> Structural steel shapes or pipes embedded in concrete.</li>
+                </ul>
+
+                <h4>Slenderness &amp; Stability</h4>
+                <p>All columns must be checked for slenderness effects per Chapter 6:</p>
+                <ul>
+                  <li><code>kℓu / r ≤ 22</code> &rarr; Nonsway, slenderness may be neglected</li>
+                  <li><code>kℓu / r ≤ 34 + 12(M₁/M₂)</code> &rarr; Braced columns</li>
+                  <li>If exceeded: use Moment Magnification (6.6.4) or Second-Order Analysis (6.7)</li>
+                </ul>
+
+                <h4>Design Limits (10.3)</h4>
+                <ul>
+                  <li>Minimum dimension: 8 in. or as required for cover</li>
+                  <li>Minimum eccentricity: <code>M₂,min = Pᵤ(0.6 + 0.03h)</code></li>
+                  <li>Must accommodate concrete placement</li>
+                  <li>Seismic: Chapter 18 additional requirements</li>
+                </ul>
+              </article>
+
+              <!-- Page 2 -->
+              <article id="guide-page-2" class="guide-page-content">
+                <h2>Page 2: Required Strength &amp; Load Combinations (10.4 / Chapter 5)</h2>
+                
+                <h4>Load Combinations</h4>
+                <table class="guide-table">
+                  <thead>
+                    <tr>
+                      <th>Equation</th>
+                      <th>Load Combination</th>
+                      <th>Primary Load</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>(5.3.1a)</td>
+                      <td><code>U = 1.4 D</code></td>
+                      <td>Dead</td>
+                    </tr>
+                    <tr>
+                      <td>(5.3.1b)</td>
+                      <td><code>U = 1.2 D + 1.6 L + 0.5(Lᵣ or S or R)</code></td>
+                      <td>Live</td>
+                    </tr>
+                    <tr>
+                      <td>(5.3.1c)</td>
+                      <td><code>U = 1.2 D + 1.6(Lᵣ or S or R) + (1.0L or 0.5W)</code></td>
+                      <td>Roof/Live/Snow</td>
+                    </tr>
+                    <tr>
+                      <td>(5.3.1d)</td>
+                      <td><code>U = 1.2 D + 1.0 W + 1.0 L + 0.5(Lᵣ or S or R)</code></td>
+                      <td>Wind</td>
+                    </tr>
+                    <tr>
+                      <td>(5.3.1e)</td>
+                      <td><code>U = 1.2 D + 1.0 E + 1.0 L + 0.2 S</code></td>
+                      <td>Seismic</td>
+                    </tr>
+                    <tr>
+                      <td>(5.3.1f)</td>
+                      <td><code>U = 0.9 D + 1.0 W</code></td>
+                      <td>Wind (overturning)</td>
+                    </tr>
+                    <tr>
+                      <td>(5.3.1g)</td>
+                      <td><code>U = 0.9 D + 1.0 E</code></td>
+                      <td>Seismic (overturning)</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <h4>Column Force Components</h4>
+                <ul>
+                  <li><strong>Pᵤ</strong> = Factored axial force (positive for compression, negative for tension)</li>
+                  <li><strong>Mᵤ</strong> = Factored moment (include minimum eccentricity and second-order effects)</li>
+                  <li><strong>Vᵤ</strong> = Factored shear force (critical for moment frame columns)</li>
+                </ul>
+
+                <h4>Minimum Eccentricity (6.6.4.5.4)</h4>
+                <pre><code>M₂,min = Pᵤ (0.6 + 0.03 h)
+h = column dimension in direction of bending (in.)</code></pre>
+
+                <h4>Second-Order Effects</h4>
+                <p>If kℓᵤ/r exceeds limits:</p>
+                <ul>
+                  <li>Moment Magnification (6.6.4)</li>
+                  <li>Second-Order Elastic Analysis (6.7)</li>
+                </ul>
+              </article>
+
+              <!-- Page 3 -->
+              <article id="guide-page-3" class="guide-page-content">
+                <h2>Page 3: Design Strength &amp; φ-Factors (10.5 / Chapter 21)</h2>
+                
+                <h4>Basic Strength Requirement</h4>
+                <pre><code>φ Sₙ ≥ U
+Design Strength ≥ Required Strength</code></pre>
+
+                <h4>Strength-Reduction Factors for Columns (21.2)</h4>
+                <table class="guide-table">
+                  <thead>
+                    <tr>
+                      <th>Condition</th>
+                      <th>Tied Column φ</th>
+                      <th>Spiral Column φ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Compression-controlled (εₜ ≤ εₜᵧ)</td>
+                      <td>0.65</td>
+                      <td>0.75</td>
+                    </tr>
+                    <tr>
+                      <td>Transition zone</td>
+                      <td>0.65 &rarr; 0.90</td>
+                      <td>0.75 &rarr; 0.90</td>
+                    </tr>
+                    <tr>
+                      <td>Tension-controlled (εₜ ≥ 0.005)</td>
+                      <td>0.90</td>
+                      <td>0.90</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <h4>Nominal Strength Calculation — Interaction Diagram Method (Strain Compatibility)</h4>
+                <ol>
+                  <li>Assume neutral axis depth <code>c</code></li>
+                  <li>Calculate concrete stress block depth: <code>a = β₁ c</code></li>
+                  <li>Determine steel strains: <code>εₛ = 0.003 × (d - c) / c</code></li>
+                  <li>Compute steel stresses: <code>fₛ = Eₛ εₛ</code> (≤ fᵧ)</li>
+                  <li>Sum forces: <code>Pₙ = C꜀ + ΣCₛ - ΣTₛ</code></li>
+                  <li>Sum moments about centroid: <code>Mₙ = Pₙ × e</code></li>
+                </ol>
+
+                <h4>β₁ Factor</h4>
+                <pre><code>β₁ = 0.85 for f'c ≤ 4,000 psi
+β₁ = 0.85 - 0.05(f'c - 4000)/1000  (minimum 0.65)</code></pre>
+
+                <h4>Pure Axial Capacity</h4>
+                <pre><code>P₀ = 0.85 f'c (Aɢ - Aₛₜ) + fᵧ Aₛₜ
+Pₙ,max = 0.80 P₀  (tied)
+Pₙ,max = 0.85 P₀  (spiral)</code></pre>
+
+                <h4>Interaction Check</h4>
+                <p>For every load combination (Pᵤ, Mᵤ), the design point must lie inside the φPₙ–φMₙ curve.</p>
+              </article>
+
+              <!-- Page 4 -->
+              <article id="guide-page-4" class="guide-page-content">
+                <h2>Page 4: Reinforcement Limits (10.6 / Chapter 25)</h2>
+                
+                <h4>Longitudinal Reinforcement</h4>
+                <ul>
+                  <li><strong>Minimum:</strong> Aₛ,min = 0.01 Aɢ (1% of gross area)</li>
+                  <li><strong>Maximum:</strong> Aₛ,max = 0.08 Aɢ (8% of gross area)</li>
+                </ul>
+
+                <h4>Practical Limits</h4>
+                <ul>
+                  <li>≤ 4% when bars are not spliced</li>
+                  <li>6%–8% only with splices and proper concrete placement</li>
+                  <li>Minimum 4 longitudinal bars for rectangular tied columns</li>
+                  <li>Minimum 6 longitudinal bars for circular spiral columns</li>
+                </ul>
+
+                <h4>Bar Spacing &amp; Cover (25.2, 20.5)</h4>
+                <pre><code>sₘᵢₙ = max( 1.0 in., dᵦ, 4/3 dₐɢɢ )</code></pre>
+                <ul>
+                  <li>Interior, not exposed: 1.5 in. cover</li>
+                  <li>Exposed to weather or in contact with ground: 2.0 in.</li>
+                </ul>
+
+                <h4>Bundled Bars (25.6)</h4>
+                <ul>
+                  <li>Permitted if bars are tied, wired, or secured in contact</li>
+                  <li>Bundles of 3 or 4 bars allowed with adequate confinement</li>
+                  <li>Development length increased by 20% for 3-bar, 33% for 4-bar</li>
+                </ul>
+
+                <h4>Development &amp; Splices</h4>
+                <ul>
+                  <li>Development length ℓd per 25.4</li>
+                  <li>Lap splices: Class A (1.0ℓd) or Class B (1.3ℓd) per 25.5.2</li>
+                  <li>Mechanical splices per 25.5.3 (Type 1 or 2)</li>
+                  <li>Welded splices per 25.5.4</li>
+                </ul>
+              </article>
+
+              <!-- Page 5 -->
+              <article id="guide-page-5" class="guide-page-content">
+                <h2>Page 5: Tied Column Detailing (10.7 / 25.7.2)</h2>
+                
+                <h4>Tie Size (25.7.2.2)</h4>
+                <ul>
+                  <li>No. 3 ties for longitudinal bars ≤ No. 10</li>
+                  <li>No. 4 ties for longitudinal bars > No. 10 or bundled bars</li>
+                </ul>
+
+                <h4>Tie Spacing (25.7.2.1)</h4>
+                <pre><code>s ≤ min( 16 dᵦ,  48 dᵦ,ₜᵢₑ,  least column dimension )</code></pre>
+
+                <h4>Tie Arrangement Rules (25.7.2.3)</h4>
+                <ul>
+                  <li>Every corner bar and alternate bar shall have lateral support by a tie corner or seismic hook.</li>
+                  <li>No unsupported bar shall be farther than 6 in. clear from a supported bar.</li>
+                  <li>Ties shall be arranged so that no bar is more than s/2 from a laterally supported bar.</li>
+                  <li>For seismic-force-resisting systems (SDC C–F), use seismic hooks and crossties per Chapter 18.</li>
+                </ul>
+
+                <h4>Vertical Spacing at Floor Levels</h4>
+                <ul>
+                  <li>First tie not more than s/2 above top of footing or slab</li>
+                  <li>Last tie not more than s/2 below lowest reinforcement in supported member</li>
+                  <li>Ties placed vertically as close as practicable to slab soffits</li>
+                  <li>Uniform spacing unless required closer in splice zones</li>
+                </ul>
+              </article>
+
+              <!-- Page 6 -->
+              <article id="guide-page-6" class="guide-page-content">
+                <h2>Page 6: Spiral Column Detailing (10.7 / 25.7.3)</h2>
+                
+                <h4>Spiral Bar Requirements</h4>
+                <ul>
+                  <li>Minimum bar size: No. 3 (3/8 in.) diameter</li>
+                  <li>Spirals shall be continuous, of regular pitch, and properly anchored</li>
+                </ul>
+
+                <h4>Spiral Pitch (Clear Spacing)</h4>
+                <pre><code>1.0 in. ≤ s ≤ 3.0 in.</code></pre>
+
+                <h4>Minimum Volumetric Ratio (25.7.3.3)</h4>
+                <pre><code>ρₛ ≥ 0.45 (Aɢ / A꜀ₕ - 1) (f'c / fᵧₜ)</code></pre>
+                <p>Aɢ = gross area, A꜀ₕ = core area, fᵧₜ = spiral yield</p>
+
+                <h4>Spiral Advantages</h4>
+                <ul>
+                  <li>Higher φ factor: 0.75 vs 0.65 for tied columns</li>
+                  <li>Better confinement increases concrete strength and ductility</li>
+                  <li>Preferred for high seismic zones (SDC D, E, F)</li>
+                  <li>Core remains intact after cover spalls under extreme load</li>
+                </ul>
+
+                <h4>Anchorage &amp; Splices</h4>
+                <ul>
+                  <li>Spirals may be spliced by lapping, welding, or mechanical anchorage</li>
+                  <li>Lap splices: 1.5 turn minimum overlap for deformed wire/bar</li>
+                  <li>Anchorage at ends: 1.5 extra turns at top and bottom</li>
+                </ul>
+              </article>
+
+              <!-- Page 7 -->
+              <article id="guide-page-7" class="guide-page-content">
+                <h2>Page 7: Step-by-Step Design Procedure</h2>
+                
+                <table class="guide-table">
+                  <thead>
+                    <tr>
+                      <th>Step</th>
+                      <th>Title</th>
+                      <th>Key Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>1</td>
+                      <td><strong>Design Data</strong></td>
+                      <td>Establish f'c, fᵧ, column shape, story height, boundary conditions. Determine Pᵤ, Mᵤ, Vᵤ.</td>
+                    </tr>
+                    <tr>
+                      <td>2</td>
+                      <td><strong>Slenderness Check</strong></td>
+                      <td>Compute kℓᵤ/r. If ≤ 22 (nonsway) or ≤ 34+12(M₁/M₂) (braced), neglect. Otherwise, moment magnification or second-order analysis.</td>
+                    </tr>
+                    <tr>
+                      <td>3</td>
+                      <td><strong>Minimum Eccentricity</strong></td>
+                      <td>Calculate M₂,min = Pᵤ(0.6 + 0.03h). Use larger of analysis moment or M₂,min.</td>
+                    </tr>
+                    <tr>
+                      <td>4</td>
+                      <td><strong>Trial Section &amp; Reinforcement</strong></td>
+                      <td>Choose dimensions (b, h) and longitudinal bars. Check 0.01 ≤ ρ ≤ 0.08.</td>
+                    </tr>
+                    <tr>
+                      <td>5</td>
+                      <td><strong>Determine φ Factor</strong></td>
+                      <td>Assume compression-controlled (φ = 0.65 tied, 0.75 spiral). Verify εₜ after calculating nominal strength.</td>
+                    </tr>
+                    <tr>
+                      <td>6</td>
+                      <td><strong>Interaction Diagram</strong></td>
+                      <td>Use strain compatibility: vary c, compute strains, stresses, Pₙ, Mₙ. Plot φPₙ vs φMₙ and verify design point lies inside curve.</td>
+                    </tr>
+                    <tr>
+                      <td>7</td>
+                      <td><strong>Pure Axial Check</strong></td>
+                      <td>Pₙ,max = 0.80P₀ (tied) or 0.85P₀ (spiral). Ensure φPₙ,max ≥ Pᵤ.</td>
+                    </tr>
+                    <tr>
+                      <td>8</td>
+                      <td><strong>Transverse Reinforcement</strong></td>
+                      <td>Ties: size, spacing, arrangement per 25.7.2. Spirals: pitch, ratio ρₛ, anchorage per 25.7.3.</td>
+                    </tr>
+                    <tr>
+                      <td>9</td>
+                      <td><strong>Detailing Checks</strong></td>
+                      <td>Cover, bar spacing, development length, splices (Chapter 25). Seismic detailing per Chapter 18 if applicable.</td>
+                    </tr>
+                    <tr>
+                      <td>10</td>
+                      <td><strong>Construction Documents</strong></td>
+                      <td>Show column size, bar marks, tie/spiral size &amp; spacing, splice locations, and cover.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </article>
+
+              <!-- Page 8 -->
+              <article id="guide-page-8" class="guide-page-content">
+                <h2>Page 8: Worked Example — 18" × 18" Tied Column</h2>
+                
+                <div class="guide-alert">
+                  <p><strong>Given Data</strong><br>
+                  - Column: 18" × 18" (Aɢ = 324 in²)<br>
+                  - f'c = 4,000 psi | fᵧ = 60,000 psi<br>
+                  - Pᵤ = 500 kips | Mᵤ = 250 k-ft<br>
+                  - ℓᵤ = 12 ft | Braced (nonsway), k = 1.0</p>
+                </div>
+
+                <h4>Step 1: Slenderness Check</h4>
+                <pre><code>r = 0.30 × 18 = 5.4 in.
+kℓᵤ / r = 1.0 × 144 / 5.4 = 26.7
+Limit = 34 + 12(0) = 34
+26.7 &lt; 34  →  OK (slenderness neglected)</code></pre>
+
+                <h4>Step 2: Minimum Eccentricity</h4>
+                <pre><code>M₂,min = Pᵤ(0.6 + 0.03h) = 500 × (0.6 + 0.54) = 570 k-in = 47.5 k-ft
+Applied Mᵤ = 250 k-ft &gt; 47.5 k-ft  →  Use Mᵤ = 250 k-ft</code></pre>
+
+                <h4>Step 3: Select Reinforcement</h4>
+                <pre><code>Try 8 No. 8 bars: Aₛₜ = 8 × 0.79 = 6.32 in²
+ρ = 6.32 / 324 = 1.95%  →  1% &lt; 1.95% &lt; 8%  OK</code></pre>
+
+                <h4>Step 4: Pure Axial Capacity (φ = 0.65 assumed)</h4>
+                <pre><code>P₀ = 0.85 × 4 × (324 - 6.32) + 60 × 6.32 = 1,080 + 379 = 1,459 kips
+Pₙ,max = 0.80 × 1,459 = 1,167 kips
+φPₙ,max = 0.65 × 1,167 = 758 kips &gt; Pᵤ = 500 kips  OK</code></pre>
+
+                <h4>Step 5: Interaction Check (Strain Compatibility)</h4>
+                <pre><code>Required Pₙ = Pᵤ / φ = 500 / 0.65 = 769 kips
+Required Mₙ = Mᵤ / φ = 250 / 0.65 = 385 k-ft = 4,620 k-in
+Using c = 10.5 in. (compression-controlled, εₜ &lt; εₜᵧ):
+Pₙ = 1,050 kips,  Mₙ = 520 k-ft
+φPₙ = 683 kips &gt; 500 kips  OK
+φMₙ = 338 k-ft &gt; 250 k-ft  OK</code></pre>
+
+                <h4>Step 6: Tie Design</h4>
+                <pre><code>Tie size: No. 3 (longitudinal bars are No. 8 ≤ No. 10)
+Spacing: min(16×1.0=16", 48×0.375=18", 18") = 16"
+Use No. 3 ties @ 12" o.c. (practical, within limit)
+Arrangement: Square tie supporting all 8 bars</code></pre>
+
+                <h4>Step 7: Detailing Checks</h4>
+                <pre><code>Cover: 1.5" to ties (interior, not exposed)  OK
+Clear spacing: (18 - 2×1.5 - 2×0.375 - 1.0)/2 = 6.6" &gt; 1.0"  OK</code></pre>
+              </article>
+
+              <!-- Page 9 -->
+              <article id="guide-page-9" class="guide-page-content">
+                <h2>Page 9: Interaction Diagram &amp; Design Verification</h2>
+                
+                <p><strong>Column:</strong> 18" × 18" | f'c = 4 ksi | fᵧ = 60 ksi | 8 No. 8 bars</p>
+                <p>The interaction diagram plots φPₙ vs φMₙ. The design point (250 k-ft, 500 k) lies <strong>inside</strong> the curve.</p>
+
+                <h4>Verification Summary</h4>
+                <ul>
+                  <li>φPₙ = 683 kips &gt; Pᵤ = 500 kips <strong>OK</strong></li>
+                  <li>φMₙ = 338 k-ft &gt; Mᵤ = 250 k-ft <strong>OK</strong></li>
+                  <li>φPₙ,max = 758 kips &gt; Pᵤ = 500 kips <strong>OK</strong></li>
+                </ul>
+              </article>
+
+              <!-- Page 10 -->
+              <article id="guide-page-10" class="guide-page-content">
+                <h2>Page 10: References &amp; Key Code Sections</h2>
+                
+                <h4>Primary Chapter 10 Sections</h4>
+                <ul>
+                  <li>10.1 Scope</li>
+                  <li>10.2 General Requirements</li>
+                  <li>10.3 Design Limits</li>
+                  <li>10.4 Required Strength</li>
+                  <li>10.5 Design Strength</li>
+                  <li>10.6 Reinforcement Limits</li>
+                  <li>10.7 Reinforcement Detailing</li>
+                </ul>
+
+                <h4>Referenced Chapters</h4>
+                <ul>
+                  <li>Chapter 5 — Loads &amp; Load Combinations</li>
+                  <li>Chapter 6 — Structural Analysis (slenderness, moment magnification)</li>
+                  <li>Chapter 19 — Concrete Design Properties (f'c, E꜀, β₁)</li>
+                  <li>Chapter 20 — Steel Reinforcement Properties (fᵧ, bar sizes)</li>
+                  <li>Chapter 21 — Strength-Reduction Factors (φ)</li>
+                  <li>Chapter 25 — Reinforcement Details (ties, spirals, splices)</li>
+                  <li>Chapter 18 — Earthquake-Resistant Structures (seismic columns)</li>
+                </ul>
+
+                <h4>Key Notation (Chapter 2)</h4>
+                <ul>
+                  <li><strong>Aɢ:</strong> Gross area of concrete section</li>
+                  <li><strong>Aₛₜ:</strong> Total area of longitudinal reinforcement</li>
+                  <li><strong>Pₙ:</strong> Nominal axial strength</li>
+                  <li><strong>Mₙ:</strong> Nominal moment strength</li>
+                  <li><strong>φ:</strong> Strength-reduction factor</li>
+                  <li><strong>εₜ:</strong> Net tensile strain in extreme tension steel</li>
+                  <li><strong>εₜᵧ:</strong> Compression-controlled strain limit (≈ fᵧ / Eₛ)</li>
+                </ul>
+
+                <h4>Design Aids &amp; Software</h4>
+                <ul>
+                  <li>ACI SP-17(09) — Reinforced Concrete Design Handbook</li>
+                  <li>PCA Notes on ACI 318-19</li>
+                  <li>spColumn (StructurePoint)</li>
+                  <li>PCACOL (PCA)</li>
+                </ul>
+              </article>
+            </main>
           </div>
         </div>
 
@@ -391,6 +1084,52 @@
 
   <script src="js/main.js"></script>
   <script src="js/calculators.js"></script>
+  <script>
+    function switchMainTab(tabName) {
+      const calcBtn = document.getElementById('tab-btn-calculator');
+      const guideBtn = document.getElementById('tab-btn-guide');
+      const calcPanel = document.getElementById('panel-column');
+      const guidePanel = document.getElementById('panel-column-guide');
+
+      if (tabName === 'calculator') {
+        calcBtn.classList.add('active');
+        guideBtn.classList.remove('active');
+        calcPanel.style.display = 'grid';
+        guidePanel.style.display = 'none';
+      } else {
+        calcBtn.classList.remove('active');
+        guideBtn.classList.add('active');
+        calcPanel.style.setProperty('display', 'none', 'important');
+        guidePanel.style.display = 'block';
+      }
+    }
+
+    function showGuidePage(pageNum) {
+      // Hide all pages
+      const pages = document.querySelectorAll('.guide-page-content');
+      pages.forEach(p => p.classList.remove('active'));
+
+      // Deactivate all buttons
+      const buttons = document.querySelectorAll('.guide-nav-btn');
+      buttons.forEach(b => b.classList.remove('active'));
+
+      // Show target page
+      const targetPage = document.getElementById('guide-page-' + pageNum);
+      if (targetPage) targetPage.classList.add('active');
+
+      // Activate target button
+      const targetBtn = document.getElementById('guide-btn-' + pageNum);
+      if (targetBtn) targetBtn.classList.add('active');
+      
+      // Scroll to content top on mobile
+      if (window.innerWidth <= 992) {
+        const contentArea = document.querySelector('.guide-content');
+        if (contentArea) {
+          contentArea.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    }
+  </script>
 
   <!-- LEAD CAPTURE MODAL -->
   <div class="modal-overlay" id="auth-modal">

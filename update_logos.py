@@ -1,7 +1,7 @@
 import os
 import re
 
-directory = r"C:\Users\pc\.gemini\antigravity\scratch\twinanalytic"
+directory = os.path.dirname(os.path.abspath(__file__))
 html_files = [f for f in os.listdir(directory) if f.endswith('.html')]
 
 # We want to match:

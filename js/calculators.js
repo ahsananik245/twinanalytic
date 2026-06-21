@@ -741,6 +741,9 @@ function calculateColumn() {
   const outPnMax = document.getElementById('column-out-pn-max');
   const outPhiPn = document.getElementById('column-out-phi-pn');
   const outDcRatio = document.getElementById('column-out-dc-ratio');
+  const outSlenderness = document.getElementById('column-out-slenderness');
+  const outSlendernessLimit = document.getElementById('column-out-slenderness-limit');
+  const outSlendernessStatus = document.getElementById('column-out-slenderness-status');
   const outConcreteVol = document.getElementById('column-out-concrete-vol');
   const outSteelWeight = document.getElementById('column-out-steel-weight');
   const badge = document.getElementById('column-status-badge');
@@ -762,6 +765,9 @@ function calculateColumn() {
     if (outPnMax) outPnMax.textContent = 'N/A';
     if (outPhiPn) outPhiPn.textContent = 'N/A';
     if (outDcRatio) outDcRatio.textContent = 'N/A';
+    if (outSlenderness) outSlenderness.textContent = 'N/A';
+    if (outSlendernessLimit) outSlendernessLimit.textContent = 'N/A';
+    if (outSlendernessStatus) outSlendernessStatus.textContent = 'N/A';
     if (outConcreteVol) outConcreteVol.textContent = 'N/A';
     if (outSteelWeight) outSteelWeight.textContent = 'N/A';
     
@@ -775,7 +781,7 @@ function calculateColumn() {
   if (errDiv) errDiv.classList.add('hidden');
 
   // 1. Factored Load
-  const Pu = (1.2 * pdl) + (1.6 * pll);
+  const Pu = Math.max(1.4 * pdl, (1.2 * pdl) + (1.6 * pll));
 
   // 2. Concrete Area Sizing
   const phi_axial = type === 'TIED' ? 0.65 : 0.75;
@@ -786,12 +792,18 @@ function calculateColumn() {
   let Dim = 0;
   let Ag = 0;
   if (type === 'TIED') {
-    Dim = Math.max(10, Math.ceil(Math.sqrt(Ag_req)));
+    Dim = Math.max(8, Math.ceil(Math.sqrt(Ag_req)));
     Ag = Dim * Dim;
   } else {
-    Dim = Math.max(10, Math.ceil(Math.sqrt(4 * Ag_req / Math.PI)));
+    Dim = Math.max(8, Math.ceil(Math.sqrt(4 * Ag_req / Math.PI)));
     Ag = Math.PI * Dim * Dim / 4;
   }
+
+  // Slenderness Check (ACI 318-19 Chapter 6)
+  const r = type === 'TIED' ? 0.30 * Dim : 0.25 * Dim;
+  const slenderness = (1.0 * colHeight * 12) / r;
+  const slendernessLimit = (mux > 0 || muy > 0) ? 34.0 : 22.0;
+  const slendernessStatus = slenderness <= slendernessLimit ? "OK" : "Slender (Magnify)";
 
   // 3. Required Steel Area (Ast)
   const Ast_axial_req = (Pu / (phi_axial * alpha) - 0.85 * fc * Ag) / (fy - 0.85 * fc);
@@ -832,6 +844,11 @@ function calculateColumn() {
 
   const Ast_actual = N_bars * Ab;
   const p_actual = Ast_actual / Ag;
+
+  // Main bars larger than No. 10 require at least No. 4 ties (ACI 318-19 25.7.2.2)
+  const mainBarNum = parseInt(mainBarSize.replace('#', ''), 10);
+  const tieBarNum = parseInt(tieBarSize.replace('#', ''), 10);
+  const tieSizeWarning = (mainBarNum > 10 && tieBarNum < 4);
 
   // 6. Bar Coordinates
   const d_prime = cover + d_tie + mainBarDia / 2;
@@ -984,8 +1001,12 @@ function calculateColumn() {
     return { Pn, Mn, phi, epsilon_t };
   }
 
-  const e_x = muy * 12 / Pu; // eccentricity along x due to Muy
-  const e_y = mux * 12 / Pu; // eccentricity along y due to Mux
+  const e_min = 0.6 + 0.03 * Dim; // ACI 318-19 6.6.4.5.4 minimum eccentricity (in.)
+  let e_x = muy * 12 / Pu; // eccentricity along x due to Muy
+  let e_y = mux * 12 / Pu; // eccentricity along y due to Mux
+
+  if (muy > 0 && e_x < e_min) e_x = e_min;
+  if (mux > 0 && e_y < e_min) e_y = e_min;
 
   let Pn = 0, phi = phi_axial, PhiPn = 0, dcRatio = 0;
 
@@ -1055,6 +1076,7 @@ function calculateColumn() {
 
   // 10. Detailing Spacing & Pitch
   let s_final = 0;
+  let spiralFeasibilityWarning = false;
   let governingSpacingText = "";
   const hookExtension = Math.max(3.0, 6 * d_tie);
 
@@ -1080,6 +1102,10 @@ function calculateColumn() {
     const s_max_limit = 3.0 + d_tie;
     const s_spiral = Math.max(s_min_limit, Math.min(s_max_limit, s_spiral_req));
     governingSpacingText = "Spacing governed by Spiral Ratio (ACI 25.7.3.3)";
+
+    if (s_spiral_req < s_min_limit) {
+      spiralFeasibilityWarning = true;
+    }
 
     s_final = Math.min(s_shear, s_spiral);
     if (s_shear < s_spiral && (shearCase === 'B' || shearCase === 'C')) {
@@ -1131,6 +1157,16 @@ function calculateColumn() {
     hasFailures = true;
     warningMessage += `FAIL: Column is overstressed! (D/C Ratio of ${dcRatio.toFixed(2)} > 1.00). `;
   }
+  if (slenderness > slendernessLimit) {
+    warningMessage += `WARNING: Column is slender (kl/r = ${slenderness.toFixed(1)} > ${slendernessLimit}). Moment magnification or second-order analysis is required per ACI 318-19 Chapter 6. `;
+  }
+  if (tieSizeWarning) {
+    warningMessage += `WARNING: ACI 318-19 25.7.2.2 requires at least No. 4 ties for main longitudinal bars larger than No. 10. `;
+  }
+  if (type === 'SPIRAL' && spiralFeasibilityWarning) {
+    hasFailures = true;
+    warningMessage += `FAIL: Spiral volumetric ratio cannot be satisfied within concrete aggregate spacing limits. Increase column diameter or spiral bar size! `;
+  }
   if (!isSpacingOk) {
     warningMessage += "WARNING: Clear spacing too narrow for aggregate flow. ";
   }
@@ -1159,6 +1195,12 @@ function calculateColumn() {
   if (outPnMax) outPnMax.textContent = `${(Pn / alpha).toFixed(1)} k`;
   if (outPhiPn) outPhiPn.textContent = `${PhiPn.toFixed(1)} k`;
   if (outDcRatio) outDcRatio.textContent = `${dcRatio.toFixed(2)}`;
+  if (outSlenderness) outSlenderness.textContent = slenderness.toFixed(2);
+  if (outSlendernessLimit) outSlendernessLimit.textContent = slendernessLimit.toFixed(2);
+  if (outSlendernessStatus) {
+    outSlendernessStatus.textContent = slendernessStatus;
+    outSlendernessStatus.style.color = slenderness <= slendernessLimit ? '#52c41a' : '#f5222d';
+  }
   if (outConcreteVol) outConcreteVol.textContent = `${concreteVol.toFixed(2)} m³`;
   if (outSteelWeight) outSteelWeight.textContent = `${steelWeight.toFixed(1)} kg`;
 
@@ -3508,7 +3550,7 @@ function downloadSlabPDF() {
 // ==========================================
 function downloadColumnPDF() {
   let axialDcr = 0.0;
-  const code = document.getElementById('column-code').value || 'ACI 318-14';
+  const code = document.getElementById('column-code').value || 'ACI 318-19';
   const type = document.getElementById('column-type').value; // 'TIED' or 'SPIRAL'
   const pdl = parseFloat(document.getElementById('column-pdl').value) || 0;
   const pll = parseFloat(document.getElementById('column-pll').value) || 0;
@@ -4151,14 +4193,14 @@ function downloadColumnPDF() {
   doc.line(0.5, cy + 0.22, 8.0, cy + 0.22);
   cy += 0.22;
 
-  const isACI = code === 'ACI 318-14';
-  const ref_fc = isACI ? 'ACI 318-14 §26.4' : 'BNBC 2020 Part 6 Ch 5';
-  const ref_fy = isACI ? 'ACI 318-14 §20.2' : 'BNBC 2020 Part 6 Ch 5';
-  const ref_es = isACI ? 'ACI 318-14 §20.2.2' : 'BNBC 2020 Part 6 Ch 6';
-  const ref_ecu = isACI ? 'ACI 318-14 §22.2' : 'BNBC 2020 Part 6 Ch 6';
-  const ref_beta1 = isACI ? 'ACI 318-14 §22.2.2.4.3' : 'BNBC 2020 Part 6 Ch 6';
-  const ref_phi = isACI ? 'ACI 318-14 §21.2' : 'BNBC 2020 Part 6 Ch 6';
-  const ref_alpha = isACI ? 'ACI 318-14 §22.4' : 'BNBC 2020 Part 6 Ch 6';
+  const isACI = code.startsWith('ACI 318');
+  const ref_fc = isACI ? `${code} §26.4` : 'BNBC 2020 Part 6 Ch 5';
+  const ref_fy = isACI ? `${code} §20.2` : 'BNBC 2020 Part 6 Ch 5';
+  const ref_es = isACI ? `${code} §20.2.2` : 'BNBC 2020 Part 6 Ch 6';
+  const ref_ecu = isACI ? `${code} §22.2` : 'BNBC 2020 Part 6 Ch 6';
+  const ref_beta1 = isACI ? `${code} §22.2.2.4.3` : 'BNBC 2020 Part 6 Ch 6';
+  const ref_phi = isACI ? `${code} §21.2` : 'BNBC 2020 Part 6 Ch 6';
+  const ref_alpha = isACI ? `${code} §22.4` : 'BNBC 2020 Part 6 Ch 6';
 
   const section4Rows = [
     ['fc\' (concrete compressive strength)', `${fc.toFixed(2)} ksi`, ref_fc],
@@ -5038,7 +5080,7 @@ function downloadColumnPDF() {
     cy += 0.16;
     doc.text(`Column is SLENDER — moment magnification applied`, 0.6, cy);
     cy += 0.16;
-    doc.text(`per ACI 318-14 Section 6.6. delta_ns = ${delta_ns.toFixed(3)}`, 0.6, cy);
+    doc.text(`per ${code} Section 6.6. delta_ns = ${delta_ns.toFixed(3)}`, 0.6, cy);
     cy += 0.25;
   } else {
     delta_ns = 1.0;
@@ -5056,7 +5098,7 @@ function downloadColumnPDF() {
   doc.setFont('times', 'bold');
   doc.setFontSize(11);
   doc.setTextColor(201, 168, 76);
-  doc.text('12.4 Minimum Eccentricity Check (ACI 318-14 §6.6.4.5):', 0.5, cy);
+  doc.text(`12.4 Minimum Eccentricity Check (${code} §6.6.4.5):`, 0.5, cy);
   cy += 0.16;
 
   doc.setFont('helvetica', 'normal');
@@ -5092,7 +5134,7 @@ function downloadColumnPDF() {
   const Mu_total = Math.sqrt(mux * mux + muy * muy);
   if (Mu_total === 0) {
     doc.setFont('helvetica', 'normal');
-    doc.text('No applied moment. ACI 318-14 minimum eccentricity governs.', 0.6, cy);
+    doc.text(`No applied moment. ${code} minimum eccentricity governs.`, 0.6, cy);
     cy += 0.15;
     doc.setFont('helvetica', 'bold');
     doc.text(`Design moment = M_min = ${M_min.toFixed(2)} kip-ft`, 0.6, cy);
@@ -5134,7 +5176,7 @@ function downloadColumnPDF() {
   doc.setFont('times', 'bold');
   doc.setFontSize(11);
   doc.setTextColor(201, 168, 76);
-  doc.text('12.5 Moment Magnification Factor Derivation (ACI 318-14 Section 6.6):', 0.5, cy);
+  doc.text(`12.5 Moment Magnification Factor Derivation (${code} Section 6.6):`, 0.5, cy);
   cy += 0.16;
 
   doc.setFont('helvetica', 'normal');
@@ -5535,7 +5577,7 @@ function downloadColumnPDF() {
   cy += 0.10;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
-  doc.text(`* Clear cover to ties: 1.5 in (ACI 318-14 §20.6.1)`, 0.6, cy);
+  doc.text(`* Clear cover to ties: 1.5 in (${code} §20.6.1)`, 0.6, cy);
   cy += 0.14;
   doc.text(`* Minimum bar clear spacing: max(1.5 db, 1.5 in) = ${minAllowedSpacing.toFixed(2)} in`, 0.6, cy);
   cy += 0.14;
@@ -5876,19 +5918,19 @@ function downloadColumnPDF() {
   doc.setFontSize(8);
   doc.setTextColor(80, 80, 80);
 
-  const isA = code === 'ACI 318-14';
+  const isA = code.startsWith('ACI 318');
   const refs_list = isA ? [
-    '- ACI 318-14 §4.3.2 — Design loads and combinations',
-    '- ACI 318-14 §20.2 — Steel material properties',
-    '- ACI 318-14 §20.6.1 — Concrete cover requirements',
-    '- ACI 318-14 §21.2 — Strength reduction factors (phi)',
-    '- ACI 318-14 §22.2 — Assumptions for flexure and axial',
-    '- ACI 318-14 §22.4 — Axial strength: tied and spiral columns',
-    '- ACI 318-14 §22.5 — One-way shear strength',
-    '- ACI 318-14 §25.7.2 — Ties in compression members',
-    '- ACI 318-14 §25.7.3 — Spiral reinforcement',
-    '- ACI 318-14 §6.2.5 — Slenderness effects: moment magnification',
-    '- ACI 318-14 §26.4 — Specified concrete strength'
+    `- ${code} §4.3.2 — Design loads and combinations`,
+    `- ${code} §20.2 — Steel material properties`,
+    `- ${code} §20.6.1 — Concrete cover requirements`,
+    `- ${code} §21.2 — Strength reduction factors (phi)`,
+    `- ${code} §22.2 — Assumptions for flexure and axial`,
+    `- ${code} §22.4 — Axial strength: tied and spiral columns`,
+    `- ${code} §22.5 — One-way shear strength`,
+    `- ${code} §25.7.2 — Ties in compression members`,
+    `- ${code} §25.7.3 — Spiral reinforcement`,
+    `- ${code} §6.2.5 — Slenderness effects: moment magnification`,
+    `- ${code} §26.4 — Specified concrete strength`
   ] : [
     '- BNBC 2020 Part 6 Ch 6 — Design loads and combinations',
     '- BNBC 2020 Part 6 Ch 5 — Concrete and steel material properties',
