@@ -5323,7 +5323,7 @@ function downloadColumnPDF() {
   const term3 = As_each_face * fy * (d_eff_min - Dim / 2);
   const Mn_equilibrium_in = term1 + term2 + term3;
   const Mn_equilibrium_ft = Mn_equilibrium_in / 12;
-  const phiMn_equilibrium_ft = 0.9 * Mn_equilibrium_ft;
+  const phiMn_equilibrium_ft = phi_axial * Mn_equilibrium_ft;
 
   checkPageBreak(doc, 2.5);
   doc.setFont('times', 'bold');
@@ -5410,12 +5410,12 @@ function downloadColumnPDF() {
   doc.setFont('helvetica', 'normal');
   doc.text(`Formula:`, 0.6, cy);
   doc.setFont('courier', 'normal');
-  doc.text(`phi * Mn = 0.9 * Mn`, 2.0, cy);
+  doc.text(`phi * Mn = ${phi_axial} * Mn`, 2.0, cy);
   cy += 0.15;
   doc.setFont('helvetica', 'normal');
   doc.text(`Substitution:`, 0.6, cy);
   doc.setFont('courier', 'normal');
-  doc.text(`phi * Mn = 0.9 * ${Mn_equilibrium_ft.toFixed(2)}`, 2.0, cy);
+  doc.text(`phi * Mn = ${phi_axial} * ${Mn_equilibrium_ft.toFixed(2)}`, 2.0, cy);
   cy += 0.15;
   doc.setFont('helvetica', 'bold');
   doc.text(`phi * Mn = ${phiMn_equilibrium_ft.toFixed(2)} kip-ft`, 2.0, cy);
