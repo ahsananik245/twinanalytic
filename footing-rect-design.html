@@ -6,8 +6,8 @@
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Free RC Single Footing Design (Square) per ACI 318 / BNBC 2020</title>
-  <meta name="description" content="Free online structural engineering check for isolated square footing with live SVG drawings.">
+  <title>Free RC Rectangular Footing Design (Square) per ACI 318 / BNBC 2020</title>
+  <meta name="description" content="Free online structural engineering check for isolated rectangular footing with live SVG drawings.">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- jsPDF & html2pdf Library -->
@@ -821,7 +821,7 @@
     <div class="container">
       <header class="page-title-section">
         <p>Interactive Analysis Suite</p>
-        <h1>Single Square Footing Design Calculator</h1>
+        <h1>Rectangular Footing Design Calculator</h1>
       </header>
 
       <div class="beam-workspace-grid">
@@ -855,8 +855,11 @@
               <div class="input-field"><label>Live Load LL (kips)</label><input type="number" id="footing-ll" value="80" min="0" step="5"></div>
               <div class="input-field" style="grid-column: 1 / -1;"><label>Surcharge/Fill (ft)</label><input type="number" id="footing-surcharge" value="5" min="0" max="20" step="0.5"></div>
             </div>
-            <div class="form-group-title">Footing Geometry &amp; Rebar</div>
+            
+            <div class="form-group-title">Footing Geometry & Rebar</div>
             <div class="input-grid">
+              <div class="input-field"><label>Trial Length L (ft)</label><input type="number" id="footing-rect-l" value="11" min="2" max="60" step="0.25"></div>
+              <div class="input-field"><label>Trial Width B (ft)</label><input type="number" id="footing-rect-b" value="8" min="2" max="60" step="0.25"></div>
               <div class="input-field"><label>Clear Cover (inch)</label><input type="number" id="footing-cover" value="3" min="2" max="4" step="0.5"></div>
               <div class="input-field"><label>Trial Thickness d (inch)</label><input type="number" id="footing-d" value="12" min="6" max="60" step="1"></div>
               <div class="input-field">
@@ -868,7 +871,8 @@
                 <select id="footing-rebar-s"><option value="12">12 mm</option><option value="16" selected>16 mm</option><option value="20">20 mm</option><option value="25">25 mm</option></select>
               </div>
             </div>
-            <button type="button" class="btn btn-gold btn-calc" onclick="calculateFooting()" id="btn-calc-footing" style="width:100%; margin-top:2rem;">
+
+            <button type="button" class="btn btn-gold btn-calc" onclick="calculateRectFooting()" id="btn-calc-footing-rect" style="width:100%; margin-top:2rem;">
               <i class="fa-solid fa-calculator"></i> Run Design Check
             </button>
           </form>
@@ -1014,7 +1018,7 @@
         <div class="footer-col">
           <h3>Interactive</h3>
           <ul class="footer-links">
-            <li><a href="footing-design.html">Free Single Footing Design Calculator</a></li>
+            <li><a href="footing-design.html">Free Rectangular Footing Design Calculator</a></li>
             <li><a href="column-design.html">Free Column Design Calculator</a></li>
             <li><a href="slab-design.html">Free Slab Spans Calculator</a></li>
           </ul>
@@ -1066,7 +1070,7 @@
       // Calculate Button
       document.getElementById('btn-calculate').addEventListener('click', (e) => {
         e.preventDefault();
-        checkAuthAndRun(runAnalysis, 'Single Footing Design');
+        checkAuthAndRun(runAnalysis, 'Rectangular Footing Design');
       });
 
       // Reset Button
@@ -1820,7 +1824,7 @@
                 <i class="fa-solid fa-lock"></i>
                 <h4>Calculation Locked</h4>
                 <p>Please enter your name, email, and country to unlock all calculators and download reports.</p>
-                <button class="btn btn-gold btn-sm" onclick="document.getElementById('btn-calculate')?.click() || checkAuthAndRun(null, 'Single Footing Design')">Unlock Now</button>
+                <button class="btn btn-gold btn-sm" onclick="document.getElementById('btn-calculate')?.click() || checkAuthAndRun(null, 'Rectangular Footing Design')">Unlock Now</button>
               </div>
             `;
             colMid.appendChild(overlay);
@@ -3126,7 +3130,7 @@ ${detailTable}
       }
 
       // Save PDF
-      doc.save(`twinanalytic_footing_report_${new Date().toISOString().split('T')[0]}.pdf`);
+      doc.save(`twinanalytic_footing_rect_report_${new Date().toISOString().split('T')[0]}.pdf`);
 
       if (btn) {
         btn.innerHTML = originalText;
@@ -3333,7 +3337,7 @@ ${detailTable}
 
   <script src="js/main.js"></script>
   <script src="js/calculators.js"></script>
-  <script src="js/footing-design.js"></script>
+  <script src="js/footing-rect-design.js"></script>
 
   <!-- REPORT PREVIEW MODAL -->
   <div class="report-modal-overlay" id="report-modal">
@@ -3376,6 +3380,6 @@ ${detailTable}
       </form>
     </div>
   </div>
-<script src="js/footing-pdf.js"></script>
+<script src="js/footing-rect-pdf.js"></script>
 </body>
 </html>

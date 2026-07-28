@@ -1,0 +1,10 @@
+Row 14: B14: qLearnify
+Row 17: C17: qLearnify is an educational platform dedicated to the professional development of engineers and architects. | E17: Website:
+Row 18: C18: https://qlearnify.com/ | E18: Facebook:
+Row 19: C19: https://www.facebook.com/qlearnify | E19: Youtube (Bangla):
+Row 20: C20: https://www.youtube.com/@qlearnify-bn | E20: Youtube (English):
+Row 21: C21: https://www.youtube.com/@qlearnify-en | E21: WhatsApp:
+Row 22: C22: https://wa.me/8801511250108 | E22: LinkedIn:
+Row 24: B24: https://www.linkedin.com/company/qlearnify/
+Row 34: A34: Note: This Excel sheet has been created for educational purposes; please validate it according to your own standards before using it for professional work. | B34: Bangla:
+Row 36: A36: https://youtube.com/playlist?list=PLxle8F-wJI7P43K0GljphED4I5TRXu6Zx&si=el-Lrxm5mB1Vmgcf | B36: English:

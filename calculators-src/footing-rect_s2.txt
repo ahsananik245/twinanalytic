@@ -1,0 +1,56 @@
+Row 1: A1: This is the product of 
+Row 2: A2: By Engr Hedaetullah & Nj Disha
+Row 3: A3: www.ceta-ac.com
+Row 5: B5: Materials Properties:
+Row 6: C6: Given data(PSI) | D6: Converted Data | E6: Main Data
+Row 7: D7: FORMULA: 0.4*E10 | E7: FORMULA: IF(C7>0,C7,IF(D7>0,D7)) | F7: psi
+Row 8: D8: FORMULA: 0.45*E9 | E8: FORMULA: IF(C8>0,C8,IF(D8>0,D8)) | F8: psi
+Row 9: D9: f'c = | E9: 3000 | F9: psi
+Row 10: D10: fy =  | E10: 72500 | F10: psi
+Row 11: B11: Dead Load (DL)= | E11: 107 | F11: Kips
+Row 12: B12: Live Load (LL)= | E12: 31 | F12: Kips | V12: FORMULA: CONCATENATE(E18,"mm"," ","Ø"," ","@",E51," ","c/c")
+Row 13: B13: Allowable Soil Pressure (BC), Qa= | E13: 2.35 | F13: Ksf | V13: FORMULA: CONCATENATE(E19,"mm"," ","Ø"," ","@",E58," ","c/c")
+Row 14: B14: Depth of the Footing Base Form EGL, H= | E14: 5 | F14: ft
+Row 15: B15: Column Size, C1 = | E15: 15 | F15: in | K15: Main Bar Area= | L15: FORMULA: _xlfn.CEILING.MATH(E20+E21+(E18/25.4),0.25)
+Row 16: B16: Column Size, C2 = | E16: 12 | F16: in | K16: Distributed Bar=  | L16: FORMULA: (PI()/4)*(E19/8)^2
+Row 17: B17: Average  Unit Weight (Concrete+Soil) qe= | E17: 125 | F17: psf
+Row 18: B18: Long Dir Bar= | E18: 16 | F18: mm Ø
+Row 19: B19: Short Dir Ba= | E19: 16 | F19: mm Ø
+Row 20: B20: Trail Effective Thickness/Depth, d = | E20: 10.75 | F20: in
+Row 21: B21: Bottom Clear Cover ,C/C = | E21: 3 | F21: in
+Row 22: B22: Trial Length, L= | E22: 10 | F22: ft | G22: Approximate B
+Row 23: B23: Trial width, B= | E23: 8 | F23: ft | G23: FORMULA: E29/E22
+Row 24: D24: (Long) a= | E24: 0.65 | F24: Approximate a= | H24: FORMULA: E47*E10/(0.85*E9*E23*12)
+Row 25: D25: (Short) a= | E25: 0.69 | F25: Approximate a= | H25: FORMULA: E54*E10/(0.85*E9*E22*12)
+Row 27: B27: Pressure of Maretials at the base of the footing= | E27: FORMULA: E14*E17 | F27: psf
+Row 28: B28: Available B.C. to Carry the Column Service Load | E28: FORMULA: E13*1000-E27 | F28: psf
+Row 29: B29: Required Footing Area, A req= | E29: FORMULA: (E11+E12)*1000/E28 | F29: sqft
+Row 30: B30: Furnishing Footing Area= | E30: FORMULA: E22*E23 | F30: sqft
+Row 31: B31: Upward Pressure by factor Column load = | E31: FORMULA: (1.2*E11+1.6*E12)/(E22*E23) | F31: Ksf
+Row 32: B32: Length of the critical perimeter, bo= | E32: FORMULA: ((E15+E20)*2)+((E16+E20)*2) | F32: in
+Row 33: B33: Punching Shear Check | E33: FORMULA: IF(E36>E34,"Satisfied","Not Satisfied")
+Row 34: B34: Shear Force acting on this perimeter, Vu1= | E34: FORMULA: E31*((E22*E23)-(((E15+E20)/12)*((E16+E20)/12))) | F34: Kips
+Row 35: B35: Nominal Shear, Vc= | E35: FORMULA: 4*SQRT(E9)*E32*E20/1000 | F35: Kips
+Row 36: B36: Vu= | E36: FORMULA: 0.75*E35 | F36: Kips
+Row 37: B37: One Way - Beam Shear Check (For L Dir) | E37: FORMULA: IF(E40>E38,"Satisfied","Not Satisfied")
+Row 38: B38: Shear Force acting on this perimeter, Vu2= | E38: FORMULA: E31*H38*E23 | F38: Kips | G38: for L Dir | H38: FORMULA: E22-((E22/2)+(E15/(2*12))+E20/12)
+Row 39: B39: Nominal Shear, Vc= | E39: FORMULA: 2*SQRT(E9)*E23*12*E20/1000 | F39: Kips | G39: for B Dir | H39: FORMULA: E23-((E23/2)+(E16/(2*12))+E20/12)
+Row 40: B40: Vu= | E40: FORMULA: 0.75*E39 | F40: Kips
+Row 41: B41: One Way - Beam Shear Check (For B Dir) | E41: FORMULA: IF(E44>E42,"Satisfied","Not Satisfied")
+Row 42: B42: Shear Force acting on this perimeter, Vu2= | E42: FORMULA: E31*H39*E22 | F42: Kips
+Row 43: B43: Nominal Shear, Vc= | E43: FORMULA: 2*SQRT(E9)*E22*12*E20/1000 | F43: Kips
+Row 44: B44: Vu= | E44: FORMULA: 0.75*E43 | F44: Kips
+Row 45: B45: Moment & Rebar Calculation (For Long)
+Row 46: B46: Bending Moment Mu= | E46: FORMULA: E31*E23*H46*H46*12/2 | F46: Kips-in | G46: M_L= | H46: FORMULA: (E22/2)-(E15/(2*12))
+Row 47: B47: As= | E47: FORMULA: E46*1000/(0.9*E10*(E20-(E24/2))) | F47: in^2
+Row 48: B48: As (min)= | E48: FORMULA: 3*SQRT(E9)*E23*12*E20/E10 | F48: in^2
+Row 49: B49: Not less than, As (min)= | E49: FORMULA: 200*E23*12*E20/E10 | F49: in^2
+Row 50: B50: Controlling Value of Rebar, As = | E50: FORMULA: MAX(E47:E49) | F50: in^2
+Row 51: B51: Specing Calucation Sp= | E51: FORMULA: _xlfn.FLOOR.MATH((((E23*12)-(E21*2))/((E50/((3.1416/4)*(E18/25.4)^2))-1)),0.25) | F51: in c/c | J51: FORMULA: PI()/4 | K51: 0.78539816339744828
+Row 52: B52: Moment & Rebar Calculation (For Short)
+Row 53: B53: Bending Moment Mu= | E53: FORMULA: E31*E22*H53*H53*12/2 | F53: Kips-in | G53: M_B= | H53: FORMULA: (E23/2)-(E16/(2*12))
+Row 54: B54: As= | E54: FORMULA: E53*1000/(0.9*E10*(E20-(E25/2))) | F54: in^2
+Row 55: B55: As (min)= | E55: FORMULA: 3*SQRT(E9)*E22*12*E20/E10 | F55: in^2
+Row 56: B56: Not less than, As (min)= | E56: FORMULA: 200*E22*12*E20/E10 | F56: in^2
+Row 57: B57: Controlling Value of Rebar, As = | E57: FORMULA: MAX(E54:E56) | F57: in^2
+Row 58: B58: Specing Calucation Sp= | E58: FORMULA: _xlfn.FLOOR.MATH((((E22*12)-(E21*2))/((E57/((3.1416/4)*(E19/25.4)^2))-1)),0.25) | F58: in c/c
