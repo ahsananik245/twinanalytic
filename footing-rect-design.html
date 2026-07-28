@@ -1694,7 +1694,7 @@
     let pendingType = '';
 
     function checkAuthAndRun(callback, calcType) {
-      const unlocked = localStorage.getItem('tools_user_unlocked') === 'true';
+      const unlocked = window.isUnlockedSession || (function(){ try { return localStorage.getItem('tools_user_unlocked') === 'true'; } catch(e) { return false; } })();
       if (unlocked) {
         callback();
       } else {
@@ -1753,6 +1753,7 @@
         }
         
         try { localStorage.setItem('tools_user_unlocked', 'true'); } catch(e){}
+        window.isUnlockedSession = true;
         
         try {
           updateLockUI();
@@ -1811,7 +1812,7 @@
     }
 
     function updateLockUI() {
-      const unlocked = localStorage.getItem('tools_user_unlocked') === 'true';
+      const unlocked = window.isUnlockedSession || (function(){ try { return localStorage.getItem('tools_user_unlocked') === 'true'; } catch(e) { return false; } })();
       const colMid = document.querySelector('.col-middle');
       const colRight = document.querySelector('.col-right');
       

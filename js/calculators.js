@@ -113,7 +113,7 @@ function initCalculators() {
 
 // Check if user is already authorized; if not, prompt modal form
 function checkAuthAndRun(callback, calcType) {
-  const unlocked = localStorage.getItem('tools_user_unlocked') === 'true';
+  const unlocked = window.isUnlockedSession || (function(){ try { return localStorage.getItem('tools_user_unlocked') === 'true'; } catch(e) { return false; } })();
   if (unlocked) {
     if (callback) callback();
   } else {
@@ -134,7 +134,7 @@ function openAuthModal(callback, calcType) {
 
 // Update lock blur and lock overlay UI based on authorization state
 function updateLockUI() {
-  const unlocked = localStorage.getItem('tools_user_unlocked') === 'true';
+  const unlocked = window.isUnlockedSession || (function(){ try { return localStorage.getItem('tools_user_unlocked') === 'true'; } catch(e) { return false; } })();
   const colOutputs = document.querySelectorAll('.tool-outputs-card');
   
   colOutputs.forEach(colOutput => {
@@ -181,7 +181,7 @@ function updateLockUI() {
 }
 
 function triggerUnlockFlow() {
-  const calcBtn = document.querySelector('.btn-calc');
+  const calcBtn = document.querySelector('.btn-calc') || document.getElementById('btn-calculate');
   if (calcBtn) {
     calcBtn.click();
   } else {
@@ -432,6 +432,7 @@ function handleAuthSubmit(event) {
         }
         
         try { localStorage.setItem('tools_user_unlocked', 'true'); } catch(e){}
+        window.isUnlockedSession = true;
         
         try {
           updateLockUI();
