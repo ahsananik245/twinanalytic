@@ -1744,20 +1744,34 @@
       };
 
       const completeUnlock = () => {
-        let leads = JSON.parse(localStorage.getItem('tools_leads') || '[]');
-        leads.push({ ...payload, timestamp });
-        localStorage.setItem('tools_leads', JSON.stringify(leads));
-        localStorage.setItem('tools_user_unlocked', 'true');
-        updateLockUI();
+        try {
+          let leads = JSON.parse(localStorage.getItem('tools_leads') || '[]');
+          leads.push({ ...payload, timestamp });
+          try { localStorage.setItem('tools_leads', JSON.stringify(leads)); } catch(e){}
+        } catch (e) {
+          console.warn("Storage sync skipped", e);
+        }
+        
+        try { localStorage.setItem('tools_user_unlocked', 'true'); } catch(e){}
+        
+        try {
+          updateLockUI();
+          const modal = document.getElementById('auth-modal');
+          if (modal) modal.classList.remove('active');
+        } catch(e) {}
 
-        const modal = document.getElementById('auth-modal');
-        if (modal) modal.classList.remove('active');
+        if (pendingCallback) {
+            try { pendingCallback(); } catch(e) {}
+        } else {
+            const btn = document.querySelector('.btn-calc') || document.getElementById('btn-calculate');
+            if (btn) btn.click();
+        }
 
-        if (pendingCallback) pendingCallback();
-
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalBtnText;
-        event.target.reset();
+        try {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnText;
+          event.target.reset();
+        } catch(e) {}
       };
 
       if (!GOOGLE_SCRIPT_URL) {

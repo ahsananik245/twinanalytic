@@ -423,35 +423,35 @@ function handleAuthSubmit(event) {
   };
 
   const completeUnlock = () => {
-    // Save entry in leads array locally
-    let leads = JSON.parse(localStorage.getItem('tools_leads') || '[]');
-    leads.push({
-      ...payload,
-      timestamp: timestamp
-    });
-    localStorage.setItem('tools_leads', JSON.stringify(leads));
-    localStorage.setItem('tools_user_unlocked', 'true');
+        try {
+          let leads = JSON.parse(localStorage.getItem('tools_leads') || '[]');
+          leads.push({ ...payload, timestamp });
+          try { localStorage.setItem('tools_leads', JSON.stringify(leads)); } catch(e){}
+        } catch (e) {
+          console.warn("Storage sync skipped", e);
+        }
+        
+        try { localStorage.setItem('tools_user_unlocked', 'true'); } catch(e){}
+        
+        try {
+          updateLockUI();
+          const modal = document.getElementById('auth-modal');
+          if (modal) modal.classList.remove('active');
+        } catch(e) {}
 
-    // Close modal
-    const modal = document.getElementById('auth-modal');
-    if (modal) {
-      modal.classList.remove('active');
-    }
+        if (pendingCallback) {
+            try { pendingCallback(); } catch(e) {}
+        } else {
+            const btn = document.querySelector('.btn-calc') || document.getElementById('btn-calculate');
+            if (btn) btn.click();
+        }
 
-    // Update lead indicators
-    updateLeadsCount();
-    updateLockUI();
-
-    // Run the blocked calculator callback (runs calculation or downloads PDF)
-    if (pendingCallback) {
-      pendingCallback();
-    }
-
-    // Reset button and form inputs
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = originalBtnText;
-    event.target.reset();
-  };
+        try {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnText;
+          event.target.reset();
+        } catch(e) {}
+      };
 
   // 4. API Posting block
   const googleScriptUrl = GOOGLE_SCRIPT_URL;
