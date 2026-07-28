@@ -181,15 +181,13 @@ function updateLockUI() {
 }
 
 function triggerUnlockFlow() {
-  const btnCol = document.getElementById('btn-calc-column');
-  const btnSlab = document.getElementById('btn-calc-slab');
-  if (btnCol) {
-    btnCol.click();
-  } else if (btnSlab) {
-    btnSlab.click();
+  const calcBtn = document.querySelector('.btn-calc');
+  if (calcBtn) {
+    calcBtn.click();
   } else {
     openAuthModal(null, 'Calculator Unlock');
   }
+
 }
 
 // Internal calculation engine to compute metrics before sending to database
