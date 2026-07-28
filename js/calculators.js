@@ -377,82 +377,109 @@ function calculateMetricsInternally(calcType) {
 function handleAuthSubmit(event) {
   event.preventDefault();
 
-  const completeUnlock = () => {
-    try {
-        localStorage.setItem('tools_user_unlocked', 'true');
-        const modal = document.getElementById('auth-modal');
-        if (modal) modal.classList.remove('active');
-        
-        if (typeof updateLockUI === 'function') updateLockUI();
-        
-        if (pendingCallback) {
-          pendingCallback();
-        } else {
-           // Fallback trigger if callback lost
-           const calcBtn = document.querySelector('.btn-calc');
-           if (calcBtn) calcBtn.click();
-        }
-        if(event && event.target) {
-           const submitBtn = event.target.querySelector('button[type="submit"]');
-           if (submitBtn) {
-             submitBtn.disabled = false;
-             submitBtn.innerHTML = 'Unlock Calculators';
-           }
-           event.target.reset();
-        }
-    } catch(e) {
-        console.error("Unlock fallback error", e);
-        // Absolute nuclear fallback
-        localStorage.setItem('tools_user_unlocked', 'true');
-        document.querySelectorAll('.lock-overlay').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.lock-blur-wrapper').forEach(el => el.classList.remove('locked-blur'));
-    }
+  const name = document.getElementById('lead-name').value.trim();
+  const country = document.getElementById('lead-country').value.trim();
+  const email = document.getElementById('lead-email').value.trim();
+  const timestamp = new Date().toLocaleString();
+
+  // 1. Client-side Validation
+  if (!name) {
+    alert("Please enter your full name.");
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    alert("Please enter a valid business email address.");
+    return;
+  }
+
+  if (!country) {
+    alert("Please enter your country.");
+    return;
+  }
+
+  // 2. Button Loading State
+  const submitBtn = event.target.querySelector('button[type="submit"]');
+  const originalBtnText = submitBtn.innerHTML;
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right: 0.5rem;"></i> Unlocking...';
+
+  // 3. Compute calculated metrics internally before submission
+  const calculatedMetrics = calculateMetricsInternally(pendingType);
+
+  const payload = {
+    name: name,
+    email: email,
+    phone: country, // map country to phone field for Sheets compatibility
+    country: country,
+    timestamp: timestamp,
+    calcType: pendingType,
+    geometry: calculatedMetrics.geometry,
+    reinforcement: calculatedMetrics.reinforcement,
+    status: calculatedMetrics.status,
+    concreteVol: calculatedMetrics.concreteVol,
+    steelWeight: calculatedMetrics.steelWeight
   };
 
-  try {
-      const name = document.getElementById('lead-name') ? document.getElementById('lead-name').value.trim() : 'Unknown';
-      const country = document.getElementById('lead-country') ? document.getElementById('lead-country').value.trim() : 'Unknown';
-      const email = document.getElementById('lead-email') ? document.getElementById('lead-email').value.trim() : 'Unknown';
-      
-      const submitBtn = event.target.querySelector('button[type="submit"]');
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right: 0.5rem;"></i> Unlocking...';
-      }
-      
-      const payload = {
-        name: name,
-        email: email,
-        phone: country,
-        timestamp: new Date().toLocaleString(),
-        calcType: pendingType || 'General Tools Access',
-        status: 'SUCCESS'
-      };
-      
-      let leads = JSON.parse(localStorage.getItem('tools_leads') || '[]');
-      leads.push(payload);
-      localStorage.setItem('tools_leads', JSON.stringify(leads));
-      
-      if (typeof GOOGLE_SCRIPT_URL !== 'undefined' && GOOGLE_SCRIPT_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" && GOOGLE_SCRIPT_URL.startsWith("http")) {
-        fetch(GOOGLE_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify(payload)
-        }).then(() => {
-          completeUnlock();
-        }).catch(err => {
-          console.error(err);
-          completeUnlock();
-        });
-      } else {
-        setTimeout(completeUnlock, 300);
-      }
-  } catch(e) {
-      console.error("Critical error in auth flow", e);
-      completeUnlock(); // FORCE UNLOCK EVEN IF CRASH
+  const completeUnlock = () => {
+    // Save entry in leads array locally
+    let leads = JSON.parse(localStorage.getItem('tools_leads') || '[]');
+    leads.push({
+      ...payload,
+      timestamp: timestamp
+    });
+    localStorage.setItem('tools_leads', JSON.stringify(leads));
+    localStorage.setItem('tools_user_unlocked', 'true');
+
+    // Close modal
+    const modal = document.getElementById('auth-modal');
+    if (modal) {
+      modal.classList.remove('active');
+    }
+
+    // Update lead indicators
+    updateLeadsCount();
+    updateLockUI();
+
+    // Run the blocked calculator callback (runs calculation or downloads PDF)
+    if (pendingCallback) {
+      pendingCallback();
+    }
+
+    // Reset button and form inputs
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalBtnText;
+    event.target.reset();
+  };
+
+  // 4. API Posting block
+  const googleScriptUrl = GOOGLE_SCRIPT_URL;
+  if (!googleScriptUrl || googleScriptUrl === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL") {
+    console.warn("Google Sheets Apps Script URL not configured. Logging locally.");
+    setTimeout(completeUnlock, 1000); // Simulate smooth network latency
+    return;
   }
+
+  fetch(googleScriptUrl, {
+    method: 'POST',
+    mode: 'no-cors', // standard way to post to Apps Script redirect URLs
+    headers: {
+      'Content-Type': 'text/plain'
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(() => {
+    completeUnlock();
+  })
+  .catch((error) => {
+    console.error("Database sync failed, proceeding with local unlock:", error);
+    // Proceed with unlocking anyway so the user's experience is not blocked by adblockers, DNS errors, or firewalls
+    completeUnlock();
+  });
 }
+
+// Initialize admin leads management actions
 function initAdminPanel() {
   const btnExport = document.getElementById('btn-export-leads');
   const btnClear = document.getElementById('btn-clear-leads');
