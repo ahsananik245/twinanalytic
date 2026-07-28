@@ -219,3 +219,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof initAdminPanel === 'function') initAdminPanel();
   if (typeof updateLockUI === 'function') updateLockUI();
 });
+document.addEventListener('DOMContentLoaded', () => {
+  const btnFooting = document.getElementById('btn-calc-footing');
+  if (btnFooting) {
+    btnFooting.addEventListener('click', calculateFooting);
+  }
+});
