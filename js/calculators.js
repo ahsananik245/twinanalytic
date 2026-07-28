@@ -1993,7 +1993,7 @@ function drawTwinAnalyticLogo(doc, x, y, size, isDarkBg) {
 
 function downloadSlabPDF() {
   const projName = document.getElementById('slab-proj-name').value || "TwinAnalytic Tower";
-  const designer = document.getElementById('slab-designer').value || "AH";
+  const designer = document.getElementById('slab-designer').value || "TwinAnalytic Engineer";
   const dateVal = document.getElementById('slab-date').value || new Date().toISOString().split('T')[0];
   const location = document.getElementById('slab-location').value || "New York, NY";
   const floor = document.getElementById('slab-floor').value || "Floor 2";
@@ -3567,8 +3567,8 @@ function downloadColumnPDF() {
 
   const projName = document.getElementById('column-proj-name').value || "TwinAnalytic Tower";
   const projNum = document.getElementById('column-proj-num').value || "2026-001";
-  const designerInitials = document.getElementById('column-designer').value || "AH";
-  const reviewerInitials = document.getElementById('column-reviewer').value || "MB";
+  const designerInitials = document.getElementById('column-designer').value || "TwinAnalytic Engineer";
+  const reviewerInitials = document.getElementById('column-reviewer').value || "TwinAnalytic";
 
   if (isNaN(pdl) || pdl <= 0 || isNaN(pll) || pll <= 0 || isNaN(fc) || fc <= 0 || isNaN(fy) || fy <= 0 || isNaN(p) || p < 0.01 || p > 0.08 || isNaN(colHeight) || colHeight <= 0) {
     alert('Please enter valid input parameters before downloading the PDF report.');
