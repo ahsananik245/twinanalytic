@@ -108,56 +108,82 @@ const BNBCDesign2 = (function () {
     const Po = 0.85 * fc * (Ag - Ast) + fy * Ast;
     const phiPmax = axialCap * phiC * Po;
 
+    /* Strength reduction factor from the net tensile strain.
+
+       ACI 318-02 unified design provisions (Sec 9.3.2.2) fix the transition
+       between the compression-controlled strain limit of 0.002 and the
+       tension-controlled limit of 0.005, regardless of fy.
+
+       ACI 318-19 (Table 21.2.2) moves the compression-controlled limit to
+       the yield strain fy/Es and ends the transition at fy/Es + 0.003. */
     function phiOf(pt) {
+      const et = pt.epsT;
       if (code === 'ACI318-02') {
-        /* Increase linearly to 0.90 as phi.Pn falls from 0.10 f'c Ag to zero */
-        const lim = 0.10 * fc * Ag;
-        const p = Math.max(0, pt.P) * phiC;
-        if (p >= lim) return phiC;
-        return phiC + (0.90 - phiC) * (1 - p / lim);
+        if (et <= 0.002) return phiC;
+        if (et >= 0.005) return 0.90;
+        return phiC + (0.90 - phiC) * (et - 0.002) / 0.003;
       }
-      return D.phiFromStrain(pt.epsT, fy * 1000, Es * 1000, !confined);
+      return D.phiFromStrain(et, fy * 1000, Es * 1000, !confined);
     }
 
-    /* Build the interaction diagram */
-    const pts = [];
-    const cMax = 2.5 * Dia;
-    for (let i = 0; i <= 220; i++) {
-      const c = cMax * (1 - i / 220) + 1e-4;
+    /* One point on the design interaction curve for a neutral axis depth c.
+       phiPnRaw is kept uncapped so it stays monotonic in c, which is what
+       the root finder below relies on; phiPn carries the axial cap for
+       display. */
+    function designPoint(c) {
       const pt = capacity(c);
       const ph = phiOf(pt);
-      pts.push({ c, Pn: pt.P, Mn: pt.M, phiPn: Math.min(ph * pt.P, phiPmax), phiMn: ph * pt.M, epsT: pt.epsT, phi: ph });
+      return {
+        c: c, Pn: pt.P, Mn: pt.M, epsT: pt.epsT, phi: ph,
+        phiPnRaw: ph * pt.P,
+        phiPn: Math.min(ph * pt.P, phiPmax),
+        phiMn: ph * pt.M
+      };
     }
-    pts.sort((x, y) => y.phiPn - x.phiPn);
 
-    /* Pure flexure: bisect for P = 0 */
-    let lo = 1e-4, hi = cMax, cf = 0;
+    /* Build the interaction diagram. The array is generated in order of
+       decreasing c, so it is already ordered by decreasing axial load —
+       sorting it by the capped phiPn would scramble the plateau where
+       every point shares the same capped value. */
+    const pts = [];
+    const cMax = 3 * Dia;
+    const NPTS = 400;
+    for (let i = 0; i <= NPTS; i++) {
+      pts.push(designPoint(cMax * (1 - i / NPTS) + 1e-6));
+    }
+
+    /* Pure flexure: bisect for Pn = 0 */
+    let lo = 1e-6, hi = cMax, cf = (lo + hi) / 2;
     for (let i = 0; i < 200; i++) {
       cf = (lo + hi) / 2;
-      const p = capacity(cf).P;
-      if (p > 0) hi = cf; else lo = cf;
+      if (capacity(cf).P > 0) hi = cf; else lo = cf;
     }
-    const flexPt = capacity(cf);
-    const phiMn0 = phiOf(flexPt) * flexPt.M;
+    const flexPt = designPoint(cf);
+    const phiMn0 = flexPt.phiMn;
 
-    /* Balanced point: tension steel just reaches yield */
+    /* Balanced point: extreme tension steel just reaches yield */
     const dt = Math.max.apply(null, bars.map(b => b.d));
     const cb = epsCu * dt / (epsCu + epsY);
-    const balPt = capacity(cb);
-    const phiPb = phiOf(balPt) * balPt.P;
-    const phiMb = phiOf(balPt) * balPt.M;
+    const balPt = designPoint(cb);
+    const phiPb = balPt.phiPn;
+    const phiMb = balPt.phiMn;
 
-    /* Capacity at the applied axial load: interpolate phiMn at Pu */
-    let phiMnAtPu = 0;
-    for (let i = 0; i < pts.length - 1; i++) {
-      const a1 = pts[i], b1 = pts[i + 1];
-      if ((a1.phiPn >= Pu && b1.phiPn <= Pu) || (a1.phiPn <= Pu && b1.phiPn >= Pu)) {
-        const t = (a1.phiPn - b1.phiPn) !== 0 ? (a1.phiPn - Pu) / (a1.phiPn - b1.phiPn) : 0;
-        phiMnAtPu = a1.phiMn + t * (b1.phiMn - a1.phiMn);
-        break;
+    /* Capacity at the applied axial load. phiPn(c) increases monotonically
+       with c, so bisect for the exact c that carries Pu rather than
+       interpolating between tabulated points. */
+    let phiMnAtPu, cAtPu = cf;
+    if (Pu <= 0) {
+      phiMnAtPu = phiMn0;
+    } else if (Pu >= phiPmax) {
+      phiMnAtPu = 0;
+    } else {
+      let a2 = cf, b2 = cMax;
+      for (let i = 0; i < 200; i++) {
+        cAtPu = (a2 + b2) / 2;
+        if (designPoint(cAtPu).phiPnRaw > Pu) b2 = cAtPu; else a2 = cAtPu;
       }
+      phiMnAtPu = designPoint(cAtPu).phiMn;
     }
-    if (Pu <= 0) phiMnAtPu = phiMn0;
 
     const dcr = phiMnAtPu > 0 ? Mu / phiMnAtPu : Infinity;
     const axialOK = Pu <= phiPmax;
@@ -185,19 +211,24 @@ const BNBCDesign2 = (function () {
 
     const status = (axialOK && flexOK && spiralOK && Vu <= phiVc) ? 'PASS' : 'FAIL';
 
-    /* Table of the standard interaction points */
-    const at = target => {
-      let best = pts[0], bd = Infinity;
-      pts.forEach(p => { const d2 = Math.abs(p.epsT - target); if (d2 < bd) { bd = d2; best = p; } });
-      return best;
-    };
-    const p0 = pts[0];
+    /* Standard control points, each located by bisecting on the tension
+       strain rather than picking the nearest tabulated point. */
+    function atStrain(target) {
+      let a3 = cf, b3 = cMax;
+      for (let i = 0; i < 160; i++) {
+        const m3 = (a3 + b3) / 2;
+        if (capacity(m3).epsT > target) a3 = m3; else b3 = m3;
+      }
+      return designPoint((a3 + b3) / 2);
+    }
+    const e002 = atStrain(0.002);
+    const e005 = atStrain(0.005);
     const rows = [
       ['Axial load only', fx(phiPmax, 3), '0.000'],
-      ['Maximum axial load', fx(Math.min(p0.phiPn, phiPmax), 3), fx(p0.phiMn, 3)],
-      ['Balanced condition', fx(phiPb, 3), fx(phiMb, 3)],
-      ['εt = 0.002', fx(at(0.002).phiPn, 3), fx(at(0.002).phiMn, 3)],
-      ['εt = 0.005', fx(at(0.005).phiPn, 3), fx(at(0.005).phiMn, 3)],
+      ['Balanced condition (εt = εy)', fx(phiPb, 3), fx(phiMb, 3)],
+      ['εt = 0.002', fx(e002.phiPn, 3), fx(e002.phiMn, 3)],
+      ['εt = 0.005', fx(e005.phiPn, 3), fx(e005.phiMn, 3)],
+      ['At the applied Pu', fx(Math.min(Pu, phiPmax), 3), fx(phiMnAtPu, 3)],
       ['Flexure only', '0.000', fx(phiMn0, 3)]
     ];
 
@@ -249,10 +280,10 @@ const BNBCDesign2 = (function () {
         {
           n: 4, title: 'Strength Reduction Factor', status: 'pass',
           formula: code === 'ACI318-02'
-            ? "φ = " + fx(phiC, 2) + " for compression, increased linearly to 0.90 as φPn\nfalls from 0.10 f'c Ag to zero        (ACI 318-02 Sec 9.3.2.2)"
+            ? 'φ = ' + fx(phiC, 2) + ' when εt ≤ 0.002 (compression controlled)\nφ = 0.90 when εt ≥ 0.005 (tension controlled)\nlinear in between        (ACI 318-02 Sec 9.3.2.2, unified provisions)'
             : 'φ = ' + fx(phiC, 2) + ' when εt ≤ εty\nφ = 0.90 when εt ≥ εty + 0.003\nlinear in between        (ACI 318-19 Table 21.2.2)',
           sub: code === 'ACI318-02'
-            ? "0.10 f'c Ag = " + fx(0.10 * fc * Ag, 2) + ' k'
+            ? 'The 318-02 breakpoints are fixed at 0.002 and 0.005 regardless of fy.'
             : 'εty = fy/Es = ' + fx(epsY, 5) + ',  transition ends at εt = ' + fx(epsY + 0.003, 5),
           res: 'φ ranges from ' + fx(phiC, 2) + ' to 0.90'
         },
@@ -281,7 +312,10 @@ const BNBCDesign2 = (function () {
         headers: ['Condition', 'φPn (k)', 'φMn (ft-k)'],
         rows, foot: null
       },
-      raw: { Ag, Ast, rho, Po, phiPmax, phiMnAtPu, phiMn0, phiPb, phiMb, dcr, phiVc, rhoS, rhoSmin, beta1, pts, status }
+      raw: {
+        Ag, Ast, rho, Rs, Po, phiPmax, phiMnAtPu, cAtPu, phiMn0, cf,
+        phiPb, phiMb, cb, dcr, phiVc, rhoS, rhoSmin, beta1, pts, designPoint, status
+      }
     };
   }
 

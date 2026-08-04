@@ -197,11 +197,34 @@ from the ACI clause the workbook itself cites, and pinned against the values it 
 cached:
 
 - **C5 circular column** — `φPn,max` matches to 6 significant figures. The
-  interaction diagram is integrated by strain compatibility (circular segment
-  concrete zone, displaced concrete deducted from compression bars) and sits within
-  about 5 % of the workbook's control points; the residual is bar-cage orientation,
-  which is exposed as an input. The workbook does not check the ACI 25.7.3.3 spiral
-  confinement ratio — its own example fails it.
+  interaction diagram is integrated by strain compatibility: the concrete zone is a
+  circular segment (area and centroid in closed form) and the displaced concrete is
+  deducted from bars inside the stress block.
+
+  Reconciling the diagram against the workbook's cached control points exposed the
+  workbook's φ rule. ACI 318-02 carries two φ formulations, and the unified design
+  provisions of Sec 9.3.2.2 transition on the **net tensile strain**, from 0.70 for
+  a spiral member at εt ≤ 0.002 to 0.90 at εt ≥ 0.005. The workbook uses that one.
+  With it applied, the control points line up:
+
+  | Control point | Workbook φPn / φMn | This suite | Difference |
+  |---|---|---|---|
+  | εt = 0.002    | 366.10 / 226.96 | 359.59 / 223.34 | −1.8 % / −1.6 % |
+  | Balanced      | 360.43 / 229.96 | 351.71 / 224.94 | −2.4 % / −2.2 % |
+  | εt = 0.005    | 152.49 / 232.38 | 151.49 / 221.29 | −0.7 % / −4.8 % |
+  | Pure flexure  |   0.00 / 165.14 |   0.00 / 157.74 | — / −4.5 % |
+
+  The residual few per cent is the bar circle radius. This suite places the cage at
+  `D/2 − cover − d(spiral) − db/2`; the workbook's numbers are consistent with
+  `D/2 − cover`, which ignores the spiral bar and the bar radius and so pushes the
+  steel further from the neutral axis. The convention used here is the more precise
+  one and reads slightly lower, on the conservative side. Cage orientation is
+  exposed as an input — a bar sitting on the bending axis is the conservative
+  arrangement and is the default.
+
+  Separately, the workbook does not check the ACI 25.7.3.3 spiral confinement ratio
+  ρs at all. Its own example (#3 spiral at 3 in pitch) fails it: ρs = 0.0086 against
+  0.0144 required.
 - **C7 combined footing** — geometry and service loads reproduce. The workbook uses
   ACI 318-99 factors (1.4D + 1.7L); the port uses the current 1.2D + 1.6L. Whether
   self weight and overburden are included is exposed as a gross/net switch.
