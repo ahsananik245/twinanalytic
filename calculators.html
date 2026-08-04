@@ -6,14 +6,15 @@
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Free Structural Design Calculators — TwinAnalytic</title>
-  <meta name="description" content="Use TwinAnalytic's online engineering calculators to check reinforced concrete beams, columns, and slabs.">
+  <title>Free BNBC 2020 &amp; ACI 318 Structural Calculators — TwinAnalytic</title>
+  <meta name="description" content="Twenty-six free structural engineering calculators to BNBC 2020 and ACI 318: seismic base shear, wind load, P-delta, drift, irregularity checks, beam, column, slab, stair, shear wall and footing design, reinforcement detailing and estimating.">
+  <link rel="canonical" href="https://twinanalytic.com/calculators.html">
 
   <!-- Open Graph Meta Tags -->
-  <meta property="og:title" content="Structural Design Tools — TwinAnalytic" />
-  <meta property="og:description" content="Use TwinAnalytic's online engineering calculators to check reinforced concrete beams, columns, and slabs." />
+  <meta property="og:title" content="Free BNBC 2020 & ACI 318 Structural Calculators — TwinAnalytic" />
+  <meta property="og:description" content="Twenty-six free structural engineering calculators to BNBC 2020 and ACI 318, from seismic and wind loading through member design to reinforcement detailing and estimating." />
   <meta property="og:image" content="https://twinanalytic.com/assets/about_render.jpg" />
-  <meta property="og:url" content="https://twinanalytic.com/tools.html" />
+  <meta property="og:url" content="https://twinanalytic.com/calculators.html" />
   <meta property="og:type" content="website" />
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -53,6 +54,100 @@
     .tools-workspace-section {
       padding: 4rem 0 8rem 0;
       background-color: var(--bg-primary);
+    }
+
+    .page-banner .banner-sub {
+      color: var(--text-secondary);
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      letter-spacing: normal;
+      text-transform: none;
+      max-width: 760px;
+      margin: 1.25rem auto 0;
+      line-height: 1.65;
+    }
+
+    /* Category grouping */
+    .calc-group { margin-bottom: 4rem; }
+    .calc-group-head {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid var(--border-gold);
+      flex-wrap: wrap;
+    }
+    .calc-group-head h2 {
+      font-family: var(--font-serif);
+      font-size: 1.6rem;
+      font-weight: 400;
+      color: #fff;
+      margin: 0;
+    }
+    .calc-group-head span {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--color-gold);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+    .calc-group-head p {
+      flex: 1 1 100%;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin: 0.35rem 0 0;
+      line-height: 1.6;
+    }
+
+    .calc-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
+      gap: 1.25rem;
+    }
+    .calc-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      padding: 1.4rem 1.3rem;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      background: rgba(20, 24, 33, 0.5);
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s, background 0.2s;
+    }
+    .calc-card:hover {
+      border-color: var(--color-gold);
+      background: rgba(20, 24, 33, 0.8);
+      transform: translateY(-3px);
+    }
+    .calc-card i {
+      font-size: 1.4rem;
+      color: var(--color-gold);
+    }
+    .calc-card h3 {
+      font-family: var(--font-serif);
+      font-size: 1.02rem;
+      font-weight: 500;
+      color: #fff;
+      margin: 0;
+      line-height: 1.35;
+    }
+    .calc-card p {
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      line-height: 1.55;
+      margin: 0;
+      flex-grow: 1;
+    }
+    .calc-card .calc-code {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-top: 1px dashed rgba(255, 255, 255, 0.07);
+      padding-top: 0.6rem;
     }
 
     /* Modal Overlay & Card styling */
@@ -170,75 +265,225 @@
   <header class="page-banner">
     <div class="container">
       <p>Precision Analysis Suite</p>
-      <h1>Free Structural Member Calculators</h1>
+      <h1>Free Structural Engineering Calculators</h1>
+      <p class="banner-sub">Twenty-six BNBC 2020 and ACI 318 calculators — seismic and wind loading,
+      code compliance checks, member design, reinforcement detailing and estimating.</p>
     </div>
   </header>
   <!-- CALCULATORS SUITE WORKSPACE -->
   <section class="tools-workspace-section">
     <div class="container">
-      <div class="about-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2.5rem; align-items: stretch;">
-        <!-- Card 1: Beam -->
-        <div class="glass-card launch-card" style="text-align: center; padding: 2.5rem 1.8rem; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
-          <div>
-            <div style="font-size: 2.8rem; margin-bottom: 1.2rem; color: var(--color-gold);"><i class="fa-solid fa-layer-group"></i></div>
-            <h3 style="font-family: var(--font-serif); font-size: 1.5rem; margin-bottom: 1rem; color: #fff; font-weight: 400;">Free RC Beam Designer</h3>
-            <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.9rem; margin-bottom: 2rem;">
-              Perform free advanced reinforced concrete beam flexural design per ACI 318 & BNBC 2020. Supports Singly, Doubly, and T-Beam sections with live SVG scaling, stress block visualizations, and calculation breakdowns.
-            </p>
-          </div>
-          <a href="beam-design.html" class="btn btn-gold btn-sm" style="display: inline-block; text-decoration: none; width: 100%;">Launch Beam Designer</a>
+      <!-- GROUP A: LOAD ANALYSIS -->
+      <div class="calc-group">
+        <div class="calc-group-head">
+          <h2>Load Analysis</h2>
+          <span>Group A &middot; BNBC 2020 Part 6 Chapter 2</span>
+          <p>Derive the seismic and wind demands on the structure before any member is sized.</p>
         </div>
-        
-        <!-- Card 2: Column -->
-        <div class="glass-card launch-card" style="text-align: center; padding: 2.5rem 1.8rem; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
-          <div>
-            <div style="font-size: 2.8rem; margin-bottom: 1.2rem; color: var(--color-gold);"><i class="fa-solid fa-cube"></i></div>
-            <h3 style="font-family: var(--font-serif); font-size: 1.5rem; margin-bottom: 1rem; color: #fff; font-weight: 400;">Free RC Column Designer</h3>
-            <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.9rem; margin-bottom: 2rem;">
-              Calculate rectangular tied or circular spiral column capacity under axial loads and moments per ACI 318 code. Features live interaction diagrams and rebar layout drawings.
-            </p>
-          </div>
-          <a href="column-design.html" class="btn btn-gold btn-sm" style="display: inline-block; text-decoration: none; width: 100%;">Launch Column Designer</a>
+        <div class="calc-card-grid">
+          <a class="calc-card" href="seismic-analysis.html">
+            <i class="fa-solid fa-house-crack"></i>
+            <h3>Seismic Base Shear</h3>
+            <p>Equivalent static analysis to BNBC 2020. Zone coefficient by town, response spectrum Cs, design base shear and the vertical distribution of storey forces.</p>
+            <div class="calc-code">BNBC 2020 Sec 2.5.7</div>
+          </a>
+          <a class="calc-card" href="wind-load.html">
+            <i class="fa-solid fa-wind"></i>
+            <h3>Wind Load &mdash; MWFRS</h3>
+            <p>Directional procedure for the main wind force resisting system. Rigid or flexible gust factor, velocity pressure profile and wall pressures.</p>
+            <div class="calc-code">BNBC 2020 Sec 2.4</div>
+          </a>
+          <a class="calc-card" href="vertical-seismic.html">
+            <i class="fa-solid fa-arrows-up-down"></i>
+            <h3>Vertical Earthquake Effect</h3>
+            <p>Vertical seismic load effect Ev and the modified gravity combinations, by BNBC 2020 or ASCE 7-16.</p>
+            <div class="calc-code">BNBC 2020 Sec 2.5.13</div>
+          </a>
         </div>
-        
-        <!-- Card 3: Slab -->
-        <div class="glass-card launch-card" style="text-align: center; padding: 2.5rem 1.8rem; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
-          <div>
-            <div style="font-size: 2.8rem; margin-bottom: 1.2rem; color: var(--color-gold);"><i class="fa-solid fa-border-all"></i></div>
-            <h3 style="font-family: var(--font-serif); font-size: 1.5rem; margin-bottom: 1rem; color: #fff; font-weight: 400;">Free RC Slab Designer</h3>
-            <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.9rem; margin-bottom: 2rem;">
-              Design free reinforced concrete two-way slabs using ACI Direct Design Method (DDM). Automatically calculates minimum thickness, service loads, punching shear, and reinforcement layouts.
-            </p>
-          </div>
-          <a href="slab-design.html" class="btn btn-gold btn-sm" style="display: inline-block; text-decoration: none; width: 100%;">Launch Slab Designer</a>
-        </div>
-
-        <!-- Card 4: Single Footing -->
-        <div class="glass-card launch-card" style="text-align: center; padding: 2.5rem 1.8rem; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
-          <div>
-            <div style="font-size: 2.8rem; margin-bottom: 1.2rem; color: var(--color-gold);"><i class="fa-solid fa-shapes"></i></div>
-            <h3 style="font-family: var(--font-serif); font-size: 1.5rem; margin-bottom: 1rem; color: #fff; font-weight: 400;">Free RC Footing Designer</h3>
-            <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.9rem; margin-bottom: 2rem;">
-              Perform free reinforced concrete single square footing design under axial loads. Automatically calculates base area dimension, punching shear, beam shear and details reinforcement mesh.
-            </p>
-          </div>
-          <a href="footing-design.html" class="btn btn-gold btn-sm" style="display: inline-block; text-decoration: none; width: 100%;">Launch Footing Designer</a>
-        </div>
-
-        <!-- Card 5: Rect Footing -->
-        <div class="glass-card launch-card" style="text-align: center; padding: 2.5rem 1.8rem; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
-          <div>
-            <div style="font-size: 2.8rem; margin-bottom: 1.2rem; color: var(--color-gold);"><i class="fa-solid fa-layer-group"></i></div>
-            <h3 style="font-family: var(--font-serif); font-size: 1.5rem; margin-bottom: 1rem; color: #fff; font-weight: 400;">Free RC Rectangular Footing</h3>
-            <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.9rem; margin-bottom: 2rem;">
-              Perform isolated rectangular footing design. Automatically calculates L-Dir & B-Dir reinforcement, limits, and checks two-way and single-way beam shears.
-            </p>
-          </div>
-          <a href="footing-rect-design.html" class="btn btn-gold btn-sm" style="display: inline-block; text-decoration: none; width: 100%;">Launch Rectangular Footing Designer</a>
-        </div>
-
-
       </div>
+
+      <!-- GROUP B: COMPLIANCE CHECKS -->
+      <div class="calc-group">
+        <div class="calc-group-head">
+          <h2>Code Compliance Checks</h2>
+          <span>Group B &middot; Irregularity &amp; Stability</span>
+          <p>Screen an analysis model against the BNBC irregularity, drift and stability provisions.</p>
+        </div>
+        <div class="calc-card-grid">
+          <a class="calc-card" href="base-shear-check.html">
+            <i class="fa-solid fa-scale-balanced"></i>
+            <h3>Base Shear Verification</h3>
+            <p>Reconcile the model base reaction with the code static value and obtain the scale factor when it falls short.</p>
+            <div class="calc-code">BNBC 2020 Sec 2.5.7</div>
+          </a>
+          <a class="calc-card" href="p-delta-check.html">
+            <i class="fa-solid fa-arrows-left-right-to-line"></i>
+            <h3>P-Delta Stability</h3>
+            <p>Storey stability coefficient against the code limit of 0.5/(&beta;Cd) capped at 0.25.</p>
+            <div class="calc-code">BNBC 2020 Sec 2.5.7.9</div>
+          </a>
+          <a class="calc-card" href="drift-check.html">
+            <i class="fa-solid fa-ruler-vertical"></i>
+            <h3>Drift &amp; Sway Limitation</h3>
+            <p>Design storey drift, drift ratio and total sway against Table 6.2.21 and the H/500 serviceability limit.</p>
+            <div class="calc-code">BNBC 2020 Table 6.2.21</div>
+          </a>
+          <a class="calc-card" href="soft-story-check.html">
+            <i class="fa-solid fa-layer-group"></i>
+            <h3>Soft Storey Irregularity</h3>
+            <p>Vertical stiffness irregularity types 1a and 1b against the storey above and the average of the three above.</p>
+            <div class="calc-code">BNBC 2020 Table 6.1.4</div>
+          </a>
+          <a class="calc-card" href="torsional-irregularity.html">
+            <i class="fa-solid fa-rotate"></i>
+            <h3>Torsional Irregularity</h3>
+            <p>Ratio of maximum to average storey drift with the accidental torsion amplification factor Ax.</p>
+            <div class="calc-code">BNBC 2020 Table 6.1.5</div>
+          </a>
+          <a class="calc-card" href="overturning-check.html">
+            <i class="fa-solid fa-tower-observation"></i>
+            <h3>Overturning Moment</h3>
+            <p>Overturning from storey forces or shears against the resisting moment with a factor of safety of 1.5.</p>
+            <div class="calc-code">BNBC 2020 Sec 2.5.9</div>
+          </a>
+        </div>
+      </div>
+
+      <!-- GROUP C &amp; D: MEMBER DESIGN -->
+      <div class="calc-group">
+        <div class="calc-group-head">
+          <h2>Member Design</h2>
+          <span>Group C &amp; D &middot; ACI 318 / BNBC 2020</span>
+          <p>Size and detail reinforced concrete members from first principles.</p>
+        </div>
+        <div class="calc-card-grid">
+          <a class="calc-card" href="beam-design.html">
+            <i class="fa-solid fa-grip-lines"></i>
+            <h3>RC Beam Flexural Design</h3>
+            <p>Singly, doubly and T-beam sections with live stress block visualisation and a full calculation breakdown.</p>
+            <div class="calc-code">ACI 318 / BNBC 2020</div>
+          </a>
+          <a class="calc-card" href="column-design.html">
+            <i class="fa-solid fa-cube"></i>
+            <h3>RC Column Design</h3>
+            <p>Rectangular tied or circular spiral column capacity under axial load and moment, with an interaction diagram.</p>
+            <div class="calc-code">ACI 318-19</div>
+          </a>
+          <a class="calc-card" href="circular-column-design.html">
+            <i class="fa-solid fa-circle-dot"></i>
+            <h3>Circular Column Interaction</h3>
+            <p>P-M interaction by strain compatibility with the concrete zone integrated as a circular segment, plus the spiral ratio check.</p>
+            <div class="calc-code">ACI 318</div>
+          </a>
+          <a class="calc-card" href="slab-design.html">
+            <i class="fa-solid fa-border-all"></i>
+            <h3>RC Slab &mdash; Direct Design Method</h3>
+            <p>Two-way slab by the ACI direct design method with minimum thickness, punching shear and reinforcement layout.</p>
+            <div class="calc-code">ACI 318 DDM</div>
+          </a>
+          <a class="calc-card" href="two-way-slab-coeff.html">
+            <i class="fa-solid fa-table-cells"></i>
+            <h3>Two-Way Slab &mdash; Coefficient Method</h3>
+            <p>Nine panel cases on stiff beams, minimum thickness from the beam stiffness ratio, and a full bar schedule.</p>
+            <div class="calc-code">ACI Method 2</div>
+          </a>
+          <a class="calc-card" href="cantilever-slab.html">
+            <i class="fa-solid fa-square-caret-right"></i>
+            <h3>Cantilever Slab / Balcony</h3>
+            <p>Working stress design of a projecting slab with the elastic constants j and k and the ACI L/10 minimum.</p>
+            <div class="calc-code">ACI 318 WSD</div>
+          </a>
+          <a class="calc-card" href="stair-design.html">
+            <i class="fa-solid fa-stairs"></i>
+            <h3>RC Stair Design</h3>
+            <p>Six support configurations solved by statics, with waist thickness, shear and reinforcement detailing.</p>
+            <div class="calc-code">ACI 318 USD</div>
+          </a>
+          <a class="calc-card" href="shear-wall-design.html">
+            <i class="fa-solid fa-block-brick"></i>
+            <h3>Shear Wall Design</h3>
+            <p>Barbell wall: minimum reinforcement regime, in-plane shear strength, axial and flexural capacity and bulb confinement.</p>
+            <div class="calc-code">ACI 318 Sec 18.10</div>
+          </a>
+          <a class="calc-card" href="footing-design.html">
+            <i class="fa-solid fa-shapes"></i>
+            <h3>Square Footing Design</h3>
+            <p>Isolated square footing with base area, punching shear, beam shear and reinforcement mesh.</p>
+            <div class="calc-code">ACI 318 USD</div>
+          </a>
+          <a class="calc-card" href="footing-rect-design.html">
+            <i class="fa-solid fa-vector-square"></i>
+            <h3>Rectangular Footing Design</h3>
+            <p>Isolated rectangular footing with L and B direction reinforcement and both shear checks.</p>
+            <div class="calc-code">ACI 318 USD</div>
+          </a>
+          <a class="calc-card" href="combined-footing.html">
+            <i class="fa-solid fa-bridge"></i>
+            <h3>Combined Footing Design</h3>
+            <p>Two-column footing: bearing pressure, middle-third rule, longitudinal beam analysis and punching at both columns.</p>
+            <div class="calc-code">ACI 318</div>
+          </a>
+        </div>
+      </div>
+
+      <!-- GROUP E: DETAILING -->
+      <div class="calc-group">
+        <div class="calc-group-head">
+          <h2>Reinforcement Detailing</h2>
+          <span>Group E &middot; ACI 318 Chapters 18 &amp; 25</span>
+          <p>Turn analysis demands into buildable bar spacing and lengths.</p>
+        </div>
+        <div class="calc-card-grid">
+          <a class="calc-card" href="beam-shear-rebar.html">
+            <i class="fa-solid fa-bars-staggered"></i>
+            <h3>Beam Stirrup Spacing</h3>
+            <p>Av/s demand screened against every ACI seismic detailing limit, with end zone and middle zone spacing.</p>
+            <div class="calc-code">ACI 318 Sec 18.6.4</div>
+          </a>
+          <a class="calc-card" href="column-tie-rebar.html">
+            <i class="fa-solid fa-grip"></i>
+            <h3>Column Tie Spacing</h3>
+            <p>Confined zone tie spacing with hx, the so expression bounded 100&ndash;150 mm, and the confinement length Lo.</p>
+            <div class="calc-code">ACI 318 Sec 18.7.5</div>
+          </a>
+          <a class="calc-card" href="shear-wall-rebar.html">
+            <i class="fa-solid fa-grip-vertical"></i>
+            <h3>Shear Wall Rebar</h3>
+            <p>Vertical and horizontal curtain ratios against the minimum and the 3t, 18 in, lw/3 and lw/5 spacing limits.</p>
+            <div class="calc-code">ACI 318-14 Sec 11.7</div>
+          </a>
+          <a class="calc-card" href="development-length.html">
+            <i class="fa-solid fa-ruler-horizontal"></i>
+            <h3>Development &amp; Splice Lengths</h3>
+            <p>Tension, compression, standard hook and Class A and B splice lengths for every metric bar size.</p>
+            <div class="calc-code">ACI 318M Ch. 25</div>
+          </a>
+        </div>
+      </div>
+
+      <!-- GROUP F: ESTIMATING -->
+      <div class="calc-group">
+        <div class="calc-group-head">
+          <h2>Estimating</h2>
+          <span>Group F &middot; Quantities &amp; Costing</span>
+          <p>Convert a finished design into quantities and a priced bill.</p>
+        </div>
+        <div class="calc-card-grid">
+          <a class="calc-card" href="foundation-estimate.html">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+            <h3>Foundation Estimating</h3>
+            <p>Earthwork, soling, RCC, shuttering, reinforcement by bar mark and mortar constituents, priced into a bill of quantities.</p>
+            <div class="calc-code">Bill of Quantities</div>
+          </a>
+          <a class="calc-card" href="beam-estimate.html">
+            <i class="fa-solid fa-clipboard-list"></i>
+            <h3>Beam Estimating</h3>
+            <p>Bar bending schedule with cut lengths and stirrup take-off across any number of spans, with a costed BOQ.</p>
+            <div class="calc-code">Bar Bending Schedule</div>
+          </a>
+        </div>
+      </div>
+
     </div>
   </section>
 <!-- FOOTER -->
@@ -267,11 +512,22 @@
           </ul>
         </div>
         <div class="footer-col">
-          <h3>Interactive</h3>
+          <h3>Load Analysis</h3>
           <ul class="footer-links">
-            <li><a href="beam-design.html">Free Beam Design Calculator</a></li>
-            <li><a href="column-design.html">Free Column Design Calculator</a></li>
-            <li><a href="slab-design.html">Free Slab Spans Calculator</a></li>
+            <li><a href="seismic-analysis.html">Seismic Base Shear</a></li>
+            <li><a href="wind-load.html">Wind Load (MWFRS)</a></li>
+            <li><a href="drift-check.html">Drift &amp; Sway Check</a></li>
+            <li><a href="p-delta-check.html">P-Delta Stability</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Member Design</h3>
+          <ul class="footer-links">
+            <li><a href="beam-design.html">RC Beam Design</a></li>
+            <li><a href="column-design.html">RC Column Design</a></li>
+            <li><a href="slab-design.html">RC Slab Design</a></li>
+            <li><a href="stair-design.html">RC Stair Design</a></li>
+            <li><a href="calculators.html">All 26 Calculators</a></li>
           </ul>
         </div>
         <div class="footer-col">
