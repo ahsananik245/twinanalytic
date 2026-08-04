@@ -929,6 +929,21 @@
               </div>
             </div>
 
+            <div class="form-group-title">Shear Reinforcement</div>
+            <div class="input-grid">
+              <div class="input-field">
+                <label>Number of Stirrup Legs</label>
+                <input type="number" id="beam-legs" value="2" min="2" max="8" step="2">
+              </div>
+              <div class="input-field">
+                <label>Frame Type</label>
+                <select id="beam-frame">
+                  <option value="SMF" selected>Special Moment Frame</option>
+                  <option value="OTHER">Non-seismic detailing</option>
+                </select>
+              </div>
+            </div>
+
             <!-- Conditional T-Beam Fields -->
             <div id="t-beam-fields" style="display: none;">
               <div class="form-group-title">T-Beam Flange Geometry</div>
@@ -1030,6 +1045,31 @@
             <div class="result-card" id="card-as-prov" data-tooltip="Provided tension steel reinforcement area">
               <div class="result-label">As Provided</div>
               <div class="result-value" id="val-as-prov">0<span class="result-unit">mm²</span></div>
+            </div>
+
+            <div class="result-card" id="card-vu" data-tooltip="Factored shear at the critical section, d from the support face">
+              <div class="result-label">Vu at d</div>
+              <div class="result-value" id="val-vu">0.0<span class="result-unit">kN</span></div>
+            </div>
+
+            <div class="result-card" id="card-phivn" data-tooltip="Design shear capacity: phi(Vc + Vs) at the provided spacing">
+              <div class="result-label">&phi;Vn (Shear)</div>
+              <div class="result-value" id="val-phivn">0.0<span class="result-unit">kN</span></div>
+            </div>
+
+            <div class="result-card" id="card-shear-dcr" data-tooltip="Shear demand capacity ratio: Vu / phiVn">
+              <div class="result-label">Shear DCR</div>
+              <div class="result-value" id="val-shear-dcr">0.00</div>
+              <div class="dcr-container">
+                <div class="dcr-bar-bg">
+                  <div class="dcr-bar-fill" id="shear-dcr-fill"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="result-card" id="card-stirrup" data-tooltip="Governing stirrup spacing over the hinge region at each support">
+              <div class="result-label">Stirrups</div>
+              <div class="result-value" id="val-stirrup" style="font-size:0.95rem;">—</div>
             </div>
 
           </div>
@@ -1433,7 +1473,65 @@
       const dcr = Mu / phiMn;
       const isSafe = dcr <= 1.0;
 
-      // Step 9: Required Steel (Design suggestion)
+      // =====================================================================
+      // Step 9: SHEAR DESIGN (ACI 318 Ch.22 / BNBC 2020)
+      // Vu was previously computed for the report only and never checked.
+      // =====================================================================
+      const phiV = 0.75;
+      const lambdaC = 1.0;                        // normalweight concrete
+      const nLegs = parseInt(document.getElementById('beam-legs').value) || 2;
+      const frameType = document.getElementById('beam-frame').value || 'SMF';
+      const isSeismic = frameType === 'SMF';
+
+      // Critical section at d from the face of support
+      const Vu_crit = Math.max(0, Vu - wu * (d / 1000));           // kN
+
+      // Concrete contribution, ACI 318 Eq 22.5.5.1
+      const Vc = 0.17 * lambdaC * Math.sqrt(fc) * b * d / 1000;    // kN
+      const phiVc = phiV * Vc;
+
+      // Maximum shear the section may carry, ACI 318 22.5.1.2
+      const Vs_max = 0.66 * Math.sqrt(fc) * b * d / 1000;          // kN
+      const sectionOK = Vu_crit <= phiV * (Vc + Vs_max);
+
+      // Required stirrup contribution
+      const Vs_req = Math.max(0, Vu_crit / phiV - Vc);             // kN
+      const Av = nLegs * (Math.PI / 4) * ds * ds;                  // mm² per set
+
+      let s_req = Infinity;
+      if (Vs_req > 0) s_req = Av * fy * d / (Vs_req * 1000);       // mm
+
+      // Minimum shear steel, ACI 318 9.6.3.4
+      const s_minSteel = Math.min(
+        Av * fy / (0.062 * Math.sqrt(fc) * b),
+        Av * fy / (0.35 * b)
+      );
+
+      // Detailing limits
+      const shearLimits = [];
+      shearLimits.push({ v: s_req, why: 'Required to carry Vs' });
+      shearLimits.push({ v: s_minSteel, why: 'ACI 9.6.3.4 minimum shear reinforcement' });
+      if (isSeismic) {
+        shearLimits.push({ v: d / 4, why: 'ACI 18.6.4.4(a) — d/4' });
+        shearLimits.push({ v: 8 * db, why: 'ACI 18.6.4.4(b) — 8db longitudinal' });
+        shearLimits.push({ v: 24 * ds, why: 'ACI 18.6.4.4(c) — 24db hoop' });
+        shearLimits.push({ v: 300, why: 'ACI 18.6.4.4(d) — 300 mm' });
+      } else {
+        const halfD = (Vs_req > 0.33 * Math.sqrt(fc) * b * d / 1000) ? d / 4 : d / 2;
+        shearLimits.push({ v: halfD, why: Vs_req > 0.33 * Math.sqrt(fc) * b * d / 1000 ? 'ACI 9.7.6.2.2 — d/4 (high shear)' : 'ACI 9.7.6.2.2 — d/2' });
+        shearLimits.push({ v: 600, why: 'ACI 9.7.6.2.2 — 600 mm' });
+      }
+      const govShear = shearLimits.reduce((a, x) => (x.v < a.v ? x : a), shearLimits[0]);
+      const s_prov = Math.max(50, Math.floor(govShear.v / 25) * 25);   // round down to 25 mm
+      const stirrupsNeeded = Vu_crit > 0.5 * phiVc;
+      const phiVn = phiV * (Vc + Math.min(Av * fy * d / (s_prov * 1000), Vs_max));
+      const shearDCR = phiVn > 0 ? Vu_crit / phiVn : 0;
+      const hingeLen = 2 * h;                                       // ACI 18.6.4.1
+
+      if (!sectionOK) warnings.push("Shear demand exceeds the maximum the section can carry — enlarge the section.");
+      if (shearDCR > 1.0) warnings.push("Shear capacity is inadequate at the provided stirrup spacing.");
+
+      // Step 10: Required Steel (Design suggestion)
       const Rn = (Mu * 1e6) / (phi * b * d * d); // MPa
       let As_req = 0;
       let n_bars_suggested = 0;
@@ -1470,6 +1568,19 @@
         warningContainer.classList.remove('active');
       }
 
+      // 2b. Publish results before rendering, so the step builder and the
+      //     report generator both read from one place.
+      window.calcResults = {
+        type, fc, fy, Es, wD, wL, L, b, h, cc, ds, db, n_bars, bf, hf, db_prime, cc_prime, n_bars_prime,
+        support, wsw, wD_total, wu, Mu, Vu, d, dt, beta1, rho_b, rho_0005, rho_0004, rho_min, rho_max,
+        As_provided, rho_provided, a, c, Mn, isTBeamAction, isCompSteelYielded, f_s_prime_val,
+        eps_s_prime_val, As_prime_provided, eps_t, phi, zone, phiMn, dcr, isSafe, As_req, n_bars_suggested,
+        // shear design
+        nLegs, frameType, isSeismic, Vu_crit, Vc, phiVc, Vs_max, Vs_req, Av,
+        s_req, s_minSteel, s_prov, govShear, shearLimits, stirrupsNeeded,
+        phiVn, shearDCR, hingeLen, sectionOK
+      };
+
       // 3. Update Status Banner and Cards
       const banner = document.getElementById('status-banner');
       if (isSafe) {
@@ -1501,6 +1612,17 @@
       document.getElementById('val-as-req').innerHTML = `${Math.round(As_req)}<span class="result-unit">mm²</span>`;
       document.getElementById('val-as-prov').innerHTML = `${Math.round(As_provided)}<span class="result-unit">mm² (${n_bars} nos)</span>`;
 
+      // Shear result cards
+      document.getElementById('val-vu').innerHTML = `${Vu_crit.toFixed(1)}<span class="result-unit">kN</span>`;
+      document.getElementById('val-phivn').innerHTML = `${phiVn.toFixed(1)}<span class="result-unit">kN</span>`;
+      document.getElementById('val-shear-dcr').textContent = shearDCR.toFixed(3);
+      document.getElementById('val-stirrup').innerHTML = stirrupsNeeded
+        ? `&Oslash;${ds} @ ${s_prov}<span class="result-unit">mm c/c (${nLegs} legs)</span>`
+        : `<span class="result-unit">not required (Vu &le; &phi;Vc/2)</span>`;
+      const sFill = document.getElementById('shear-dcr-fill');
+      sFill.style.width = `${Math.min(100, shearDCR * 100)}%`;
+      sFill.className = shearDCR > 1.0 ? 'dcr-bar-fill danger' : (shearDCR > 0.85 ? 'dcr-bar-fill warning' : 'dcr-bar-fill');
+
       // 4. Position Strain Marker
       let strainMarkerPct = 0;
       if (eps_t <= 0.002) {
@@ -1519,13 +1641,6 @@
       // 6. Populate Accordion Steps
       populateSteps(type, fc, fy, wD, wL, L, wu, Mu, d, beta1, rho_b, rho_max, rho_min, a, c, eps_t, phi, Mn, phiMn, dcr, As_req, n_bars_suggested, isSafe, isTBeamAction, isCompSteelYielded, eps_s_prime_val, f_s_prime_val, As_prime_provided);
 
-      // 7. Store computed results globally for the print report generator
-      window.calcResults = {
-        type, fc, fy, Es, wD, wL, L, b, h, cc, ds, db, n_bars, bf, hf, db_prime, cc_prime, n_bars_prime,
-        support, wsw, wD_total, wu, Mu, Vu, d, dt, beta1, rho_b, rho_0005, rho_0004, rho_min, rho_max,
-        As_provided, rho_provided, a, c, Mn, isTBeamAction, isCompSteelYielded, f_s_prime_val,
-        eps_s_prime_val, As_prime_provided, eps_t, phi, zone, phiMn, dcr, isSafe, As_req, n_bars_suggested
-      };
     }
 
     function drawLiveSVG(type, b, h, cc, ds, db, n_bars, a, c, d, bf, hf, db_prime, cc_prime, n_bars_prime) {
@@ -1645,6 +1760,9 @@
 
       const hf = parseFloat(document.getElementById('beam-hf').value) || 120;
       const aw = a - hf;
+      const r = window.calcResults || {};
+      const ds = r.ds || 10;
+      const b = r.b || 300;
 
       const stepsData = [
         {
@@ -1744,6 +1862,50 @@
           formula: "As_req = rho_req * b * d\nn_bars = ceil(As_req / Ab)",
           sub: `As_req = ${Math.round(As_req)} mm²\nSuggested bar pattern: ${n_bars_suggested} Nos - #${document.getElementById('beam-db').value} bars`,
           res: `As_req = ${Math.round(As_req)} mm² (${n_bars_suggested} bars)`
+        },
+        {
+          num: 11,
+          title: "Shear Demand at the Critical Section",
+          status: r.sectionOK ? "pass" : "fail",
+          formula: "Vu at the support = coefficient * wu * L\nThe critical section is taken at d from the face of support:\nVu(d) = Vu - wu * d",
+          sub: `Vu at support = ${r.Vu.toFixed(1)} kN\nwu = ${wu.toFixed(1)} kN/m,  d = ${d.toFixed(1)} mm\nVu(d) = ${r.Vu.toFixed(1)} - ${wu.toFixed(1)} * ${(d / 1000).toFixed(3)}`,
+          res: `Vu = ${r.Vu_crit.toFixed(2)} kN at the critical section`
+        },
+        {
+          num: 12,
+          title: "Concrete Shear Strength (phiVc)",
+          status: r.Vu_crit <= r.phiVc ? "pass" : "pass",
+          formula: "Vc = 0.17 * lambda * sqrt(f'c) * bw * d        (ACI 318 Eq 22.5.5.1, SI)\nphiVc = 0.75 * Vc\nStirrups are required once Vu exceeds phiVc / 2.",
+          sub: `Vc = 0.17 * 1.0 * sqrt(${fc}) * ${b} * ${d.toFixed(1)} / 1000 = ${r.Vc.toFixed(2)} kN\nphiVc = 0.75 * ${r.Vc.toFixed(2)} = ${r.phiVc.toFixed(2)} kN\nphiVc / 2 = ${(r.phiVc / 2).toFixed(2)} kN`,
+          res: `phiVc = ${r.phiVc.toFixed(2)} kN — stirrups ${r.stirrupsNeeded ? 'REQUIRED' : 'not required'}`
+        },
+        {
+          num: 13,
+          title: "Stirrup Requirement (Vs)",
+          status: r.sectionOK ? "pass" : "fail",
+          formula: "Vs_required = Vu / phi - Vc\ns = Av * fy * d / Vs\nVs must not exceed 0.66 * sqrt(f'c) * bw * d   (ACI 22.5.1.2)",
+          sub: `Av = ${r.nLegs} legs * (pi/4) * ${ds}^2 = ${r.Av.toFixed(1)} mm²\nVs required = ${r.Vu_crit.toFixed(2)} / 0.75 - ${r.Vc.toFixed(2)} = ${r.Vs_req.toFixed(2)} kN\nVs max allowed = ${r.Vs_max.toFixed(2)} kN\ns from strength = ${isFinite(r.s_req) ? r.s_req.toFixed(1) + ' mm' : 'not governed by strength'}`,
+          res: r.sectionOK
+            ? `Vs = ${r.Vs_req.toFixed(2)} kN <= ${r.Vs_max.toFixed(2)} kN limit`
+            : `Vs exceeds the ${r.Vs_max.toFixed(2)} kN limit — enlarge the section`
+        },
+        {
+          num: 14,
+          title: "Stirrup Spacing Limits",
+          status: "pass",
+          formula: r.isSeismic
+            ? "Over 2h from each support face (ACI 18.6.4):\ns <= d/4,  8db(long),  24db(hoop),  300 mm"
+            : "ACI 9.7.6.2.2:  s <= d/2 (or d/4 for high shear) and s <= 600 mm",
+          sub: r.shearLimits.map(l => '  ' + (isFinite(l.v) ? l.v.toFixed(1) : '—').padStart(8) + ' mm   ' + l.why).join('\n'),
+          res: `Governing: ${r.govShear.v.toFixed(1)} mm — ${r.govShear.why}`
+        },
+        {
+          num: 15,
+          title: "Shear Capacity Check",
+          status: r.shearDCR <= 1.0 ? "pass" : "fail",
+          formula: "Provide s rounded down to a 25 mm module\nphiVn = phi * (Vc + Av*fy*d/s)\nShear DCR = Vu / phiVn",
+          sub: `Provide ${r.nLegs}-leg stirrups Ø${ds} @ ${r.s_prov} mm c/c\nOver the hinge region 2h = ${r.hingeLen.toFixed(0)} mm from each support face\nphiVn = ${r.phiVn.toFixed(2)} kN`,
+          res: `Shear DCR = ${r.shearDCR.toFixed(3)} -> ${r.shearDCR <= 1.0 ? 'SAFE ✓' : 'INADEQUATE ✗'}`
         }
       ];
 
@@ -2514,6 +2676,59 @@ ${checkListTable}
   ══════════════════════════════════════════════════
 `);
       container.appendChild(p6);
+
+      // Page: Shear design
+      const pShear = createReportPage(8, `
+<div class="report-section-header">6.0  SHEAR DESIGN (ACI 318 Ch.22 &amp; 18.6.4)</div>
+
+<div class="report-subsection-header">6.1  Design Shear at the Critical Section</div>
+
+  The critical section is taken at a distance d from the face of support.
+
+  Vu at support   = ${(r.Vu || 0).toFixed(2)} kN
+  Reduction       = wu × d = ${(r.wu || 0).toFixed(2)} × ${((r.d || 0) / 1000).toFixed(3)} = ${(((r.wu || 0) * (r.d || 0)) / 1000).toFixed(2)} kN
+  ──────────────────────────────────────────────
+  Vu at d         = ${(r.Vu_crit || 0).toFixed(2)} kN
+
+<div class="report-subsection-header">6.2  Concrete Shear Strength</div>
+
+  Vc    = 0.17 λ √f'c bw d          (ACI 318 Eq 22.5.5.1, SI units)
+        = 0.17 × 1.00 × √${r.fc} × ${r.b} × ${(r.d || 0).toFixed(1)} / 1000
+        = ${(r.Vc || 0).toFixed(2)} kN
+
+  φVc   = 0.75 × ${(r.Vc || 0).toFixed(2)} = ${(r.phiVc || 0).toFixed(2)} kN
+  φVc/2 = ${((r.phiVc || 0) / 2).toFixed(2)} kN
+
+  Vu = ${(r.Vu_crit || 0).toFixed(2)} kN ${r.stirrupsNeeded ? '>' : '≤'} φVc/2  →  shear reinforcement ${r.stirrupsNeeded ? 'IS REQUIRED' : 'is not required'}
+
+<div class="report-subsection-header">6.3  Stirrup Requirement</div>
+
+  Vs,required = Vu/φ − Vc = ${(r.Vu_crit || 0).toFixed(2)}/0.75 − ${(r.Vc || 0).toFixed(2)} = ${(r.Vs_req || 0).toFixed(2)} kN
+  Vs,max      = 0.66 √f'c bw d = ${(r.Vs_max || 0).toFixed(2)} kN          (ACI 318 22.5.1.2)
+  ${(r.Vs_req || 0) <= (r.Vs_max || 0) ? '✅ Vs is within the limit — the section size is acceptable' : '❌ Vs exceeds the limit — the section must be enlarged'}
+
+  Av (${r.nLegs} legs of Ø${r.ds}) = ${(r.Av || 0).toFixed(1)} mm²
+  s from strength        = Av fy d / Vs = ${isFinite(r.s_req) ? (r.s_req).toFixed(1) + ' mm' : 'not governed by strength'}
+
+<div class="report-subsection-header">6.4  Spacing Limits — ${r.isSeismic ? 'Special Moment Frame' : 'Non-seismic'}</div>
+
+${(r.shearLimits || []).map(l => '  ' + (isFinite(l.v) ? l.v.toFixed(1) : '—').padStart(9) + ' mm    ' + l.why).join('\n')}
+  ──────────────────────────────────────────────
+  Governing = ${(r.govShear ? r.govShear.v.toFixed(1) : '0')} mm  (${r.govShear ? r.govShear.why : ''})
+
+<div class="report-subsection-header">6.5  Provided Shear Reinforcement</div>
+
+  PROVIDE  ${r.nLegs}-leg Ø${r.ds} stirrups @ ${r.s_prov} mm c/c
+  over a hinge region of 2h = ${(r.hingeLen || 0).toFixed(0)} mm from each face of support.
+
+  φVn = φ(Vc + Av fy d / s) = ${(r.phiVn || 0).toFixed(2)} kN
+  Shear DCR = Vu / φVn = ${(r.Vu_crit || 0).toFixed(2)} / ${(r.phiVn || 0).toFixed(2)} = ${(r.shearDCR || 0).toFixed(3)}
+
+  ══════════════════════════════════════════════════
+    BEAM ${beamMark} IS ${(r.shearDCR || 0) <= 1 ? 'ADEQUATE' : 'INADEQUATE'} FOR SHEAR ${(r.shearDCR || 0) <= 1 ? '✅' : '❌'}
+  ══════════════════════════════════════════════════
+`);
+      container.appendChild(pShear);
 
       // Page 8: Detailing Diagrams (with SVGs)
       const p7 = createReportPage(8, `
