@@ -376,6 +376,88 @@
   flex: 1 1 100%;
 }
 
+/* ---------- Project workspace bar ---------- */
+.workspace-bar {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 0.6rem;
+  margin-bottom: 1.1rem;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+}
+
+.ws-btn, .ws-select {
+  background: rgba(201, 168, 76, 0.08);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  color: var(--color-gold-light, #e5cf95);
+  border-radius: 4px;
+  padding: 0.34rem 0.6rem;
+  font-size: 0.7rem;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.ws-btn:hover, .ws-select:hover { background: rgba(201, 168, 76, 0.18); }
+.ws-select { max-width: 150px; }
+.ws-btn.ws-storey {
+  background: rgba(79, 134, 198, 0.08);
+  border-color: rgba(79, 134, 198, 0.3);
+  color: #9dc0e8;
+}
+.ws-btn.ws-storey:hover { background: rgba(79, 134, 198, 0.2); }
+
+/* ---------- Unit toggle ---------- */
+.unit-toggle {
+  display: inline-flex;
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.unit-toggle button {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.62rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.unit-toggle button + button { border-left: 1px solid rgba(201, 168, 76, 0.22); }
+.unit-toggle button:hover { color: #fff; }
+.unit-toggle button.active {
+  background: var(--color-gold);
+  color: #0a0a0a;
+  font-weight: 700;
+}
+
+/* ---------- Toast ---------- */
+.calc-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 2rem;
+  transform: translate(-50%, 1.4rem);
+  background: #161a23;
+  color: #e2e8f0;
+  border: 1px solid var(--color-gold);
+  border-radius: 6px;
+  padding: 0.7rem 1.1rem;
+  font-size: 0.82rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 3000;
+  max-width: 90vw;
+  text-align: center;
+}
+.calc-toast.show { opacity: 1; transform: translate(-50%, 0); }
+
 /* ---------- Figures ---------- */
 .figure-block { margin-bottom: 1.25rem; }
 .figure-slot { margin-bottom: 1.1rem; }

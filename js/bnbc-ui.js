@@ -143,6 +143,27 @@ const BNBCUI = (function () {
     }
   }
 
+  /* Render one result row, converting it into the active unit system when
+     its unit string identifies a convertible quantity. Anything else —
+     ratios, verdicts, bar callouts — passes through untouched. */
+  function displayResult(r) {
+    const plain = r.value + (r.unit ? ' ' + r.unit : '');
+    if (typeof BNBCProject === 'undefined' || !r.unit) return plain;
+    const kind = BNBCProject.kindOf(r.unit);
+    if (!kind) return plain;
+    const home = BNBCProject.NATIVE_SYS[kind];
+    const now = BNBCProject.unitSystem();
+    if (!home || home === now) return plain;
+    /* Only a bare number can be converted; leave composites like "3 / 4" alone */
+    const n = parseFloat(r.value);
+    if (!isFinite(n) || /[/×x]/.test(String(r.value))) return plain;
+    const fNow = (BNBCProject.UNITS[now][kind] || { f: 1 }).f;
+    const fHome = (BNBCProject.UNITS[home][kind] || { f: 1 }).f;
+    const conv = n * fNow / fHome;
+    const dp = Math.abs(conv) >= 100 ? 1 : (Math.abs(conv) >= 1 ? 3 : 5);
+    return conv.toFixed(dp) + ' ' + BNBCProject.unitLabel(kind);
+  }
+
   function renderResults(res) {
     const host = document.getElementById('calc-results');
     if (!host) return;
@@ -155,7 +176,7 @@ const BNBCUI = (function () {
       lab.textContent = r.label;
       const val = document.createElement('span');
       val.className = 'console-val' + (r.flag === 'fail' ? ' val-fail' : (r.flag === 'warn' ? ' val-warn' : (r.flag === 'pass' ? ' val-pass' : '')));
-      val.textContent = r.value + (r.unit ? ' ' + r.unit : '');
+      val.textContent = displayResult(r);
       line.appendChild(lab);
       line.appendChild(val);
       host.appendChild(line);
@@ -541,16 +562,227 @@ const BNBCUI = (function () {
       const nav = document.getElementById('nav-links');
       if (ham && nav) ham.addEventListener('click', () => { nav.classList.toggle('active'); ham.classList.toggle('active'); });
 
+      bindWorkspace();
+
       run();
       if (typeof updateLockUI === 'function') updateLockUI();
     }
+  }
+
+  /* ------------------------------------------------------------------
+     Project workspace: unit toggle, save / load, share by URL, and
+     pulling shared storey data in from the other calculators.
+     ------------------------------------------------------------------ */
+  function collectFormState() {
+    const state = {};
+    document.querySelectorAll('#calc-form input, #calc-form select').forEach(el => {
+      if (el.id) state[el.id] = el.value;
+    });
+    (CFG.grids || []).forEach(g => { state['__grid_' + g.mount] = readGrid(g); });
+    return state;
+  }
+
+  function applyFormState(state) {
+    if (!state) return;
+    Object.keys(state).forEach(k => {
+      if (k.indexOf('__grid_') === 0) return;
+      const el = document.getElementById(k);
+      if (el) el.value = state[k];
+    });
+    (CFG.grids || []).forEach(g => {
+      const rows = state['__grid_' + g.mount];
+      if (!rows || !rows.length) return;
+      const body = document.getElementById(g.mount + '-body');
+      if (!body) return;
+      body.innerHTML = '';
+      rows.forEach(r => addRow(g, r));
+    });
+    run();
+  }
+
+  function bindWorkspace() {
+    if (typeof BNBCProject === 'undefined') return;
+
+    tagUnits();
+    repaintUnits(null);          // label only, no value change on first paint
+
+    let prevSystem = BNBCProject.unitSystem();
+    BNBCProject.mountUnitToggle('unit-toggle-host', now => {
+      repaintUnits(prevSystem);
+      prevSystem = now;
+      run();
+    });
+
+    /* A link that was shared with inputs baked in */
+    const shared = BNBCProject.readShared();
+    if (shared) {
+      applyFormState(shared);
+      toast('Inputs loaded from the shared link.');
+    }
+
+    const btnSave = document.getElementById('btn-save-project');
+    if (btnSave) btnSave.addEventListener('click', () => {
+      const name = prompt('Save these inputs as:', BNBCProject.get().name || CFG.title);
+      if (!name) return;
+      BNBCProject.saveNamed(name, collectFormState());
+      refreshSavedList();
+      toast('Saved as "' + name + '".');
+    });
+
+    const btnShare = document.getElementById('btn-share-link');
+    if (btnShare) btnShare.addEventListener('click', () => {
+      const url = BNBCProject.shareURL(collectFormState());
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(
+          () => toast('Share link copied to the clipboard.'),
+          () => { location.hash = url.split('#')[1]; toast('Link is in the address bar.'); });
+      } else {
+        location.hash = url.split('#')[1];
+        toast('Link is in the address bar.');
+      }
+    });
+
+    const sel = document.getElementById('saved-project-select');
+    if (sel) sel.addEventListener('change', () => {
+      if (!sel.value) return;
+      applyFormState(BNBCProject.loadNamed(sel.value));
+      toast('Loaded "' + sel.value + '".');
+    });
+    refreshSavedList();
+
+    /* Shared storey data */
+    const gridSpec = (CFG.grids || [])[0];
+    if (gridSpec && CFG.storeyKeys) {
+      const btnPull = document.getElementById('btn-pull-storeys');
+      if (btnPull) btnPull.addEventListener('click', () => {
+        const rows = BNBCProject.getStoreys();
+        if (!rows.length) { toast('No storey data saved yet — push it from another calculator first.'); return; }
+        const body = document.getElementById(gridSpec.mount + '-body');
+        body.innerHTML = '';
+        rows.forEach(r => addRow(gridSpec, r));
+        run();
+        toast('Loaded ' + rows.length + ' levels from the project.');
+      });
+      const btnPush = document.getElementById('btn-push-storeys');
+      if (btnPush) btnPush.addEventListener('click', () => {
+        const rows = readGrid(gridSpec);
+        BNBCProject.mergeStoreys(rows, CFG.storeyKeys);
+        toast('Shared ' + rows.length + ' levels with the other calculators.');
+      });
+    }
+  }
+
+  function refreshSavedList() {
+    const sel = document.getElementById('saved-project-select');
+    if (!sel || typeof BNBCProject === 'undefined') return;
+    const names = BNBCProject.listSaved();
+    sel.innerHTML = '<option value="">Load saved…</option>' +
+      names.map(n => '<option>' + n.replace(/</g, '&lt;') + '</option>').join('');
+  }
+
+  function toast(msg) {
+    let t = document.getElementById('calc-toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'calc-toast';
+      t.className = 'calc-toast';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._h);
+    t._h = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+
+  /* ------------------------------------------------------------------
+     Unit handling.
+
+     Each numeric input records the unit its label carried when the page
+     loaded — that is the unit the engine expects. The field then displays
+     whatever the active system uses, and v() converts back on the way in,
+     so the verified engines never see a converted number.
+     ------------------------------------------------------------------ */
+  const UNIT_RE = /\(([^()]*)\)\s*$/;
+
+  function labelFor(el) {
+    const field = el.closest('.input-field');
+    return field ? field.querySelector('label') : null;
+  }
+
+  function tagUnits() {
+    if (typeof BNBCProject === 'undefined') return;
+    document.querySelectorAll('#calc-form input[type="number"]').forEach(el => {
+      if (el.dataset.nativeKind !== undefined) return;
+      const lab = labelFor(el);
+      const m = lab ? (lab.textContent || '').match(UNIT_RE) : null;
+      const kind = m ? BNBCProject.kindOf(m[1]) : null;
+      el.dataset.nativeKind = kind || '';
+      if (kind && lab) lab.dataset.baseText = lab.textContent.replace(UNIT_RE, '').trim();
+    });
+  }
+
+  /* Rewrite the displayed values and labels for the active unit system.
+
+     Pass prevSystem = null on the first paint: the markup seeds each field
+     in its own native unit, so the conversion is from the field's home
+     system rather than from whatever was on screen before. Skipping that
+     conversion would leave a native-imperial page showing inches under a
+     millimetre label, and v() would then hand the engine a wrong number. */
+  function repaintUnits(prevSystem) {
+    if (typeof BNBCProject === 'undefined') return;
+    const now = BNBCProject.unitSystem();
+    document.querySelectorAll('#calc-form input[type="number"]').forEach(el => {
+      const kind = el.dataset.nativeKind;
+      if (!kind) return;
+      const lab = labelFor(el);
+      const home = BNBCProject.NATIVE_SYS[kind];
+      const from = prevSystem || home;
+      const val = parseFloat(el.value);
+      if (isFinite(val) && home && from !== now) {
+        const fFrom = (BNBCProject.UNITS[from][kind] || { f: 1 }).f;
+        const fHome = (BNBCProject.UNITS[home][kind] || { f: 1 }).f;
+        const fNow = (BNBCProject.UNITS[now][kind] || { f: 1 }).f;
+        const native = val * fHome / fFrom;          // back to the native unit
+        const shown = native * fNow / fHome;         // out to the active unit
+        el.value = parseFloat(shown.toPrecision(6));
+        /* Remember the exact native value alongside the rounded display
+           value, so repeated switching does not drift the calculation. */
+        el.dataset.nativeValue = String(native);
+        el.dataset.shownValue = el.value;
+      }
+      if (lab && lab.dataset.baseText) {
+        lab.textContent = lab.dataset.baseText + ' (' + BNBCProject.unitLabel(kind) + ')';
+      }
+    });
   }
 
   /* Convenience accessors used by the page-level collect() functions */
   function v(id, dflt) {
     const el = document.getElementById(id);
     if (!el) return dflt;
-    if (el.type === 'number') { const n = parseFloat(el.value); return isFinite(n) ? n : dflt; }
+    if (el.type === 'number') {
+      const n = parseFloat(el.value);
+      if (!isFinite(n)) return dflt;
+      const kind = el.dataset ? el.dataset.nativeKind : '';
+      if (kind && typeof BNBCProject !== 'undefined') {
+        const home = BNBCProject.NATIVE_SYS[kind];
+        const now = BNBCProject.unitSystem();
+        if (home && home !== now) {
+          /* If the field still holds exactly what the last conversion wrote,
+             use the exact native value rather than reversing the rounded
+             display value — otherwise switching units repeatedly would
+             slowly drift the inputs. */
+          if (el.dataset.shownValue === el.value && el.dataset.nativeValue) {
+            const cached = parseFloat(el.dataset.nativeValue);
+            if (isFinite(cached)) return cached;
+          }
+          const fNow = (BNBCProject.UNITS[now][kind] || { f: 1 }).f;
+          const fHome = (BNBCProject.UNITS[home][kind] || { f: 1 }).f;
+          return n * fHome / fNow;
+        }
+      }
+      return n;
+    }
     return el.value;
   }
   function grid(mountId) {

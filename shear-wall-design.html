@@ -80,7 +80,16 @@
 
         <!-- INPUTS -->
         <section class="analysis-card col-inputs">
-          <h3>Design Parameters</h3>
+          <h3>Design Parameters <span id="unit-toggle-host"></span></h3>
+          <div class="workspace-bar">
+            <button type="button" class="ws-btn" id="btn-save-project" title="Save these inputs under a name">
+              <i class="fa-solid fa-floppy-disk"></i> Save
+            </button>
+            <select class="ws-select" id="saved-project-select"><option value="">Load saved…</option></select>
+            <button type="button" class="ws-btn" id="btn-share-link" title="Copy a link with these inputs baked in">
+              <i class="fa-solid fa-link"></i> Share
+            </button>
+          </div>
           <form id="calc-form" onsubmit="return false;">
             <div class="form-group-title">Materials &amp; Loads</div>
             <div class="input-grid">
@@ -295,6 +304,7 @@
   <script src="js/bnbc-design.js"></script>
   <script src="js/bnbc-design2.js"></script>
   <script src="js/bnbc-design3.js"></script>
+  <script src="js/bnbc-project.js"></script>
   <script src="js/bnbc-draw.js"></script>
   <script src="js/bnbc-figures.js"></script>
   <script src="js/bnbc-ui.js"></script>
