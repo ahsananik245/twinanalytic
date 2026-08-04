@@ -102,6 +102,7 @@
           <div class="calc-headline is-info" id="calc-headline">Enter the design parameters to run the analysis.</div>
           <div class="warning-box" id="calc-warnings"></div>
           <div class="results-console" id="calc-results"></div>
+          <div class="figure-block" id="calc-figure" style="display:none;"></div>
           <div class="out-table-block" id="calc-table" style="display:none;"></div>
 
           <button class="btn-pdf" id="btn-export-pdf" type="button">
@@ -190,12 +191,15 @@
   <script src="js/bnbc-calcs.js"></script>
   <script src="js/bnbc-design.js"></script>
   <script src="js/bnbc-design2.js"></script>
+  <script src="js/bnbc-draw.js"></script>
+  <script src="js/bnbc-figures.js"></script>
   <script src="js/bnbc-ui.js"></script>
   <script>
     BNBCUI.mount({
       title: 'Torsional Irregularity Check',
       slug: 'twinanalytic-torsional-irregularity',
       calc: BNBCCalc.torsionalIrregularity,
+      figure: BNBCFigures.torsion,
       grids: [{
         mount: 'grid-cases',
         hint: 'One row per lateral load case and direction. Dmax and Dmin are the drifts at the two ends of the diaphragm.',

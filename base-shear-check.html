@@ -165,6 +165,7 @@
           <div class="calc-headline is-info" id="calc-headline">Enter the design parameters to run the analysis.</div>
           <div class="warning-box" id="calc-warnings"></div>
           <div class="results-console" id="calc-results"></div>
+          <div class="figure-block" id="calc-figure" style="display:none;"></div>
           <div class="out-table-block" id="calc-table" style="display:none;"></div>
 
           <button class="btn-pdf" id="btn-export-pdf" type="button">
@@ -253,6 +254,8 @@
   <script src="js/bnbc-calcs.js"></script>
   <script src="js/bnbc-design.js"></script>
   <script src="js/bnbc-design2.js"></script>
+  <script src="js/bnbc-draw.js"></script>
+  <script src="js/bnbc-figures.js"></script>
   <script src="js/bnbc-ui.js"></script>
   <script>
     (function () {
@@ -273,6 +276,7 @@
       title: 'Base Shear Verification',
       slug: 'twinanalytic-base-shear-check',
       calc: BNBCCalc.baseShearCheck,
+      figure: BNBCFigures.baseShear,
       collect: function () {
         return {
           DL: BNBCUI.v('in-DL', 0), SDL: BNBCUI.v('in-SDL', 0), LL: BNBCUI.v('in-LL', 0),

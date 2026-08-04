@@ -221,6 +221,21 @@ const BNBCUI = (function () {
     });
   }
 
+  /* Draw the calculator's figure, if it declared one. A failure here must
+     never take the numbers down with it. */
+  function renderFigure(res) {
+    const host = document.getElementById('calc-figure');
+    if (!host) return;
+    if (!CFG.figure || typeof BNBCDraw === 'undefined') { host.style.display = 'none'; return; }
+    try {
+      CFG.figure(res, host);
+      host.style.display = host.children.length ? 'block' : 'none';
+    } catch (err) {
+      console.warn('[TwinAnalytic] figure failed', err);
+      host.style.display = 'none';
+    }
+  }
+
   function renderTable(res) {
     const host = document.getElementById('calc-table');
     if (!host) return;
@@ -295,6 +310,7 @@ const BNBCUI = (function () {
     renderResults(res);
     renderWarnings(res);
     renderSteps(res);
+    renderFigure(res);
     renderTable(res);
     if (CFG.onRender) { try { CFG.onRender(res); } catch (e) { console.warn(e); } }
   }

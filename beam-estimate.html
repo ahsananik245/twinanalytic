@@ -174,6 +174,7 @@
           <div class="calc-headline is-info" id="calc-headline">Enter the design parameters to run the analysis.</div>
           <div class="warning-box" id="calc-warnings"></div>
           <div class="results-console" id="calc-results"></div>
+          <div class="figure-block" id="calc-figure" style="display:none;"></div>
           <div class="out-table-block" id="calc-table" style="display:none;"></div>
 
           <button class="btn-pdf" id="btn-export-pdf" type="button">
@@ -262,12 +263,15 @@
   <script src="js/bnbc-calcs.js"></script>
   <script src="js/bnbc-design.js"></script>
   <script src="js/bnbc-design2.js"></script>
+  <script src="js/bnbc-draw.js"></script>
+  <script src="js/bnbc-figures.js"></script>
   <script src="js/bnbc-ui.js"></script>
   <script>
     BNBCUI.mount({
       title: 'Beam Estimating',
       slug: 'twinanalytic-beam-estimate',
       calc: BNBCDesign2.beamEstimate,
+      figure: BNBCFigures.estimate,
       grids: [{
         mount: 'grid-spans',
         hint: 'One row per span. Bar diameters are in millimetres; enter zero where a bar mark is not used.',

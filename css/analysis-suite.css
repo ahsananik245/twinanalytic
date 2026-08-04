@@ -376,6 +376,36 @@
   flex: 1 1 100%;
 }
 
+/* ---------- Figures ---------- */
+.figure-block { margin-bottom: 1.25rem; }
+.figure-slot { margin-bottom: 1.1rem; }
+.figure-slot:last-child { margin-bottom: 0; }
+
+.figure-title {
+  font-family: var(--font-serif);
+  font-size: 0.8rem;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+}
+
+.figure-box {
+  background: #0b0e14;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 0.6rem;
+  overflow-x: auto;
+}
+
+.figure-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  min-width: 280px;
+}
+
 /* ---------- Output table ---------- */
 .out-table-block { margin-top: 1.25rem; }
 .out-table-title {
