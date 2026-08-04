@@ -456,10 +456,73 @@ const BNBCFigures = (function () {
     ], { title: 'Reinforcement Ratios against the Minimum', xLabel: 'ρ' });
   }
 
+  /* ---------------- moment magnifier ---------------- */
+  function magnifier(res, host) {
+    const r = res.raw;
+    const s = slots(host, 2);
+
+    /* How the magnifier grows as the axial load approaches the buckling load */
+    const pts = [];
+    for (let f = 0; f <= 0.96; f += 0.01) {
+      pts.push([f, Math.max(1, r.Cm / (1 - f))]);
+    }
+    const ratio = r.Pc > 0 ? r.Pu / (0.75 * r.Pc) : 0;
+    D.chart(s[0], [{ pts: pts, color: C.GOLD, fill: 'rgba(201,168,76,0.10)' }], {
+      title: 'Magnification against Axial Load Ratio',
+      xLabel: 'Pu / 0.75Pc', yLabel: 'Magnifier δ',
+      xFrom0: true, height: 270,
+      hLines: [{ y: 1.4, label: 'δ = 1.4 — consider enlarging', color: C.RED }],
+      markers: r.stable ? [{
+        x: ratio, y: Math.min(r.delta, 6),
+        label: 'δ = ' + D.fmt(r.delta), color: r.delta > 1.4 ? C.RED : C.GREEN
+      }] : []
+    });
+
+    /* Column elevation with the buckled shape suggested */
+    const W = 260, H = 300;
+    const sv = D.svg(s[1], W, H, 'Slenderness');
+    const cw = 46, x0 = W / 2 - cw / 2, y0 = 34, ch = H - 80;
+    D.el('rect', { x: x0, y: y0, width: cw, height: ch, fill: C.CONC, stroke: C.INK, 'stroke-width': 1.5 }, sv);
+    /* deflected shape */
+    const amp = Math.min(26, 6 * (r.delta || 1));
+    let d2 = 'M ' + (x0 + cw / 2) + ' ' + y0;
+    for (let i = 1; i <= 24; i++) {
+      const t = i / 24;
+      d2 += ' L ' + (x0 + cw / 2 + amp * Math.sin(Math.PI * t)) + ' ' + (y0 + ch * t);
+    }
+    D.el('path', { d: d2, fill: 'none', stroke: C.RED, 'stroke-width': 1.6, 'stroke-dasharray': '4 3' }, sv);
+    /* end restraints */
+    [y0, y0 + ch].forEach(y => D.el('path', { d: 'M' + (x0 - 10) + ' ' + y + ' l ' + (cw + 20) + ' 0', stroke: C.MUTED, 'stroke-width': 2 }, sv));
+    /* axial load arrow */
+    D.el('line', { x1: x0 + cw / 2, y1: 8, x2: x0 + cw / 2, y2: y0 - 3, stroke: C.BLUE, 'stroke-width': 1.6 }, sv);
+    D.el('path', { d: 'M' + (x0 + cw / 2) + ' ' + (y0 - 2) + ' l -4 -7 l 8 0 Z', fill: C.BLUE }, sv);
+    D.text(sv, x0 + cw / 2 + 8, 14, 'Pu = ' + D.fmt(r.Pu) + ' k', { size: 8, fill: C.BLUE });
+    D.text(sv, x0 + cw + 14, y0 + ch / 2, 'kl/r = ' + D.fmt(r.klr), { size: 8, fill: r.slender ? C.RED : C.GREEN });
+    D.text(sv, x0 + cw + 14, y0 + ch / 2 + 12, 'limit ' + D.fmt(r.limit), { size: 8 });
+    D.text(sv, W / 2, H - 14, r.slender ? 'SLENDER — magnify' : 'SHORT COLUMN', {
+      anchor: 'middle', size: 9, fill: r.slender ? C.RED : C.GREEN, weight: 600
+    });
+  }
+
+  /* ---------------- load combinations ---------------- */
+  function loadCombos(res, host) {
+    const r = res.raw;
+    const s = slots(host, 1);
+    D.storeyProfile(s[0], r.combos.map(c => ({
+      name: '#' + c.n + (c.seismic ? ' (E)' : ''), value: c.value
+    })), {
+      title: 'Load Combination Results',
+      xLabel: 'Factored effect',
+      limit: Math.abs(r.governing.value),
+      limitLabel: 'governs — combo ' + r.governing.n
+    });
+  }
+
   return {
     seismic, wind, pdelta, drift, softStorey, torsion, overturning, baseShear,
     stair, circularColumn, combinedFooting, twoWaySlab, cantileverSlab,
-    beamShear, columnTies, development, estimate, shearWall, shearWallRebar
+    beamShear, columnTies, development, estimate, shearWall, shearWallRebar,
+    magnifier, loadCombos
   };
 })();
 

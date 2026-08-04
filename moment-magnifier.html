@@ -4,14 +4,14 @@
   <link rel="icon" type="image/png" href="assets/favicon.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Free Circular Column Design Calculator — ACI 318 Interaction Diagram</title>
-  <meta name="description" content="Free circular concrete column design with a full P-M interaction diagram built by strain compatibility. Checks axial capacity, moment capacity at the applied load, spiral ratio and shear.">
-  <link rel="canonical" href="https://twinanalytic.com/circular-column-design.html">
+  <title>Free Column Slenderness &amp; Moment Magnifier Calculator — ACI 318</title>
+  <meta name="description" content="Free column slenderness check and moment magnification calculator to ACI 318 Sec 6.6.4. Computes kl/r, the slenderness limit, the critical buckling load Pc and the magnified design moment Mc.">
+  <link rel="canonical" href="https://twinanalytic.com/moment-magnifier.html">
 
-  <meta property="og:title" content="Circular Column Design Calculator — TwinAnalytic" />
-  <meta property="og:description" content="Free circular concrete column design with a full P-M interaction diagram built by strain compatibility. Checks axial capacity, moment capacity at the applied load, spiral ratio and shear." />
+  <meta property="og:title" content="Column Slenderness & Moment Magnifier — TwinAnalytic" />
+  <meta property="og:description" content="Free column slenderness check and moment magnification calculator to ACI 318 Sec 6.6.4. Computes kl/r, the slenderness limit, the critical buckling load Pc and the magnified design moment Mc." />
   <meta property="og:image" content="https://twinanalytic.com/assets/about_render.jpg" />
-  <meta property="og:url" content="https://twinanalytic.com/circular-column-design.html" />
+  <meta property="og:url" content="https://twinanalytic.com/moment-magnifier.html" />
   <meta property="og:type" content="website" />
 
   <link rel="stylesheet" href="css/style.css">
@@ -71,9 +71,9 @@
   <main class="analysis-page">
     <div class="container">
       <header class="page-title-section">
-        <p class="eyebrow">Member Design · ACI 318</p>
-        <h1>Circular Column — Axial &amp; Flexural Capacity</h1>
-        <p class="standard">Builds the P-M interaction diagram of a spirally reinforced circular column from first principles: the concrete compression zone is integrated as a circular segment and every bar is evaluated by strain compatibility with the displaced concrete deducted.</p>
+        <p class="eyebrow">Member Design · ACI 318 Sec 6.6.4</p>
+        <h1>Column Slenderness &amp; Moment Magnification</h1>
+        <p class="standard">Decides whether a column is short or slender, then magnifies the design moment where it must be. Produces the Mc that the column calculators expect as their input moment, rather than leaving you to supply a pre-magnified value.</p>
       </header>
 
       <div class="analysis-grid">
@@ -82,83 +82,85 @@
         <section class="analysis-card col-inputs">
           <h3>Design Parameters</h3>
           <form id="calc-form" onsubmit="return false;">
-            <div class="form-group-title">Code &amp; Materials</div>
+            <div class="form-group-title">Frame &amp; Section</div>
             <div class="input-grid">
-              <div class="input-field full">
-                <label>Design Code</label>
-                <select id="in-code">
-                  <option value="ACI318-19" selected>ACI 318-19 — strain based &phi;</option>
-                  <option value="ACI318-02">ACI 318-02 — axial load based &phi;</option>
+              <div class="input-field">
+                <label>Frame Type</label>
+                <select id="in-frame">
+                  <option value="braced" selected>Braced against sidesway</option>
+                  <option value="unbraced">Unbraced (sway) frame</option>
                 </select>
               </div>
               <div class="input-field">
+                <label>Section Shape</label>
+                <select id="in-shape">
+                  <option value="rect" selected>Rectangular</option>
+                  <option value="circ">Circular</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Width, b (in)</label>
+                <input type="number" id="in-b" value="14" step="1" min="6">
+              </div>
+              <div class="input-field">
+                <label>Depth, h (in)</label>
+                <input type="number" id="in-h" value="14" step="1" min="6">
+              </div>
+              <div class="input-field full">
+                <label>Diameter, D (in) — circular sections only</label>
+                <input type="number" id="in-D" value="20" step="1" min="8">
+              </div>
+              <div class="input-field">
                 <label>Concrete Strength, f'c (ksi)</label>
-                <input type="number" id="in-fc" value="5" step="0.5" min="2.5">
+                <input type="number" id="in-fc" value="4" step="0.5" min="2.5">
               </div>
               <div class="input-field">
                 <label>Steel Yield, fy (ksi)</label>
                 <input type="number" id="in-fy" value="60" step="1" min="40">
               </div>
-              <div class="input-field">
-                <label>Confinement Type</label>
-                <select id="in-tie">
-                  <option value="spiral" selected>Spiral (&phi; = 0.75, cap 0.85)</option>
-                  <option value="tied">Tied (&phi; = 0.65, cap 0.80)</option>
-                </select>
-              </div>
-              <div class="input-field">
-                <label>Bar Cage Orientation</label>
-                <select id="in-orient">
-                  <option value="axis" selected>Bar on the bending axis (conservative)</option>
-                  <option value="rotated">Rotated half a bar spacing</option>
-                </select>
-              </div>
             </div>
 
-            <div class="form-group-title">Geometry &amp; Reinforcement</div>
+            <div class="form-group-title">Geometry &amp; Restraint</div>
             <div class="input-grid">
               <div class="input-field">
-                <label>Column Diameter, D (in)</label>
-                <input type="number" id="in-D" value="20" step="1" min="8">
+                <label>Clear Height, lu (ft)</label>
+                <input type="number" id="in-lu" value="16" step="0.5" min="2">
               </div>
               <div class="input-field">
-                <label>Clear Cover (in)</label>
-                <input type="number" id="in-cov" value="1.5" step="0.25" min="0.75">
+                <label>Effective Length Factor, k</label>
+                <input type="number" id="in-k" value="1" step="0.05" min="0.5" max="4">
               </div>
-              <div class="input-field">
-                <label>Number of Vertical Bars</label>
-                <input type="number" id="in-n" value="8" step="1" min="4" max="40">
-              </div>
-              <div class="input-field">
-                <label>Vertical Bar Size</label>
-                <select id="in-bar"><option value="#3">#3</option><option value="#4">#4</option><option value="#5">#5</option><option value="#6">#6</option><option value="#7" selected>#7</option><option value="#8">#8</option><option value="#9">#9</option><option value="#10">#10</option><option value="#11">#11</option><option value="#14">#14</option><option value="#18">#18</option></select>
-              </div>
-              <div class="input-field">
-                <label>Spiral Bar Size</label>
-                <select id="in-sp"><option value="#3">#3</option><option value="#4" selected>#4</option><option value="#5">#5</option><option value="#6">#6</option><option value="#7">#7</option><option value="#8">#8</option><option value="#9">#9</option><option value="#10">#10</option><option value="#11">#11</option><option value="#14">#14</option><option value="#18">#18</option></select>
-              </div>
-              <div class="input-field">
-                <label>Spiral Pitch (in)</label>
-                <input type="number" id="in-pitch" value="3" step="0.25" min="1">
-              </div>
-              <div class="input-note">The spiral is checked against the ACI 318 25.7.3.3 confinement ratio
-              &rho;s, which a pitch chosen only for shear will often not satisfy.</div>
+              <div class="input-note">Take k = 1.0 for a braced frame unless a stiffness analysis justifies
+              less. An unbraced frame needs k &gt; 1.0 from an alignment chart.</div>
             </div>
 
-            <div class="form-group-title">Factored Loads</div>
+            <div class="form-group-title">Loads</div>
             <div class="input-grid">
               <div class="input-field">
-                <label>Axial Load, Pu (k)</label>
-                <input type="number" id="in-Pu" value="480" step="1" min="0">
+                <label>Factored Axial Load, Pu (k)</label>
+                <input type="number" id="in-Pu" value="250" step="5" min="0">
               </div>
               <div class="input-field">
-                <label>Magnified Moment, Mu (ft-k)</label>
-                <input type="number" id="in-Mu" value="200" step="1" min="0">
+                <label>Sustained Load Ratio, &beta;dns</label>
+                <input type="number" id="in-beta" value="0.6" step="0.05" min="0" max="1">
+              </div>
+              <div class="input-field">
+                <label>Smaller End Moment, M1 (ft-k)</label>
+                <input type="number" id="in-M1" value="40" step="5" min="0">
+              </div>
+              <div class="input-field">
+                <label>Larger End Moment, M2 (ft-k)</label>
+                <input type="number" id="in-M2" value="90" step="5" min="0">
               </div>
               <div class="input-field full">
-                <label>Shear Load, Vu (k)</label>
-                <input type="number" id="in-Vu" value="20" step="1" min="0">
+                <label>Curvature</label>
+                <select id="in-curv">
+                  <option value="single" selected>Single curvature (M1/M2 negative)</option>
+                  <option value="double">Double curvature (M1/M2 positive)</option>
+                </select>
               </div>
+              <div class="input-note">&beta;dns is the ratio of the maximum factored sustained axial load to the
+              maximum factored axial load — 0.6 is a common default for a gravity column.</div>
             </div>
 
             <div class="buttons-block">
@@ -193,10 +195,10 @@
       <div class="suite-crosslinks">
         <h4>Related Calculators</h4>
         <div class="crosslink-row">
-          <a href="combined-footing.html">Combined Footing</a>
-          <a href="shear-wall-design.html">Shear Wall Design</a>
+          <a href="p-delta-check.html">P-Delta Stability</a>
+          <a href="load-combinations.html">Load Combinations</a>
+          <a href="circular-column-design.html">Circular Column</a>
           <a href="column-tie-rebar.html">Column Tie Rebar</a>
-          <a href="development-length.html">Development & Splice</a>
           <a href="beam-design.html">RC Beam Design</a>
           <a href="column-design.html">RC Column Design</a>
         </div>
@@ -269,27 +271,28 @@
   <script src="js/bnbc-ui.js"></script>
   <script>
     BNBCUI.mount({
-      title: 'Circular Column Design',
-      slug: 'twinanalytic-circular-column',
-      calc: BNBCDesign2.circularColumn,
-      figure: BNBCFigures.circularColumn,
+      title: 'Column Slenderness & Moment Magnifier',
+      slug: 'twinanalytic-moment-magnifier',
+      calc: BNBCDesign3.momentMagnifier,
+      figure: BNBCFigures.magnifier,
       collect: function () {
         return {
-          code: BNBCUI.v('in-code', 'ACI318-19'),
-          fc: BNBCUI.v('in-fc', 5), fy: BNBCUI.v('in-fy', 60),
-          tieType: BNBCUI.v('in-tie', 'spiral'),
-          barOrientation: BNBCUI.v('in-orient', 'axis'),
-          D: BNBCUI.v('in-D', 20), cover: BNBCUI.v('in-cov', 1.5),
-          nBar: BNBCUI.v('in-n', 8), bar: BNBCUI.v('in-bar', '#7'),
-          spiral: BNBCUI.v('in-sp', '#4'), pitch: BNBCUI.v('in-pitch', 3),
-          Pu: BNBCUI.v('in-Pu', 480), Mu: BNBCUI.v('in-Mu', 200), Vu: BNBCUI.v('in-Vu', 20)
+          frame: BNBCUI.v('in-frame', 'braced'),
+          shape: BNBCUI.v('in-shape', 'rect'),
+          b: BNBCUI.v('in-b', 14), h: BNBCUI.v('in-h', 14), D: BNBCUI.v('in-D', 20),
+          fc: BNBCUI.v('in-fc', 4), fy: BNBCUI.v('in-fy', 60),
+          lu: BNBCUI.v('in-lu', 16), k: BNBCUI.v('in-k', 1),
+          Pu: BNBCUI.v('in-Pu', 250), betaDns: BNBCUI.v('in-beta', 0.6),
+          M1: BNBCUI.v('in-M1', 40), M2: BNBCUI.v('in-M2', 90),
+          curvature: BNBCUI.v('in-curv', 'single')
         };
       },
       pdfInputs: function (i) {
-        return [['Code', i.code], ["f'c / fy", i.fc + ' / ' + i.fy + ' ksi'],
-                ['Diameter', i.D + ' in'], ['Vertical bars', i.nBar + ' - ' + i.bar],
-                ['Spiral', i.spiral + ' @ ' + i.pitch + ' in'],
-                ['Pu / Mu / Vu', i.Pu + ' k / ' + i.Mu + ' ft-k / ' + i.Vu + ' k']];
+        return [['Frame', i.frame], ['Section', i.shape === 'circ' ? ('D ' + i.D + ' in') : (i.b + ' x ' + i.h + ' in')],
+                ["f'c / fy", i.fc + ' / ' + i.fy + ' ksi'],
+                ['Clear height lu', i.lu + ' ft'], ['k', i.k],
+                ['Pu', i.Pu + ' k'], ['M1 / M2', i.M1 + ' / ' + i.M2 + ' ft-k'],
+                ['beta dns', i.betaDns], ['Curvature', i.curvature]];
       }
     });
   </script>

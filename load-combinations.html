@@ -4,14 +4,14 @@
   <link rel="icon" type="image/png" href="assets/favicon.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Free Circular Column Design Calculator — ACI 318 Interaction Diagram</title>
-  <meta name="description" content="Free circular concrete column design with a full P-M interaction diagram built by strain compatibility. Checks axial capacity, moment capacity at the applied load, spiral ratio and shear.">
-  <link rel="canonical" href="https://twinanalytic.com/circular-column-design.html">
+  <title>Free BNBC 2020 Load Combination Calculator — Strength Design</title>
+  <meta name="description" content="Free BNBC 2020 strength design load combination generator. Evaluates all eight combinations including the vertical earthquake effect Ev and identifies the governing and uplift cases.">
+  <link rel="canonical" href="https://twinanalytic.com/load-combinations.html">
 
-  <meta property="og:title" content="Circular Column Design Calculator — TwinAnalytic" />
-  <meta property="og:description" content="Free circular concrete column design with a full P-M interaction diagram built by strain compatibility. Checks axial capacity, moment capacity at the applied load, spiral ratio and shear." />
+  <meta property="og:title" content="BNBC 2020 Load Combination Generator — TwinAnalytic" />
+  <meta property="og:description" content="Free BNBC 2020 strength design load combination generator. Evaluates all eight combinations including the vertical earthquake effect Ev and identifies the governing and uplift cases." />
   <meta property="og:image" content="https://twinanalytic.com/assets/about_render.jpg" />
-  <meta property="og:url" content="https://twinanalytic.com/circular-column-design.html" />
+  <meta property="og:url" content="https://twinanalytic.com/load-combinations.html" />
   <meta property="og:type" content="website" />
 
   <link rel="stylesheet" href="css/style.css">
@@ -71,9 +71,9 @@
   <main class="analysis-page">
     <div class="container">
       <header class="page-title-section">
-        <p class="eyebrow">Member Design · ACI 318</p>
-        <h1>Circular Column — Axial &amp; Flexural Capacity</h1>
-        <p class="standard">Builds the P-M interaction diagram of a spirally reinforced circular column from first principles: the concrete compression zone is integrated as a circular segment and every bar is evaluated by strain compatibility with the displaced concrete deducted.</p>
+        <p class="eyebrow">Load Analysis · BNBC 2020 Sec 2.7</p>
+        <h1>BNBC 2020 Load Combination Generator</h1>
+        <p class="standard">Evaluates the full set of strength design combinations for one load effect — an axial force, a moment or a shear. The vertical earthquake effect shifts the dead load factor in the seismic combinations, and the uplift case is reported alongside the maximum.</p>
       </header>
 
       <div class="analysis-grid">
@@ -82,83 +82,60 @@
         <section class="analysis-card col-inputs">
           <h3>Design Parameters</h3>
           <form id="calc-form" onsubmit="return false;">
-            <div class="form-group-title">Code &amp; Materials</div>
+            <div class="form-group-title">Unfactored Load Effects</div>
             <div class="input-grid">
+              <div class="input-note">Enter the same effect from each load case — all axial forces, or all
+              moments, or all shears. The combinations are applied to whatever you enter.</div>
+              <div class="input-field">
+                <label>Dead Load, D</label>
+                <input type="number" id="in-D" value="100" step="1">
+              </div>
+              <div class="input-field">
+                <label>Live Load, L</label>
+                <input type="number" id="in-L" value="50" step="1">
+              </div>
+              <div class="input-field">
+                <label>Roof Live Load, Lr</label>
+                <input type="number" id="in-Lr" value="0" step="1">
+              </div>
+              <div class="input-field">
+                <label>Wind, W</label>
+                <input type="number" id="in-W" value="40" step="1">
+              </div>
+              <div class="input-field">
+                <label>Earthquake, E</label>
+                <input type="number" id="in-E" value="60" step="1">
+              </div>
+              <div class="input-field">
+                <label>Fluid, F</label>
+                <input type="number" id="in-F" value="0" step="1">
+              </div>
               <div class="input-field full">
-                <label>Design Code</label>
-                <select id="in-code">
-                  <option value="ACI318-19" selected>ACI 318-19 — strain based &phi;</option>
-                  <option value="ACI318-02">ACI 318-02 — axial load based &phi;</option>
-                </select>
-              </div>
-              <div class="input-field">
-                <label>Concrete Strength, f'c (ksi)</label>
-                <input type="number" id="in-fc" value="5" step="0.5" min="2.5">
-              </div>
-              <div class="input-field">
-                <label>Steel Yield, fy (ksi)</label>
-                <input type="number" id="in-fy" value="60" step="1" min="40">
-              </div>
-              <div class="input-field">
-                <label>Confinement Type</label>
-                <select id="in-tie">
-                  <option value="spiral" selected>Spiral (&phi; = 0.75, cap 0.85)</option>
-                  <option value="tied">Tied (&phi; = 0.65, cap 0.80)</option>
-                </select>
-              </div>
-              <div class="input-field">
-                <label>Bar Cage Orientation</label>
-                <select id="in-orient">
-                  <option value="axis" selected>Bar on the bending axis (conservative)</option>
-                  <option value="rotated">Rotated half a bar spacing</option>
-                </select>
+                <label>Lateral Earth Pressure, H</label>
+                <input type="number" id="in-H" value="0" step="1">
               </div>
             </div>
 
-            <div class="form-group-title">Geometry &amp; Reinforcement</div>
+            <div class="form-group-title">Seismic Parameters</div>
             <div class="input-grid">
               <div class="input-field">
-                <label>Column Diameter, D (in)</label>
-                <input type="number" id="in-D" value="20" step="1" min="8">
+                <label>Vertical Seismic Coefficient, Ev</label>
+                <input type="number" id="in-Ev" value="0.138" step="0.001" min="0" max="0.5">
               </div>
               <div class="input-field">
-                <label>Clear Cover (in)</label>
-                <input type="number" id="in-cov" value="1.5" step="0.25" min="0.75">
-              </div>
-              <div class="input-field">
-                <label>Number of Vertical Bars</label>
-                <input type="number" id="in-n" value="8" step="1" min="4" max="40">
-              </div>
-              <div class="input-field">
-                <label>Vertical Bar Size</label>
-                <select id="in-bar"><option value="#3">#3</option><option value="#4">#4</option><option value="#5">#5</option><option value="#6">#6</option><option value="#7" selected>#7</option><option value="#8">#8</option><option value="#9">#9</option><option value="#10">#10</option><option value="#11">#11</option><option value="#14">#14</option><option value="#18">#18</option></select>
-              </div>
-              <div class="input-field">
-                <label>Spiral Bar Size</label>
-                <select id="in-sp"><option value="#3">#3</option><option value="#4" selected>#4</option><option value="#5">#5</option><option value="#6">#6</option><option value="#7">#7</option><option value="#8">#8</option><option value="#9">#9</option><option value="#10">#10</option><option value="#11">#11</option><option value="#14">#14</option><option value="#18">#18</option></select>
-              </div>
-              <div class="input-field">
-                <label>Spiral Pitch (in)</label>
-                <input type="number" id="in-pitch" value="3" step="0.25" min="1">
-              </div>
-              <div class="input-note">The spiral is checked against the ACI 318 25.7.3.3 confinement ratio
-              &rho;s, which a pitch chosen only for shear will often not satisfy.</div>
-            </div>
-
-            <div class="form-group-title">Factored Loads</div>
-            <div class="input-grid">
-              <div class="input-field">
-                <label>Axial Load, Pu (k)</label>
-                <input type="number" id="in-Pu" value="480" step="1" min="0">
-              </div>
-              <div class="input-field">
-                <label>Magnified Moment, Mu (ft-k)</label>
-                <input type="number" id="in-Mu" value="200" step="1" min="0">
+                <label>Redundancy Factor, &rho;</label>
+                <input type="number" id="in-rho" value="1" step="0.05" min="1" max="1.3">
               </div>
               <div class="input-field full">
-                <label>Shear Load, Vu (k)</label>
-                <input type="number" id="in-Vu" value="20" step="1" min="0">
+                <label>Live Load Companion Factor, f1</label>
+                <select id="in-f1">
+                  <option value="0.5" selected>0.5 — general occupancies</option>
+                  <option value="1">1.0 — public assembly, garages, LL above 4.8 kN/m&sup2;</option>
+                </select>
               </div>
+              <div class="input-note">Ev comes from the vertical earthquake calculator. It raises the dead load
+              factor to (1.2 + Ev) in combination 6 and lowers it to (0.9 &minus; Ev) in combination 8, which is
+              the case that governs uplift.</div>
             </div>
 
             <div class="buttons-block">
@@ -193,12 +170,12 @@
       <div class="suite-crosslinks">
         <h4>Related Calculators</h4>
         <div class="crosslink-row">
-          <a href="combined-footing.html">Combined Footing</a>
-          <a href="shear-wall-design.html">Shear Wall Design</a>
-          <a href="column-tie-rebar.html">Column Tie Rebar</a>
-          <a href="development-length.html">Development & Splice</a>
+          <a href="seismic-analysis.html">Seismic Base Shear</a>
+          <a href="wind-load.html">Wind Load MWFRS</a>
+          <a href="vertical-seismic.html">Vertical Earthquake</a>
+          <a href="overturning-check.html">Overturning Moment</a>
+          <a href="moment-magnifier.html">Slenderness & Magnifier</a>
           <a href="beam-design.html">RC Beam Design</a>
-          <a href="column-design.html">RC Column Design</a>
         </div>
       </div>
     </div>
@@ -269,27 +246,22 @@
   <script src="js/bnbc-ui.js"></script>
   <script>
     BNBCUI.mount({
-      title: 'Circular Column Design',
-      slug: 'twinanalytic-circular-column',
-      calc: BNBCDesign2.circularColumn,
-      figure: BNBCFigures.circularColumn,
+      title: 'BNBC 2020 Load Combinations',
+      slug: 'twinanalytic-load-combinations',
+      calc: BNBCDesign3.loadCombinations,
+      figure: BNBCFigures.loadCombos,
       collect: function () {
         return {
-          code: BNBCUI.v('in-code', 'ACI318-19'),
-          fc: BNBCUI.v('in-fc', 5), fy: BNBCUI.v('in-fy', 60),
-          tieType: BNBCUI.v('in-tie', 'spiral'),
-          barOrientation: BNBCUI.v('in-orient', 'axis'),
-          D: BNBCUI.v('in-D', 20), cover: BNBCUI.v('in-cov', 1.5),
-          nBar: BNBCUI.v('in-n', 8), bar: BNBCUI.v('in-bar', '#7'),
-          spiral: BNBCUI.v('in-sp', '#4'), pitch: BNBCUI.v('in-pitch', 3),
-          Pu: BNBCUI.v('in-Pu', 480), Mu: BNBCUI.v('in-Mu', 200), Vu: BNBCUI.v('in-Vu', 20)
+          D: BNBCUI.v('in-D', 100), L: BNBCUI.v('in-L', 50), Lr: BNBCUI.v('in-Lr', 0),
+          W: BNBCUI.v('in-W', 40), E: BNBCUI.v('in-E', 60),
+          F: BNBCUI.v('in-F', 0), H: BNBCUI.v('in-H', 0),
+          Ev: BNBCUI.v('in-Ev', 0), rho: BNBCUI.v('in-rho', 1), f1: BNBCUI.v('in-f1', 0.5)
         };
       },
       pdfInputs: function (i) {
-        return [['Code', i.code], ["f'c / fy", i.fc + ' / ' + i.fy + ' ksi'],
-                ['Diameter', i.D + ' in'], ['Vertical bars', i.nBar + ' - ' + i.bar],
-                ['Spiral', i.spiral + ' @ ' + i.pitch + ' in'],
-                ['Pu / Mu / Vu', i.Pu + ' k / ' + i.Mu + ' ft-k / ' + i.Vu + ' k']];
+        return [['D / L / Lr', i.D + ' / ' + i.L + ' / ' + i.Lr],
+                ['W / E', i.W + ' / ' + i.E], ['F / H', i.F + ' / ' + i.H],
+                ['Ev', i.Ev], ['rho', i.rho], ['f1', i.f1]];
       }
     });
   </script>
