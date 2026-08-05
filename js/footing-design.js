@@ -94,6 +94,17 @@ function runFootingLogic() {
   let spacing = (B * 12 - (2 * cover)) / (num_bars - 1);
   spacing = Math.floor(spacing); // round down to whole inch
 
+  // Publish the working so the report generator can show the full
+  // step-by-step rather than only the final numbers.
+  window.footingResults = {
+    fc, fy, gamma, Qa, c1, c2, dl, ll, surcharge, cover, d, rebarL, rebarS,
+    q_mat, q_e, A_req, B, A_furnished, qu,
+    bo, Vu1, Vc1, pVc1, L_cant, L_shear, Vu2, Vc2, pVc2,
+    Mu, Mu_k_in, a_approx, As_req, As_min1, As_min2, As_control,
+    area_barL, num_bars, spacing,
+    shearOK: (pVc1 >= Vu1 && pVc2 >= Vu2)
+  };
+
   // DOM UPDATES
   document.getElementById('footing-out-area').textContent = A_req.toFixed(2);
   document.getElementById('footing-out-bb').textContent = B.toFixed(2) + " x " + B.toFixed(2);

@@ -344,60 +344,21 @@ const BNBCUI = (function () {
     if (!LAST || !window.jspdf) { window.print(); return; }
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    /* Transliterate Greek and maths symbols on the way into the PDF —
+       the built-in Helvetica is Latin-1 and renders them as mojibake. */
+    if (typeof BNBCPdf !== 'undefined') BNBCPdf.harden(doc);
     const res = LAST.res;
 
     const M = 14;
     const PW = 210, PH = 297;
     let y = M;
 
-    /* The mark is drawn as vectors so the report carries the TwinAnalytic
-       identity without depending on a raster asset being reachable. */
-    function drawMark(x, y, size) {
-      const gold = [201, 168, 76], slate = [240, 244, 248];
-      doc.setDrawColor(gold[0], gold[1], gold[2]);
-      doc.setLineWidth(size * 0.04);
-      doc.line(x + size * 0.05, y + size * 0.95, x + size * 0.95, y + size * 0.95);
-      doc.setFillColor(slate[0], slate[1], slate[2]);
-      doc.rect(x + size * 0.25, y + size * 0.2, size * 0.15, size * 0.75, 'F');
-      doc.setFillColor(gold[0], gold[1], gold[2]);
-      doc.rect(x + size * 0.6, y + size * 0.2, size * 0.15, size * 0.75, 'F');
-      doc.rect(x + size * 0.15, y + size * 0.35, size * 0.7, size * 0.12, 'F');
-      doc.setDrawColor(slate[0], slate[1], slate[2]);
-      doc.setLineWidth(size * 0.08);
-      doc.line(x + size * 0.25, y + size * 0.75, x + size * 0.75, y + size * 0.47);
-      doc.setFillColor(gold[0], gold[1], gold[2]);
-      doc.rect(x + size * 0.45, y + size * 0.47, size * 0.1, size * 0.1, 'F');
-    }
-
+    /* One shared header and footer for every report the site produces */
     function header(page) {
-      doc.setFillColor(11, 15, 23);
-      doc.rect(0, 0, PW, 24, 'F');
-
-      drawMark(M, 5, 13);
-
-      doc.setTextColor(255, 255, 255);
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(15);
-      doc.text('Twin', M + 16, 12);
-      const wTwin = doc.getTextWidth('Twin');
-      doc.setTextColor(201, 168, 76);
-      doc.text('Analytic', M + 16 + wTwin, 12);
-
-      doc.setTextColor(190, 195, 205);
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
-      doc.text('PRECISION ANALYSIS SUITE  |  BNBC 2020 / ACI 318', M + 16, 17.5);
-
-      doc.setFontSize(9); doc.setTextColor(255, 255, 255);
-      doc.text(CFG.title, PW - M, 11, { align: 'right' });
-      doc.setFontSize(7); doc.setTextColor(180, 180, 180);
-      doc.text(new Date().toLocaleString(), PW - M, 16.5, { align: 'right' });
-
-      doc.setDrawColor(201, 168, 76); doc.setLineWidth(0.4);
-      doc.line(M, 24, PW - M, 24);
-
-      doc.setFontSize(7); doc.setTextColor(130, 130, 130);
-      doc.text('Page ' + page, PW / 2, PH - 8, { align: 'center' });
-      doc.text('© ' + new Date().getFullYear() + ' TwinAnalytic  ·  twinanalytic.com  ·  Verify against project specific requirements before construction.',
-        PW / 2, PH - 4, { align: 'center' });
+      if (typeof BNBCPdf !== 'undefined') {
+        BNBCPdf.header(doc, CFG.title);
+        BNBCPdf.footer(doc, page);
+      }
     }
 
     let page = 1;
