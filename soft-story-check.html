@@ -47,6 +47,63 @@
     .modal-form input:focus { outline: none; border-color: var(--color-gold); box-shadow: 0 0 10px rgba(201, 168, 76, 0.15); }
 
   </style>
+  <!-- Structured data: lets search engines present this as a free engineering tool -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "Soft Storey Irregularity",
+        "alternateName": "Free Soft Storey / Stiffness Irregularity Calculator — BNBC 2020",
+        "url": "https://twinanalytic.com/soft-story-check.html",
+        "applicationCategory": "EngineeringApplication",
+        "applicationSubCategory": "Code Compliance Checks",
+        "operatingSystem": "Any (web browser)",
+        "browserRequirements": "Requires JavaScript",
+        "description": "Free vertical stiffness irregularity check to BNBC 2020 Table 6.1.4. Compares each storey stiffness against the storey above and against the average of the three storeys above.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "TwinAnalytic",
+          "url": "https://twinanalytic.com/"
+        },
+        "isPartOf": {
+          "@type": "WebSite",
+          "name": "TwinAnalytic",
+          "url": "https://twinanalytic.com/"
+        }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://twinanalytic.com/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Calculators",
+            "item": "https://twinanalytic.com/calculators.html"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Soft Storey Irregularity",
+            "item": "https://twinanalytic.com/soft-story-check.html"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 

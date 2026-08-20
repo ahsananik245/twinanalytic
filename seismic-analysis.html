@@ -47,6 +47,63 @@
     .modal-form input:focus { outline: none; border-color: var(--color-gold); box-shadow: 0 0 10px rgba(201, 168, 76, 0.15); }
 
   </style>
+  <!-- Structured data: lets search engines present this as a free engineering tool -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "Seismic Base Shear",
+        "alternateName": "Free BNBC 2020 Seismic Base Shear Calculator — Equivalent Static Method",
+        "url": "https://twinanalytic.com/seismic-analysis.html",
+        "applicationCategory": "EngineeringApplication",
+        "applicationSubCategory": "Load Analysis",
+        "operatingSystem": "Any (web browser)",
+        "browserRequirements": "Requires JavaScript",
+        "description": "Free online BNBC 2020 equivalent static seismic analysis. Computes the response spectrum Cs, design base shear V and the vertical distribution of storey forces for any town in Bangladesh.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "TwinAnalytic",
+          "url": "https://twinanalytic.com/"
+        },
+        "isPartOf": {
+          "@type": "WebSite",
+          "name": "TwinAnalytic",
+          "url": "https://twinanalytic.com/"
+        }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://twinanalytic.com/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Calculators",
+            "item": "https://twinanalytic.com/calculators.html"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Seismic Base Shear",
+            "item": "https://twinanalytic.com/seismic-analysis.html"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 

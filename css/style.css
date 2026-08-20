@@ -2305,3 +2305,47 @@ body .tool-inputs-card h3,
 body .tool-outputs-card h3 {
   font-size: clamp(1.1rem, 0.98rem + 0.5vw, 1.6rem);
 }
+
+/* ==========================================================================
+   RELATED-CALCULATOR RAIL
+   Mirrors the styling in analysis-suite.css so the five original calculators,
+   which do not load that sheet, present the rail identically.
+   ========================================================================== */
+
+.suite-crosslinks {
+  max-width: 1200px;
+  margin: 3rem auto 4rem;
+  padding: 2rem 2rem 0;
+  border-top: 1px solid rgba(201, 168, 76, 0.15);
+}
+
+.suite-crosslinks h4 {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 400;
+  color: var(--color-gold);
+  margin-bottom: 1rem;
+}
+
+.crosslink-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.crosslink-row a {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 0.45rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.02);
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.crosslink-row a:hover {
+  color: var(--color-gold);
+  border-color: var(--border-gold-hover);
+  background: rgba(201, 168, 76, 0.06);
+}
