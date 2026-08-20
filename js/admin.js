@@ -41,8 +41,21 @@
     leads: [],
     leadSort: { key: 'timestamp', dir: 'desc' },
     leadQuery: '',
-    publishing: false
+    publishing: false,
+    // Populated by probeServer(). When the Vercel function is configured, the
+    // GitHub token lives on the server and never enters this browser.
+    server: { checked: false, configured: false, info: null }
   };
+
+  // The raw passcode is held in sessionStorage (per tab, cleared when the tab
+  // closes) purely so the server can verify it on publish. It is deliberately
+  // never written to localStorage, which any script on this origin can read.
+  function sessionKey() {
+    try { return sessionStorage.getItem('tw_admin_key') || ''; } catch (e) { return ''; }
+  }
+  function setSessionKey(value) {
+    try { sessionStorage.setItem('tw_admin_key', value); } catch (e) { /* optional */ }
+  }
 
   // ======================================================================
   // STORAGE HELPERS
@@ -285,6 +298,7 @@
         sha256Hex(value).then(function (hash) {
           lsSet(K.PASS, hash);
           try { sessionStorage.setItem(K.SESSION, 'true'); } catch (err) { /* optional */ }
+          setSessionKey(value);
           openApp();
         });
         return;
@@ -295,6 +309,7 @@
         submit.disabled = false;
         if (hash === storedHash) {
           try { sessionStorage.setItem(K.SESSION, 'true'); } catch (err) { /* optional */ }
+          setSessionKey(value);
           openApp();
         } else {
           errorEl.textContent = 'That passcode is not correct. Try again.';
@@ -329,7 +344,7 @@
         state.published = published;
         var draft = jsonGet(K.DRAFT, null);
         state.draft = draft ? mergeDraft(published, draft) : clone(published);
-        finishBoot();
+        return probeServer().then(finishBoot);
       })
       .catch(function (err) {
         // Without the published file there is nothing safe to edit against —
@@ -354,6 +369,22 @@
       base[key] = draft[key];
     });
     return base;
+  }
+
+  // Asks the Vercel function whether server-side publishing is available.
+  // A 404 just means the function is not deployed — that is a normal state,
+  // not an error, and the panel silently falls back to browser-token mode.
+  function probeServer() {
+    return fetch('/api/publish', { method: 'GET', cache: 'no-store' })
+      .then(function (res) { return res.ok ? res.json() : null; })
+      .catch(function () { return null; })
+      .then(function (info) {
+        state.server = {
+          checked: true,
+          configured: Boolean(info && info.configured),
+          info: info
+        };
+      });
   }
 
   function finishBoot() {
@@ -1412,9 +1443,29 @@
         : '<div class="a-callout a-callout-info"><i class="fa-solid fa-circle-check" aria-hidden="true"></i>' +
           '<div>Nothing to publish — your draft matches the live site.</div></div>') +
 
-      '<div class="a-card">' +
-        '<h3 class="a-card-title"><i class="fa-brands fa-github" aria-hidden="true"></i>Publish to the Live Site</h3>' +
-        '<p class="a-card-desc">Commits your content to GitHub, which triggers a Vercel rebuild. The site usually updates within a minute.</p>' +
+      // Server-side publishing is preferred whenever it is available: the
+      // token stays on Vercel and the passcode is checked by the server.
+      (state.server.configured
+        ? '<div class="a-card">' +
+            '<h3 class="a-card-title"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i>Publish to the Live Site</h3>' +
+            '<p class="a-card-desc">Secure mode: the GitHub token lives on your Vercel server, not in this browser, ' +
+            'and your passcode is verified server-side before anything is written.</p>' +
+            '<div class="a-field is-wide" style="margin-bottom: 1rem;">' +
+              '<label for="a-commit-msg-server">Change Note</label>' +
+              '<input type="text" id="a-commit-msg-server" class="a-input" placeholder="Describe what you changed…" value="' + esc(defaultCommitMessage(diff)) + '" autocomplete="off">' +
+            '</div>' +
+            '<button type="button" class="a-btn a-btn-gold" id="a-do-publish-server"' + (dirty ? '' : ' disabled') + '>' +
+              '<i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> Publish to ' +
+              esc(state.server.info ? state.server.info.repo : 'the live site') +
+            '</button>' +
+          '</div>'
+        : '') +
+
+      '<div class="a-card"' + (state.server.configured ? ' style="opacity: 0.75;"' : '') + '>' +
+        '<h3 class="a-card-title"><i class="fa-brands fa-github" aria-hidden="true"></i>' +
+          (state.server.configured ? 'Publish with a Browser Token (fallback)' : 'Publish to the Live Site') + '</h3>' +
+        '<p class="a-card-desc">Commits your content to GitHub, which triggers a Vercel rebuild. The site usually updates within a minute.' +
+          (state.server.configured ? ' You do not need this while secure mode is active.' : '') + '</p>' +
         (connected
           ? '<div class="a-field is-wide" style="margin-bottom: 1rem;">' +
               '<label for="a-commit-msg">Change Note</label>' +
@@ -1513,8 +1564,63 @@
         return;
       }
 
+      if (e.target.closest('#a-do-publish-server')) doPublishViaServer();
       if (e.target.closest('#a-do-publish')) doPublish();
     });
+  }
+
+  // Preferred path: hand the content to our own Vercel function, which holds
+  // the GitHub token and verifies the passcode before writing anything.
+  function doPublishViaServer() {
+    if (state.publishing) return;
+
+    var key = sessionKey();
+    if (!key) {
+      toast('Lock the panel and sign in again so the server can verify you.', 'error', 7000);
+      return;
+    }
+
+    var btn = $('#a-do-publish-server');
+    var msgInput = $('#a-commit-msg-server');
+    var message = (msgInput && msgInput.value.trim()) || 'content: update site content';
+    var body = serialiseDraft();
+
+    state.publishing = true;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="a-spin" aria-hidden="true"></span> Publishing…';
+
+    fetch('/api/publish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ passcode: key, content: body, message: message })
+    })
+      .then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (data) {
+          if (!res.ok) throw new Error(data.error || ('Server responded ' + res.status + '.'));
+          return data;
+        });
+      })
+      .then(function (data) {
+        state.published = clone(state.draft);
+        lsDel(K.DRAFT);
+        pushBackup(message, data.commit);
+        updateDirty();
+        updateNavCounts();
+        renderCustomPanel(SCHEMA.sections.filter(function (s) { return s.id === 'publish'; })[0]);
+        toast('Published. Vercel is rebuilding — your site updates in about a minute.', 'success', 8000);
+      })
+      .catch(function (err) {
+        toast(err.message || 'Publishing failed.', 'error', 9000);
+      })
+      .then(function () {
+        state.publishing = false;
+        var b = $('#a-do-publish-server');
+        if (b) {
+          b.disabled = !isDirty();
+          b.innerHTML = '<i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> Publish to ' +
+            esc(state.server.info ? state.server.info.repo : 'the live site');
+        }
+      });
   }
 
   function serialiseDraft() {
@@ -1712,10 +1818,14 @@
   // ---------------------------------------------------------------- settings
   function settingsHtml() {
     var gh = jsonGet(K.GH, {});
+    var srv = state.server;
 
     return '' +
-      '<div class="a-card">' +
-        '<h3 class="a-card-title"><i class="fa-brands fa-github" aria-hidden="true"></i>GitHub Connection</h3>' +
+      serverModeHtml(srv) +
+
+      '<div class="a-card"' + (srv.configured ? ' style="opacity: 0.75;"' : '') + '>' +
+        '<h3 class="a-card-title"><i class="fa-brands fa-github" aria-hidden="true"></i>GitHub Connection' +
+          (srv.configured ? ' (fallback)' : '') + '</h3>' +
         '<p class="a-card-desc">Lets this panel write directly to your repository so publishing is one click.</p>' +
 
         '<div class="a-grid">' +
@@ -1783,7 +1893,133 @@
       '</div>';
   }
 
+  // Panel explaining, and helping you complete, the server-side setup.
+  function serverModeHtml(srv) {
+    if (srv.configured) {
+      return '<div class="a-card" style="border-color: rgba(53, 200, 139, 0.35);">' +
+          '<h3 class="a-card-title"><i class="fa-solid fa-shield-halved" aria-hidden="true" style="color: var(--a-green);"></i>Secure Publishing is Active</h3>' +
+          '<p class="a-card-desc">Your GitHub token lives on the Vercel server and never enters this browser. ' +
+          'The server checks your passcode before it will write anything, so the passcode is now real ' +
+          'authentication rather than a cosmetic lock.</p>' +
+          '<div class="a-grid">' +
+            roRow('Repository', srv.info.repo) +
+            roRow('Branch', srv.info.branch) +
+            roRow('File', srv.info.path) +
+          '</div>' +
+          '<p class="a-field-hint" style="margin-top: 1rem;">The browser-token settings below are an unused ' +
+          'fallback. If you have a token saved there, you can safely remove it.</p>' +
+        '</div>';
+    }
+
+    // Not configured — show exactly what is missing and how to finish.
+    var missing = [];
+    if (srv.info && !srv.info.hasToken) missing.push('GITHUB_TOKEN');
+    if (srv.info && !srv.info.hasPasscode) missing.push('ADMIN_PASSCODE_HASH');
+    var deployed = Boolean(srv.info);
+
+    return '<div class="a-card" style="border-color: rgba(224, 160, 48, 0.35);">' +
+        '<h3 class="a-card-title"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i>Secure Publishing (recommended)</h3>' +
+        '<p class="a-card-desc">Moves your GitHub token out of this browser and onto your Vercel server. ' +
+        'One-click publishing still works exactly the same — the token just stops being readable by ' +
+        'anything running on your site.</p>' +
+
+        (deployed
+          ? '<div class="a-callout a-callout-warn" style="margin-bottom: 1.25rem;">' +
+              '<i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>' +
+              '<div>The <code>/api/publish</code> endpoint is deployed but not configured yet. ' +
+              'Missing: <strong>' + esc(missing.join(' and ')) + '</strong>.</div></div>'
+          : '<div class="a-callout a-callout-info" style="margin-bottom: 1.25rem;">' +
+              '<i class="fa-solid fa-circle-info" aria-hidden="true"></i>' +
+              '<div>The <code>/api/publish</code> endpoint is not live yet. Deploy the latest code, ' +
+              'then set the two variables below and redeploy.</div></div>') +
+
+        '<p class="a-label" style="margin-bottom: 0.6rem;">Step 1 &mdash; Generate your passcode hash</p>' +
+        '<p class="a-field-hint" style="margin-bottom: 0.75rem;">Vercel stores a hash, never the passcode itself. ' +
+        'Enter the passcode you use to unlock this panel:</p>' +
+        '<div class="a-btn-row" style="margin-bottom: 0.75rem;">' +
+          '<div class="a-search" style="flex: 1;">' +
+            '<label for="a-hash-input" class="a-sr-only">Passcode to hash</label>' +
+            '<input type="password" id="a-hash-input" class="a-input" placeholder="Your admin passcode…" autocomplete="off" style="padding-left: 0.75rem;">' +
+          '</div>' +
+          '<button type="button" class="a-btn" id="a-hash-go"><i class="fa-solid fa-hashtag" aria-hidden="true"></i> Generate Hash</button>' +
+        '</div>' +
+        '<div id="a-hash-out"></div>' +
+
+        '<hr class="a-divider">' +
+
+        '<p class="a-label" style="margin-bottom: 0.6rem;">Step 2 &mdash; Add both variables in Vercel</p>' +
+        '<p class="a-field-hint" style="margin-bottom: 0.75rem;">Vercel dashboard &rarr; your project &rarr; ' +
+        '<strong>Settings</strong> &rarr; <strong>Environment Variables</strong>. Add these two, ' +
+        'then <strong>Redeploy</strong> for them to take effect.</p>' +
+        '<div class="a-code">GITHUB_TOKEN         your fine-grained token (github_pat_…)\n' +
+        'ADMIN_PASSCODE_HASH  the hash generated above</div>' +
+        '<div class="a-btn-row" style="margin-top: 1rem;">' +
+          '<a class="a-btn" href="https://vercel.com/dashboard" target="_blank" rel="noopener">' +
+            '<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Open Vercel Dashboard</a>' +
+          '<button type="button" class="a-btn" id="a-recheck-server">' +
+            '<i class="fa-solid fa-rotate" aria-hidden="true"></i> Re-check Server</button>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function roRow(label, value) {
+    return '<div class="a-field">' +
+        '<span class="a-label">' + esc(label) + '</span>' +
+        '<p class="a-input is-mono" style="margin: 0; overflow: hidden; text-overflow: ellipsis;">' + esc(value) + '</p>' +
+      '</div>';
+  }
+
   function wireSettings(root) {
+    var hashBtn = $('#a-hash-go', root);
+    if (hashBtn) {
+      hashBtn.addEventListener('click', function () {
+        var input = $('#a-hash-input');
+        var out = $('#a-hash-out');
+        if (!input.value) {
+          toast('Enter your passcode first.', 'error');
+          return;
+        }
+        sha256Hex(input.value).then(function (hash) {
+          var matches = hash === lsGet(K.PASS);
+          out.innerHTML =
+            '<div class="a-code" style="user-select: all;">' + esc(hash) + '</div>' +
+            '<div class="a-btn-row" style="margin-top: 0.6rem;">' +
+              '<button type="button" class="a-btn a-btn-sm" id="a-hash-copy">' +
+                '<i class="fa-solid fa-clipboard" aria-hidden="true"></i> Copy Hash</button>' +
+              '<span class="a-field-hint" style="margin: 0;">' +
+                (matches
+                  ? '<span style="color: var(--a-green);">✓ Matches your current panel passcode.</span>'
+                  : '<span style="color: var(--a-amber);">⚠ This is not the passcode this panel uses. ' +
+                    'Publishing will fail unless they match.</span>') +
+              '</span>' +
+            '</div>';
+          $('#a-hash-copy').addEventListener('click', function () {
+            navigator.clipboard.writeText(hash).then(function () {
+              toast('Hash copied. Paste it into Vercel as ADMIN_PASSCODE_HASH.', 'success', 6000);
+            }, function () {
+              toast('Clipboard blocked — select the hash and copy it manually.', 'error');
+            });
+          });
+          input.value = '';
+        });
+      });
+    }
+
+    var recheck = $('#a-recheck-server', root);
+    if (recheck) {
+      recheck.addEventListener('click', function () {
+        recheck.disabled = true;
+        recheck.innerHTML = '<span class="a-spin" aria-hidden="true"></span> Checking…';
+        probeServer().then(function () {
+          renderCustomPanel(SCHEMA.sections.filter(function (s) { return s.id === 'settings'; })[0]);
+          toast(state.server.configured
+            ? 'Secure publishing is now active.'
+            : 'Still not configured. Did you redeploy after adding the variables?',
+            state.server.configured ? 'success' : 'info', 7000);
+        });
+      });
+    }
+
     root.addEventListener('click', function (e) {
       if (e.target.closest('#a-gh-save')) {
         var settings = readGhForm();
@@ -1853,16 +2089,28 @@
           }
           return sha256Hex(next).then(function (nextHash) {
             lsSet(K.PASS, nextHash);
+            setSessionKey(next);
             $('#a-pass-current').value = '';
             $('#a-pass-new').value = '';
-            toast('Passcode changed.', 'success');
+            if (state.server.configured) {
+              // The server still holds the old hash, so publishing would now
+              // fail until Vercel is updated to match.
+              toast('Passcode changed. Update ADMIN_PASSCODE_HASH in Vercel to match, ' +
+                    'or publishing will be rejected.', 'error', 12000);
+              renderCustomPanel(SCHEMA.sections.filter(function (x) { return x.id === 'settings'; })[0]);
+            } else {
+              toast('Passcode changed.', 'success');
+            }
           });
         });
         return;
       }
 
       if (e.target.closest('#a-lock-now')) {
-        try { sessionStorage.removeItem(K.SESSION); } catch (err) { /* already gone */ }
+        try {
+          sessionStorage.removeItem(K.SESSION);
+          sessionStorage.removeItem('tw_admin_key');
+        } catch (err) { /* already gone */ }
         location.reload();
         return;
       }
@@ -1881,7 +2129,10 @@
         }).then(function (ok) {
           if (!ok) return;
           [K.PASS, K.DRAFT, K.GH, K.BACKUPS, K.PREVIEW].forEach(lsDel);
-          try { sessionStorage.removeItem(K.SESSION); } catch (err) { /* already gone */ }
+          try {
+            sessionStorage.removeItem(K.SESSION);
+            sessionStorage.removeItem('tw_admin_key');
+          } catch (err) { /* already gone */ }
           location.reload();
         });
       }

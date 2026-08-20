@@ -62,10 +62,43 @@ markup through `data-tw*` attributes. **The hardcoded HTML is always the
 fallback** — if the JSON fails to load, every page still renders exactly as it
 did before the content layer existed.
 
-### First-time setup
+### First-time setup — secure mode (recommended)
 
-1. Open `/admin.html` and create a passcode (stored as a SHA-256 hash in that
-   browser only).
+The GitHub token stays on the server and never enters a browser. This also
+makes the admin passcode **real, server-enforced authentication** rather than
+a client-side lock.
+
+1. Open `/admin.html` and create a passcode.
+2. Go to **Settings → Secure Publishing** and press **Generate Hash**, entering
+   that same passcode. Copy the hash.
+3. In the Vercel dashboard → your project → **Settings → Environment
+   Variables**, add:
+
+   | Name | Value |
+   | --- | --- |
+   | `GITHUB_TOKEN` | a fine-grained PAT, Contents: Read and write, this repo only |
+   | `ADMIN_PASSCODE_HASH` | the hash from step 2 |
+
+   Optional overrides: `GITHUB_OWNER`, `GITHUB_REPO`, `GITHUB_BRANCH`,
+   `CONTENT_PATH`.
+
+4. **Redeploy** so the variables take effect, then press **Re-check Server** in
+   the panel. It should report *Secure Publishing is Active*.
+
+`api/publish.js` verifies the passcode with a timing-safe comparison, rejects
+anything that is not a valid content file, and only then commits to GitHub.
+
+> If you change your panel passcode later, update `ADMIN_PASSCODE_HASH` in
+> Vercel to match or publishing will be rejected. The panel warns you when
+> this happens.
+
+### Alternative — browser token
+
+Simpler, but the token sits in `localStorage`, where any script on the origin
+can read it (the public pages load Tailwind, jsPDF, and Three.js from CDNs).
+Prefer secure mode; use this only as a fallback.
+
+1. Open `/admin.html` and create a passcode.
 2. Go to **Settings → GitHub Connection** and paste a token.
 
    Create the token at **GitHub → Settings → Developer settings → Personal
@@ -83,10 +116,16 @@ upload through the GitHub web interface instead.
 
 ### Security boundary
 
-The passcode is **client-side only**. It hides the console from casual visitors
-but is not server-enforced — anyone can read the page source. The real
-protection is the GitHub token: without it, nothing can change the live site.
-`admin.html` is excluded in `robots.txt` and carries `noindex, nofollow`.
+**In secure mode** the passcode is checked by `api/publish.js` on the server
+before anything is written, and the GitHub token never leaves Vercel. The
+passcode is genuine authentication.
+
+**In browser-token mode** the passcode is only a client-side lock — it hides
+the console from casual visitors, but anyone can read past it in the page
+source. There the real protection is the token itself.
+
+Either way `admin.html` is excluded in `robots.txt` and carries
+`noindex, nofollow`.
 
 ### Handy URLs
 
@@ -129,6 +168,8 @@ TwinAnalytic/
 ├── vercel.json                  # Production clean routing configurations
 ├── dev-server.py                # Python local server with clean URL support
 ├── update_logos.py              # Script to update text logos to image logos
+├── api/
+│   └── publish.js               # Serverless publish endpoint (secure mode)
 ├── data/
 │   └── content.json             # Single source of truth for all editable content
 ├── css/
