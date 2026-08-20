@@ -1,189 +1,27 @@
 // --- THREE.JS SCENES AND 3D LOGIC ---
 
-document.addEventListener('DOMContentLoaded', () => {
-  initHeroScene();
-  initBimViewerScene();
-});
+(function bootstrapScenes() {
+  // Wait for the content engine so the hero reads the published theme colours
+  // rather than the stylesheet defaults. Falls back cleanly if it is absent.
+  const start = () => {
+    const ready = window.TWContent && window.TWContent.ready;
+    const run = () => { initHeroScene(); initBimViewerScene(); };
+    if (ready && typeof ready.then === 'function') ready.then(run, run);
+    else run();
+  };
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
+})();
 
 // ==========================================
 // 1. HERO CANVASES - WIREFRAME BUILDING & BLUEPRINT GRID
 // ==========================================
-function initHeroScene() {
-  const canvas = document.getElementById('hero-canvas');
-  if (!canvas) return;
-
-  const container = canvas.parentElement;
-  let width = container.clientWidth;
-  let height = container.clientHeight;
-
-  // Scene, Camera, Renderer
-  const scene = new THREE.Scene();
-  // Deep charcoal background matching primary theme
-  scene.background = new THREE.Color(0x0A0A0A);
-  scene.fog = new THREE.FogExp2(0x0A0A0A, 0.045);
-
-  const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 100);
-  camera.position.set(0, 5, 12);
-  camera.lookAt(0, 2, 0);
-
-  const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
-  renderer.setSize(width, height);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-  // 3D Wireframe Skyscraper (The Digital Twin Model)
-  const towerGroup = new THREE.Group();
-  scene.add(towerGroup);
-
-  // Create segments of a futuristic helix/parametric building structure
-  const floors = 15;
-  const floorHeight = 0.5;
-  const radius = 2.2;
-
-  for (let i = 0; i < floors; i++) {
-    const yPos = i * floorHeight;
-    // Rotate each floor to create a spiral twist
-    const angle = i * 0.15;
-    const sizeFactor = 1 - (i * 0.035); // tapering tower
-
-    // Floor outline (polygon)
-    const shape = new THREE.CylinderGeometry(radius * sizeFactor, radius * sizeFactor, 0.05, 6, 1, true);
-    const wireframeGeom = new THREE.WireframeGeometry(shape);
-    const material = new THREE.LineBasicMaterial({
-      color: i % 2 === 0 ? 0xC9A84C : 0x2A6496, // Alternating gold & steel blue
-      transparent: true,
-      opacity: 0.65 - (i * 0.02)
-    });
-    const line = new THREE.LineSegments(wireframeGeom, material);
-    line.position.y = yPos;
-    line.rotation.y = angle;
-    towerGroup.add(line);
-
-    // Column elements connecting floors
-    if (i < floors - 1) {
-      for (let j = 0; j < 6; j++) {
-        const theta = (j * Math.PI / 3) + angle;
-        const nextTheta = (j * Math.PI / 3) + angle + 0.15;
-        
-        const r1 = radius * sizeFactor;
-        const r2 = radius * (1 - ((i + 1) * 0.035));
-
-        const x1 = Math.cos(theta) * r1;
-        const z1 = Math.sin(theta) * r1;
-        
-        const x2 = Math.cos(nextTheta) * r2;
-        const z2 = Math.sin(nextTheta) * r2;
-
-        const points = [];
-        points.push(new THREE.Vector3(x1, yPos, z1));
-        points.push(new THREE.Vector3(x2, yPos + floorHeight, z2));
-
-        const colGeom = new THREE.BufferGeometry().setFromPoints(points);
-        const colMat = new THREE.LineBasicMaterial({
-          color: 0xC9A84C,
-          transparent: true,
-          opacity: 0.4
-        });
-        const colLine = new THREE.Line(colGeom, colMat);
-        towerGroup.add(colLine);
-      }
-    }
-  }
-
-  // Shift tower base down to align in hero view
-  towerGroup.position.y = -2;
-  towerGroup.position.x = 2; // Position on the right side of the screen
-
-  // Ground Grid (The Architectural Blueprint Grid)
-  const gridHelper = new THREE.GridHelper(30, 30, 0xC9A84C, 0x1A1A2E);
-  gridHelper.position.y = -2;
-  gridHelper.position.x = 2;
-  // Apply opacity to grid lines
-  gridHelper.material.transparent = true;
-  gridHelper.material.opacity = 0.25;
-  scene.add(gridHelper);
-
-  // Floating Particle System (Gold dust flowing)
-  const particleCount = 180;
-  const particleGeom = new THREE.BufferGeometry();
-  const particlePositions = new Float32Array(particleCount * 3);
-  const particleSpeeds = [];
-
-  for (let i = 0; i < particleCount; i++) {
-    // Distribute around the tower
-    particlePositions[i * 3] = (Math.random() - 0.5) * 15 + 2;
-    particlePositions[i * 3 + 1] = (Math.random() - 0.5) * 10 + 2;
-    particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 15;
-
-    particleSpeeds.push({
-      x: (Math.random() - 0.5) * 0.015,
-      y: (Math.random() + 0.1) * 0.012, // drift upwards
-      z: (Math.random() - 0.5) * 0.015
-    });
-  }
-
-  particleGeom.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-  const particleMaterial = new THREE.PointsMaterial({
-    color: 0xE8C97E,
-    size: 0.04,
-    transparent: true,
-    opacity: 0.7,
-    blending: THREE.AdditiveBlending
-  });
-
-  const particles = new THREE.Points(particleGeom, particleMaterial);
-  scene.add(particles);
-
-  // Light Source
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-  scene.add(ambientLight);
-
-  const dirLight = new THREE.DirectionalLight(0xC9A84C, 0.8);
-  dirLight.position.set(5, 10, 7);
-  scene.add(dirLight);
-
-  // Animation Loop
-  const clock = new THREE.Clock();
-
-  function animate() {
-    requestAnimationFrame(animate);
-    const elapsedTime = clock.getElapsedTime();
-
-    // Slowly rotate tower
-    towerGroup.rotation.y = elapsedTime * 0.12;
-    towerGroup.position.y = -2 + Math.sin(elapsedTime * 0.5) * 0.15; // subtle float
-
-    // Update Particles
-    const positions = particles.geometry.attributes.position.array;
-    for (let i = 0; i < particleCount; i++) {
-      positions[i * 3] += particleSpeeds[i].x;
-      positions[i * 3 + 1] += particleSpeeds[i].y;
-      positions[i * 3 + 2] += particleSpeeds[i].z;
-
-      // Reset particles going off-screen
-      if (positions[i * 3 + 1] > 6) {
-        positions[i * 3] = (Math.random() - 0.5) * 15 + 2;
-        positions[i * 3 + 1] = -4;
-        positions[i * 3 + 2] = (Math.random() - 0.5) * 15;
-      }
-    }
-    particles.geometry.attributes.position.needsUpdate = true;
-
-    renderer.render(scene, camera);
-  }
-  animate();
-
-  // Resize Handler
-  window.addEventListener('resize', () => {
-    width = container.clientWidth;
-    height = container.clientHeight;
-
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-
-    renderer.setSize(width, height);
-  });
-}
-
+// The hero scene now lives in js/hero-scene.js. It was rewritten as a
+// self-assembling moment frame with theme-aware colours, reduced-motion
+// support, and off-screen pausing.
 
 // ==========================================
 // 2. BIM SKELETON PORTAL VIEW - RAYCASTING METADATA
