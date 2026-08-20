@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0A0A0A">
+  <title>Free Base Shear Verification Calculator — ETABS vs BNBC 2020</title>
+  <meta name="description" content="Compare the seismic base shear reported by your analysis model against the BNBC 2020 static value and obtain the scale factor required when the model falls short.">
+  <link rel="canonical" href="https://twinanalytic.com/base-shear-check.html">
+
+  <meta property="og:title" content="Base Shear Verification Calculator — TwinAnalytic" />
+  <meta property="og:description" content="Compare the seismic base shear reported by your analysis model against the BNBC 2020 static value and obtain the scale factor required when the model falls short." />
+  <meta property="og:image" content="https://twinanalytic.com/assets/about_render.jpg" />
+  <meta property="og:url" content="https://twinanalytic.com/base-shear-check.html" />
+  <meta property="og:type" content="website" />
+
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Content engine: hydrates this page from data/content.json -->
+  <script src="js/site-content.js"></script>
+  <link rel="stylesheet" href="css/analysis-suite.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(10, 10, 10, 0.85);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-card {
+      width: 100%; max-width: 480px; padding: 2.5rem;
+      background: var(--bg-secondary); border: 1px solid var(--color-gold);
+      transform: scale(0.95); transition: transform 0.3s ease;
+    }
+    .modal-overlay.active .modal-card { transform: scale(1); }
+    .modal-header h3 { font-family: var(--font-serif); font-size: 1.7rem; font-weight: 400; color: var(--color-gold); margin-bottom: 0.5rem; }
+    .modal-header p { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 2rem; line-height: 1.5; }
+    .modal-form .form-group { margin-bottom: 1.2rem; display: flex; flex-direction: column; gap: 0.5rem; text-align: left; }
+    .modal-form label { font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); }
+    .modal-form input {
+      width: 100%; background: rgba(10, 10, 10, 0.5); border: 1px solid var(--border-gold);
+      border-radius: 4px; padding: 0.8rem 1rem; color: var(--text-primary); font-size: 0.95rem;
+    }
+    .modal-form input:focus { outline: none; border-color: var(--color-gold); box-shadow: 0 0 10px rgba(201, 168, 76, 0.15); }
+
+  </style>
+</head>
+<body>
+
+  <a href="#main-content" class="skip-link">Skip to Main Content</a>
+
+  <nav class="navbar scrolled" id="navbar">
+    <div class="container">
+      <a href="index.html" class="logo" data-tw-list="brandLogo">
+        <img src="assets/logo.png" alt="TwinAnalytic Logo" style="height: 38px; width: auto; border-radius: 4px; margin-right: 8px; vertical-align: middle;">
+        Twin<span>Analytic</span>
+      </a>
+      <ul class="nav-links" id="nav-links" data-tw-list="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="bim-viewer.html">BIM Viewer</a></li>
+        <li><a href="calculators.html" class="active">Calculators</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="hamburger" id="hamburger">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main-content" tabindex="-1" class="analysis-page">
+    <div class="container">
+      <header class="page-title-section">
+        <p class="eyebrow">Compliance Check · BNBC 2020 Sec 2.5.7</p>
+        <h1>Base Shear Verification Against the Model</h1>
+        <p class="standard">Reconciles the base reaction from an ETABS or equivalent model with the code static base shear. The seismic weight uses the live load participation factor required by BNBC rather than the full live load.</p>
+      </header>
+
+      <div class="analysis-grid">
+
+        <!-- INPUTS -->
+        <section class="analysis-card col-inputs">
+          <h3>Design Parameters <span id="unit-toggle-host"></span></h3>
+          <div class="workspace-bar">
+            <button type="button" class="ws-btn" id="btn-save-project" title="Save these inputs under a name">
+              <i class="fa-solid fa-floppy-disk"></i> Save
+            </button>
+            <select class="ws-select" id="saved-project-select"><option value="">Load saved…</option></select>
+            <button type="button" class="ws-btn" id="btn-share-link" title="Copy a link with these inputs baked in">
+              <i class="fa-solid fa-link"></i> Share
+            </button>
+          </div>
+          <form id="calc-form" onsubmit="return false;">
+            <div class="form-group-title">Model Reactions</div>
+            <div class="input-grid">
+              <div class="input-field">
+                <label>Dead Load, DL (kN)</label>
+                <input type="number" id="in-DL" value="2872.069" step="0.001" min="0">
+              </div>
+              <div class="input-field">
+                <label>Super Dead Load, SDL (kN)</label>
+                <input type="number" id="in-SDL" value="2922.216" step="0.001" min="0">
+              </div>
+              <div class="input-field">
+                <label>Live Load, LL (kN)</label>
+                <input type="number" id="in-LL" value="654.454" step="0.001" min="0">
+              </div>
+              <div class="input-field">
+                <label>Live Load Participation, &lambda;</label>
+                <input type="number" id="in-llf" value="0.25" step="0.05" min="0" max="1">
+              </div>
+              <div class="input-field full">
+                <label>Earthquake Base Reaction, EQ (kN)</label>
+                <input type="number" id="in-EQ" value="219.506" step="0.001">
+              </div>
+              <div class="input-note">BNBC 2020 Sec 2.5.7.2 counts 25 % of the floor live load in the seismic
+              weight for most occupancies. Raise &lambda; only for storage and assembly areas.</div>
+            </div>
+
+            <div class="form-group-title">Code Parameters</div>
+            <div class="input-grid">
+              <div class="input-field">
+                <label>Town / District</label>
+                <select id="in-town"></select>
+              </div>
+              <div class="input-field">
+                <label>Zone Coefficient, Z</label>
+                <input type="number" id="in-Z" value="0.2" step="0.01" min="0.05" max="0.5">
+              </div>
+              <div class="input-field">
+                <label>Importance Factor, I</label>
+                <input type="number" id="in-I" value="1" step="0.05" min="1" max="1.5">
+              </div>
+              <div class="input-field">
+                <label>Response Reduction, R</label>
+                <input type="number" id="in-R" value="5" step="0.25" min="1">
+              </div>
+              <div class="input-field">
+                <label>Site / Soil Class</label>
+                <select id="in-soil">
+                  <option value="SA">SA</option><option value="SB">SB</option>
+                  <option value="SC">SC</option><option value="SD" selected>SD</option>
+                  <option value="SE">SE</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Damping, &xi;</label>
+                <input type="number" id="in-damp" value="0.05" step="0.005" min="0.005" max="0.20">
+              </div>
+              <div class="input-field">
+                <label>Period Coefficient, Ct</label>
+                <input type="number" id="in-Ct" value="0.0466" step="0.0001" min="0.001">
+              </div>
+              <div class="input-field">
+                <label>Period Exponent, m</label>
+                <input type="number" id="in-m" value="0.9" step="0.01" min="0.1" max="1.5">
+              </div>
+              <div class="input-field full">
+                <label>Total Height, H (m)</label>
+                <input type="number" id="in-H" value="38" step="0.1" min="1">
+              </div>
+            </div>
+
+            <div class="buttons-block">
+              <button class="btn-calc-primary" id="btn-calculate" type="button">Calculate</button>
+              <button class="btn-calc-ghost" id="btn-reset" type="button">Reset</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- OUTPUT -->
+        <section class="analysis-card col-output tool-outputs-card">
+          <h3>Analysis Output <span class="tool-status-badge pass" id="calc-status">INFO</span></h3>
+          <div class="calc-headline is-info" id="calc-headline">Enter the design parameters to run the analysis.</div>
+          <div class="warning-box" id="calc-warnings"></div>
+          <div class="results-console" id="calc-results"></div>
+          <div class="figure-block" id="calc-figure" style="display:none;"></div>
+          <div class="out-table-block" id="calc-table" style="display:none;"></div>
+
+          <button class="btn-pdf" id="btn-export-pdf" type="button">
+            <i class="fa-solid fa-file-pdf"></i> Download Calculation Report (PDF)
+          </button>
+        </section>
+
+        <!-- STEPS -->
+        <section class="analysis-card col-steps">
+          <h3>Step-by-Step Calculation</h3>
+          <div id="calc-steps"></div>
+        </section>
+
+      </div>
+
+      <div class="suite-crosslinks">
+        <h4>Related Calculators</h4>
+        <div class="crosslink-row">
+          <a href="seismic-analysis.html">Seismic Base Shear</a>
+          <a href="vertical-seismic.html">Vertical Earthquake</a>
+          <a href="p-delta-check.html">P-Delta Stability</a>
+          <a href="drift-check.html">Drift & Sway</a>
+          <a href="soft-story-check.html">Soft Storey</a>
+          <a href="overturning-check.html">Overturning Moment</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-top-gradient"></div>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col brand">
+          <h3 data-tw-list="brandFooter">Twin<span>Analytic</span></h3>
+          <p style="color: var(--color-gold); font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; margin-top: -0.5rem;" data-tw="site.tagline">Construction &amp; Engineering</p>
+          <p data-tw="site.footerBlurb">We combine engineering expertise with digital technologies to create safe, optimized, and reliable structures.</p>
+          <div class="footer-socials" data-tw-list="footerSocials">
+            <a href="https://linkedin.com/company/twinanalytic" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="https://x.com/twinanalytic" target="_blank"><i class="fa-brands fa-x-twitter"></i></a>
+          </div>
+        </div>
+        <div data-tw-list="footerColumns" style="display: contents;">
+        <div class="footer-col">
+          <h3>Load Analysis</h3>
+          <ul class="footer-links">
+            <li><a href="seismic-analysis.html">Seismic Base Shear</a></li>
+            <li><a href="wind-load.html">Wind Load (MWFRS)</a></li>
+            <li><a href="vertical-seismic.html">Vertical Earthquake Effect</a></li>
+            <li><a href="base-shear-check.html">Base Shear Verification</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Compliance Checks</h3>
+          <ul class="footer-links">
+            <li><a href="p-delta-check.html">P-Delta Stability</a></li>
+            <li><a href="drift-check.html">Drift &amp; Sway</a></li>
+            <li><a href="soft-story-check.html">Soft Storey</a></li>
+            <li><a href="torsional-irregularity.html">Torsional Irregularity</a></li>
+            <li><a href="overturning-check.html">Overturning Moment</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Member Design</h3>
+          <ul class="footer-links">
+            <li><a href="beam-design.html">RC Beam Design</a></li>
+            <li><a href="column-design.html">RC Column Design</a></li>
+            <li><a href="slab-design.html">RC Slab Design</a></li>
+            <li><a href="stair-design.html">RC Stair Design</a></li>
+            <li><a href="calculators.html">All Calculators</a></li>
+          </ul>
+        </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p data-tw="site.copyright">&copy; 2026 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
+        <div class="footer-bottom-links" data-tw-list="footerBottomLinks">
+          <a href="privacy.html">Privacy Protocol</a>
+          <a href="sitemap.html">Sitemap</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/calculators.js"></script>
+  <script src="js/bnbc-pdf.js"></script>
+  <script src="js/bnbc-data.js"></script>
+  <script src="js/bnbc-calcs.js"></script>
+  <script src="js/bnbc-design.js"></script>
+  <script src="js/bnbc-design2.js"></script>
+  <script src="js/bnbc-design3.js"></script>
+  <script src="js/bnbc-project.js"></script>
+  <script src="js/bnbc-draw.js"></script>
+  <script src="js/bnbc-figures.js"></script>
+  <script src="js/bnbc-ui.js"></script>
+  <script>
+    (function () {
+      const sel = document.getElementById('in-town');
+      Object.keys(BNBC.SEISMIC_ZONE_Z).sort().forEach(t => {
+        const o = document.createElement('option');
+        o.value = t; o.textContent = t + '  (Z = ' + BNBC.SEISMIC_ZONE_Z[t].toFixed(2) + ')';
+        if (t === 'Dhaka') o.selected = true;
+        sel.appendChild(o);
+      });
+      sel.addEventListener('change', () => {
+        document.getElementById('in-Z').value = BNBC.SEISMIC_ZONE_Z[sel.value];
+        BNBCUI.run();
+      });
+    })();
+
+    BNBCUI.mount({
+      title: 'Base Shear Verification',
+      slug: 'twinanalytic-base-shear-check',
+      calc: BNBCCalc.baseShearCheck,
+      figure: BNBCFigures.baseShear,
+      collect: function () {
+        return {
+          DL: BNBCUI.v('in-DL', 0), SDL: BNBCUI.v('in-SDL', 0), LL: BNBCUI.v('in-LL', 0),
+          llFactor: BNBCUI.v('in-llf', 0.25), EQ: BNBCUI.v('in-EQ', 0),
+          Z: BNBCUI.v('in-Z', 0.2), I: BNBCUI.v('in-I', 1), R: BNBCUI.v('in-R', 5),
+          soil: BNBCUI.v('in-soil', 'SD'), damping: BNBCUI.v('in-damp', 0.05),
+          Ct: BNBCUI.v('in-Ct', 0.0466), m: BNBCUI.v('in-m', 0.9), H: BNBCUI.v('in-H', 38)
+        };
+      },
+      pdfInputs: function (i) {
+        return [['DL / SDL / LL', i.DL + ' / ' + i.SDL + ' / ' + i.LL + ' kN'],
+                ['Live load participation', i.llFactor],
+                ['EQ base reaction', i.EQ + ' kN'],
+                ['Z / I / R', i.Z + ' / ' + i.I + ' / ' + i.R],
+                ['Site class', i.soil], ['Ct / m / H', i.Ct + ' / ' + i.m + ' / ' + i.H + ' m']];
+      }
+    });
+  </script>
+
+  <div class="modal-overlay" id="auth-modal">
+    <div class="modal-card glass-card">
+      <div class="modal-header">
+        <h3>Unlock Free Engineering Suite</h3>
+        <p>Enter your professional credentials to run limit-state design checks and download coordinate schematics.</p>
+      </div>
+      <form class="modal-form" id="modal-auth-form">
+        <div class="form-group">
+          <label for="lead-name">Full Name</label>
+          <input type="text" id="lead-name" placeholder="E.g., MD. AHSAN HABIB ANIK" required>
+        </div>
+        <div class="form-group">
+          <label for="lead-email">Business Email</label>
+          <input type="email" id="lead-email" placeholder="anik@twinanalytic.com" required>
+        </div>
+        <div class="form-group">
+          <label for="lead-country">Country</label>
+          <input type="text" id="lead-country" placeholder="E.g., Germany" required>
+        </div>
+        <button type="submit" class="btn btn-gold" style="width: 100%; margin-top: 1rem;">Unlock Calculators</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

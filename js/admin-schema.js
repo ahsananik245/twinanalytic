@@ -576,17 +576,29 @@ window.ADMIN_SCHEMA = {
       custom: 'calcTools',
       cards: [
         {
-          title: 'Calculator Cards', icon: 'fa-solid fa-square-root-variable', path: 'calculators', type: 'list',
-          itemLabel: 'name', addLabel: 'Add Calculator',
-          emptyText: 'No calculators listed on the hub page.',
-          desc: 'Turning a calculator off removes its card from the hub page. The calculator page itself stays reachable by direct link.',
+          title: 'Calculator Groups', icon: 'fa-solid fa-square-root-variable', path: 'calculatorGroups', type: 'list',
+          itemLabel: 'title', addLabel: 'Add Group',
+          emptyText: 'No groups. The calculator hub page will be empty.',
+          desc: 'The hub page is organised into groups. Hiding a group hides everything in it; ' +
+                'hiding a single calculator removes just that card. Either way the calculator\'s own ' +
+                'page stays reachable by direct link, so existing bookmarks keep working.',
           fields: [
-            { key: 'name', label: 'Display Name', type: 'text' },
-            { key: 'icon', label: 'Icon', type: 'icon' },
-            { key: 'desc', label: 'Description', type: 'textarea', wide: true },
-            { key: 'href', label: 'Page Link', type: 'text' },
-            { key: 'ctaLabel', label: 'Button Label', type: 'text' },
-            { key: 'enabled', label: 'Show on hub page', type: 'toggle' }
+            { key: 'title', label: 'Group Heading', type: 'text' },
+            { key: 'eyebrow', label: 'Group Sub-label', type: 'text', hint: 'e.g. the governing code section.' },
+            { key: 'desc', label: 'Group Description', type: 'textarea', wide: true },
+            { key: 'enabled', label: 'Show this group', type: 'toggle' },
+            {
+              key: 'items', label: 'Calculators in This Group', type: 'list',
+              itemLabel: 'name', addLabel: 'Add Calculator',
+              fields: [
+                { key: 'name', label: 'Display Name', type: 'text' },
+                { key: 'icon', label: 'Icon', type: 'icon' },
+                { key: 'href', label: 'Page Link', type: 'text' },
+                { key: 'desc', label: 'Description', type: 'textarea', wide: true },
+                { key: 'code', label: 'Code Reference Badge', type: 'text', hint: 'e.g. BNBC 2020 Sec 2.5.7' },
+                { key: 'enabled', label: 'Show this calculator', type: 'toggle' }
+              ]
+            }
           ]
         },
         {

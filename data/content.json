@@ -387,58 +387,6 @@
   ],
   "testimonials": [],
   "blog": [],
-  "calculators": [
-    {
-      "id": "beam",
-      "name": "Free RC Beam Designer",
-      "desc": "Perform free advanced reinforced concrete beam flexural design per ACI 318 & BNBC 2020. Supports Singly, Doubly, and T-Beam sections with live SVG scaling, stress block visualizations, and calculation breakdowns.",
-      "icon": "fa-solid fa-layer-group",
-      "href": "beam-design.html",
-      "ctaLabel": "Launch Beam Designer",
-      "enabled": true,
-      "requireLead": true
-    },
-    {
-      "id": "column",
-      "name": "Free RC Column Designer",
-      "desc": "Calculate rectangular tied or circular spiral column capacity under axial loads and moments per ACI 318 code. Features live interaction diagrams and rebar layout drawings.",
-      "icon": "fa-solid fa-cube",
-      "href": "column-design.html",
-      "ctaLabel": "Launch Column Designer",
-      "enabled": true,
-      "requireLead": true
-    },
-    {
-      "id": "slab",
-      "name": "Free RC Slab Designer",
-      "desc": "One-way and two-way slab thickness checks and reinforcement distribution per ACI 318 minimum thickness coefficients.",
-      "icon": "fa-solid fa-table-cells",
-      "href": "slab-design.html",
-      "ctaLabel": "Launch Slab Designer",
-      "enabled": true,
-      "requireLead": true
-    },
-    {
-      "id": "footing",
-      "name": "Free Square Footing Designer",
-      "desc": "Isolated square footing sizing, bearing pressure checks, punching and one-way shear, and rebar detailing.",
-      "icon": "fa-solid fa-square",
-      "href": "footing-design.html",
-      "ctaLabel": "Launch Footing Designer",
-      "enabled": true,
-      "requireLead": true
-    },
-    {
-      "id": "footing-rect",
-      "name": "Free Rectangular Footing Designer",
-      "desc": "Rectangular isolated footing design with biaxial moment handling, bearing checks, and reinforcement schedules.",
-      "icon": "fa-solid fa-square",
-      "href": "footing-rect-design.html",
-      "ctaLabel": "Launch Rectangular Footing Designer",
-      "enabled": true,
-      "requireLead": true
-    }
-  ],
   "leadGate": {
     "heading": "Calculation Locked",
     "body": "Please enter your name, email, and country to unlock all calculators and download reports.",
@@ -454,14 +402,14 @@
     },
     "about": {
       "title": "About Us — TwinAnalytic",
-      "description": "Learn about TwinAnalytic's mission, values, and the engineering leadership behind our structural and BIM services.",
+      "description": "Learn about TwinAnalytic, our leadership team, our history, and how we are engineering the future using Building Information Modeling (BIM) and Digital Twins.",
       "ogImage": "assets/about_render.jpg",
       "bannerEyebrow": "Architects of Digital Reality",
       "bannerHeading": "About TwinAnalytic"
     },
     "services": {
-      "title": "Computational Engineering Services — TwinAnalytic",
-      "description": "Structural engineering, BIM modeling, MEP, feasibility, construction supervision, and project management services.",
+      "title": "Our Services — TwinAnalytic",
+      "description": "Explore TwinAnalytic's technical services, ranging from high-precision BIM Level 3 modeling and structural finite element analysis (FEA) to real-time digital twin integrations.",
       "ogImage": "assets/about_render.jpg",
       "bannerEyebrow": "Expertise & Technologies",
       "bannerHeading": "Computational Engineering Services"
@@ -474,82 +422,90 @@
       "bannerHeading": "Project Portfolio"
     },
     "contact": {
-      "title": "Contact Us — TwinAnalytic",
-      "description": "Get in touch with TwinAnalytic for structural engineering, BIM modeling, and digital twin consultation.",
+      "title": "Contact Offices — TwinAnalytic",
+      "description": "Reach out to TwinAnalytic. Submit structural project specifications for a quote on BIM coordination modeling or digital twin installations.",
       "ogImage": "assets/about_render.jpg",
       "bannerEyebrow": "Initiate Coordination Consults",
       "bannerHeading": "Contact Our Offices"
     },
     "calculators": {
-      "title": "Free Structural Calculators — TwinAnalytic",
-      "description": "Free online RC beam, column, slab, and footing design calculators compliant with ACI 318 and BNBC 2020.",
+      "title": "Free BNBC 2020 & ACI 318 Structural Calculators — TwinAnalytic",
+      "description": "Twenty-eight free structural engineering calculators to BNBC 2020 and ACI 318: seismic base shear, wind load, P-delta, drift, irregularity checks, beam, column, slab, stair, shear wall and footing design, reinforcement detailing and estimating.",
       "ogImage": "assets/about_render.jpg",
       "bannerEyebrow": "Precision Analysis Suite",
-      "bannerHeading": "Free Structural Member Calculators"
+      "bannerHeading": "Free Structural Engineering Calculators"
     }
   },
   "footer": {
     "columns": [
       {
-        "title": "Services",
+        "title": "Load Analysis",
         "links": [
           {
-            "label": "Structural Engineering",
-            "href": "services.html#structural"
+            "label": "Seismic Base Shear",
+            "href": "seismic-analysis.html"
           },
           {
-            "label": "BIM & Digital Engineering",
-            "href": "services.html#bim"
+            "label": "Wind Load (MWFRS)",
+            "href": "wind-load.html"
           },
           {
-            "label": "Construction Support",
-            "href": "services.html#support"
+            "label": "Vertical Earthquake Effect",
+            "href": "vertical-seismic.html"
           },
           {
-            "label": "Engineering Consultancy",
-            "href": "services.html#consultancy"
+            "label": "Base Shear Verification",
+            "href": "base-shear-check.html"
           }
         ]
       },
       {
-        "title": "Interactive",
+        "title": "Compliance Checks",
         "links": [
           {
-            "label": "Free Beam Design Calculator",
+            "label": "P-Delta Stability",
+            "href": "p-delta-check.html"
+          },
+          {
+            "label": "Drift & Sway",
+            "href": "drift-check.html"
+          },
+          {
+            "label": "Soft Storey",
+            "href": "soft-story-check.html"
+          },
+          {
+            "label": "Torsional Irregularity",
+            "href": "torsional-irregularity.html"
+          },
+          {
+            "label": "Overturning Moment",
+            "href": "overturning-check.html"
+          }
+        ]
+      },
+      {
+        "title": "Member Design",
+        "links": [
+          {
+            "label": "RC Beam Design",
             "href": "beam-design.html"
           },
           {
-            "label": "Free Column Design Calculator",
+            "label": "RC Column Design",
             "href": "column-design.html"
           },
           {
-            "label": "Free Slab Spans Calculator",
+            "label": "RC Slab Design",
             "href": "slab-design.html"
-          }
-        ]
-      },
-      {
-        "title": "Navigation",
-        "links": [
-          {
-            "label": "Home",
-            "href": "index.html"
           },
           {
-            "label": "About",
-            "href": "about.html"
+            "label": "RC Stair Design",
+            "href": "stair-design.html"
           },
           {
-            "label": "Services",
-            "href": "services.html"
-          },
-          {
-            "label": "Projects",
-            "href": "projects.html"
-          },
-          {
-            "label": "Contact",
-            "href": "contact.html"
+            "label": "All Calculators",
+            "href": "calculators.html"
           }
         ]
       }
@@ -569,5 +525,271 @@
     "googleScriptUrl": "https://script.google.com/macros/s/AKfycbwOCu31hE-GRIvbTOH2HVb_PaAAFkDnyuqUZ1mRusZDll3NmeJ9JZ4ZBWxI_NRt1vCknQ/exec",
     "gaMeasurementId": "",
     "gtmContainerId": ""
-  }
+  },
+  "calculatorGroups": [
+    {
+      "title": "Load Analysis",
+      "eyebrow": "BNBC 2020 Part 6 Chapter 2",
+      "desc": "Derive the seismic and wind demands on the structure before any member is sized.",
+      "enabled": true,
+      "items": [
+        {
+          "name": "Seismic Base Shear",
+          "icon": "fa-solid fa-house-crack",
+          "href": "seismic-analysis.html",
+          "desc": "Equivalent static analysis to BNBC 2020. Zone coefficient by town, response spectrum Cs, design base shear and the vertical distribution of storey forces.",
+          "code": "BNBC 2020 Sec 2.5.7",
+          "enabled": true
+        },
+        {
+          "name": "Wind Load — MWFRS",
+          "icon": "fa-solid fa-wind",
+          "href": "wind-load.html",
+          "desc": "Directional procedure for the main wind force resisting system. Rigid or flexible gust factor, velocity pressure profile and wall pressures.",
+          "code": "BNBC 2020 Sec 2.4",
+          "enabled": true
+        },
+        {
+          "name": "Vertical Earthquake Effect",
+          "icon": "fa-solid fa-arrows-up-down",
+          "href": "vertical-seismic.html",
+          "desc": "Vertical seismic load effect Ev and the modified gravity combinations, by BNBC 2020 or ASCE 7-16.",
+          "code": "BNBC 2020 Sec 2.5.13",
+          "enabled": true
+        },
+        {
+          "name": "Load Combination Generator",
+          "icon": "fa-solid fa-layer-group",
+          "href": "load-combinations.html",
+          "desc": "All eight BNBC 2020 strength design combinations evaluated for one load effect, with the vertical earthquake effect folded in and the uplift case reported.",
+          "code": "BNBC 2020 Sec 2.7",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "title": "Code Compliance Checks",
+      "eyebrow": "Irregularity & Stability",
+      "desc": "Screen an analysis model against the BNBC irregularity, drift and stability provisions.",
+      "enabled": true,
+      "items": [
+        {
+          "name": "Base Shear Verification",
+          "icon": "fa-solid fa-scale-balanced",
+          "href": "base-shear-check.html",
+          "desc": "Reconcile the model base reaction with the code static value and obtain the scale factor when it falls short.",
+          "code": "BNBC 2020 Sec 2.5.7",
+          "enabled": true
+        },
+        {
+          "name": "P-Delta Stability",
+          "icon": "fa-solid fa-arrows-left-right-to-line",
+          "href": "p-delta-check.html",
+          "desc": "Storey stability coefficient against the code limit of 0.5/(βCd) capped at 0.25.",
+          "code": "BNBC 2020 Sec 2.5.7.9",
+          "enabled": true
+        },
+        {
+          "name": "Drift & Sway Limitation",
+          "icon": "fa-solid fa-ruler-vertical",
+          "href": "drift-check.html",
+          "desc": "Design storey drift, drift ratio and total sway against Table 6.2.21 and the H/500 serviceability limit.",
+          "code": "BNBC 2020 Table 6.2.21",
+          "enabled": true
+        },
+        {
+          "name": "Soft Storey Irregularity",
+          "icon": "fa-solid fa-layer-group",
+          "href": "soft-story-check.html",
+          "desc": "Vertical stiffness irregularity types 1a and 1b against the storey above and the average of the three above.",
+          "code": "BNBC 2020 Table 6.1.4",
+          "enabled": true
+        },
+        {
+          "name": "Torsional Irregularity",
+          "icon": "fa-solid fa-rotate",
+          "href": "torsional-irregularity.html",
+          "desc": "Ratio of maximum to average storey drift with the accidental torsion amplification factor Ax.",
+          "code": "BNBC 2020 Table 6.1.5",
+          "enabled": true
+        },
+        {
+          "name": "Overturning Moment",
+          "icon": "fa-solid fa-tower-observation",
+          "href": "overturning-check.html",
+          "desc": "Overturning from storey forces or shears against the resisting moment with a factor of safety of 1.5.",
+          "code": "BNBC 2020 Sec 2.5.9",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "title": "Member Design",
+      "eyebrow": "ACI 318 / BNBC 2020",
+      "desc": "Size and detail reinforced concrete members from first principles.",
+      "enabled": true,
+      "items": [
+        {
+          "name": "RC Beam Flexural Design",
+          "icon": "fa-solid fa-grip-lines",
+          "href": "beam-design.html",
+          "desc": "Singly, doubly and T-beam sections with live stress block visualisation and a full calculation breakdown.",
+          "code": "ACI 318 / BNBC 2020",
+          "enabled": true
+        },
+        {
+          "name": "RC Column Design",
+          "icon": "fa-solid fa-cube",
+          "href": "column-design.html",
+          "desc": "Rectangular tied or circular spiral column capacity under axial load and moment, with an interaction diagram.",
+          "code": "ACI 318-19",
+          "enabled": true
+        },
+        {
+          "name": "Slenderness & Moment Magnifier",
+          "icon": "fa-solid fa-compress",
+          "href": "moment-magnifier.html",
+          "desc": "Decides whether a column is short or slender, then produces the magnified design moment Mc that the column calculators take as input.",
+          "code": "ACI 318 Sec 6.6.4",
+          "enabled": true
+        },
+        {
+          "name": "Circular Column Interaction",
+          "icon": "fa-solid fa-circle-dot",
+          "href": "circular-column-design.html",
+          "desc": "P-M interaction by strain compatibility with the concrete zone integrated as a circular segment, plus the spiral ratio check.",
+          "code": "ACI 318",
+          "enabled": true
+        },
+        {
+          "name": "RC Slab — Direct Design Method",
+          "icon": "fa-solid fa-border-all",
+          "href": "slab-design.html",
+          "desc": "Two-way slab by the ACI direct design method with minimum thickness, punching shear and reinforcement layout.",
+          "code": "ACI 318 DDM",
+          "enabled": true
+        },
+        {
+          "name": "Two-Way Slab — Coefficient Method",
+          "icon": "fa-solid fa-table-cells",
+          "href": "two-way-slab-coeff.html",
+          "desc": "Nine panel cases on stiff beams, minimum thickness from the beam stiffness ratio, and a full bar schedule.",
+          "code": "ACI Method 2",
+          "enabled": true
+        },
+        {
+          "name": "Cantilever Slab / Balcony",
+          "icon": "fa-solid fa-square-caret-right",
+          "href": "cantilever-slab.html",
+          "desc": "Working stress design of a projecting slab with the elastic constants j and k and the ACI L/10 minimum.",
+          "code": "ACI 318 WSD",
+          "enabled": true
+        },
+        {
+          "name": "RC Stair Design",
+          "icon": "fa-solid fa-stairs",
+          "href": "stair-design.html",
+          "desc": "Six support configurations solved by statics, with waist thickness, shear and reinforcement detailing.",
+          "code": "ACI 318 USD",
+          "enabled": true
+        },
+        {
+          "name": "Shear Wall Design",
+          "icon": "fa-solid fa-block-brick",
+          "href": "shear-wall-design.html",
+          "desc": "Barbell wall: minimum reinforcement regime, in-plane shear strength, axial and flexural capacity and bulb confinement.",
+          "code": "ACI 318 Sec 18.10",
+          "enabled": true
+        },
+        {
+          "name": "Square Footing Design",
+          "icon": "fa-solid fa-shapes",
+          "href": "footing-design.html",
+          "desc": "Isolated square footing with base area, punching shear, beam shear and reinforcement mesh.",
+          "code": "ACI 318 USD",
+          "enabled": true
+        },
+        {
+          "name": "Rectangular Footing Design",
+          "icon": "fa-solid fa-vector-square",
+          "href": "footing-rect-design.html",
+          "desc": "Isolated rectangular footing with L and B direction reinforcement and both shear checks.",
+          "code": "ACI 318 USD",
+          "enabled": true
+        },
+        {
+          "name": "Combined Footing Design",
+          "icon": "fa-solid fa-bridge",
+          "href": "combined-footing.html",
+          "desc": "Two-column footing: bearing pressure, middle-third rule, longitudinal beam analysis and punching at both columns.",
+          "code": "ACI 318",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "title": "Reinforcement Detailing",
+      "eyebrow": "ACI 318 Chapters 18 & 25",
+      "desc": "Turn analysis demands into buildable bar spacing and lengths.",
+      "enabled": true,
+      "items": [
+        {
+          "name": "Beam Stirrup Spacing",
+          "icon": "fa-solid fa-bars-staggered",
+          "href": "beam-shear-rebar.html",
+          "desc": "Av/s demand screened against every ACI seismic detailing limit, with end zone and middle zone spacing.",
+          "code": "ACI 318 Sec 18.6.4",
+          "enabled": true
+        },
+        {
+          "name": "Column Tie Spacing",
+          "icon": "fa-solid fa-grip",
+          "href": "column-tie-rebar.html",
+          "desc": "Confined zone tie spacing with hx, the so expression bounded 100–150 mm, and the confinement length Lo.",
+          "code": "ACI 318 Sec 18.7.5",
+          "enabled": true
+        },
+        {
+          "name": "Shear Wall Rebar",
+          "icon": "fa-solid fa-grip-vertical",
+          "href": "shear-wall-rebar.html",
+          "desc": "Vertical and horizontal curtain ratios against the minimum and the 3t, 18 in, lw/3 and lw/5 spacing limits.",
+          "code": "ACI 318-14 Sec 11.7",
+          "enabled": true
+        },
+        {
+          "name": "Development & Splice Lengths",
+          "icon": "fa-solid fa-ruler-horizontal",
+          "href": "development-length.html",
+          "desc": "Tension, compression, standard hook and Class A and B splice lengths for every metric bar size.",
+          "code": "ACI 318M Ch. 25",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "title": "Estimating",
+      "eyebrow": "Quantities & Costing",
+      "desc": "Convert a finished design into quantities and a priced bill.",
+      "enabled": true,
+      "items": [
+        {
+          "name": "Foundation Estimating",
+          "icon": "fa-solid fa-file-invoice-dollar",
+          "href": "foundation-estimate.html",
+          "desc": "Earthwork, soling, RCC, shuttering, reinforcement by bar mark and mortar constituents, priced into a bill of quantities.",
+          "code": "Bill of Quantities",
+          "enabled": true
+        },
+        {
+          "name": "Beam Estimating",
+          "icon": "fa-solid fa-clipboard-list",
+          "href": "beam-estimate.html",
+          "desc": "Bar bending schedule with cut lengths and stirrup take-off across any number of spans, with a costed BOQ.",
+          "code": "Bar Bending Schedule",
+          "enabled": true
+        }
+      ]
+    }
+  ]
 }

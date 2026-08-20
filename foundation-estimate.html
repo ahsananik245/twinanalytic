@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0A0A0A">
+  <title>Free Foundation Estimating &amp; Costing Calculator — Bill of Quantities</title>
+  <meta name="description" content="Free foundation estimating calculator. Produces earthwork, concrete, shuttering, cement, sand, aggregate, brick and reinforcement quantities with a costed bill of quantities.">
+  <link rel="canonical" href="https://twinanalytic.com/foundation-estimate.html">
+
+  <meta property="og:title" content="Foundation Estimating & Costing — TwinAnalytic" />
+  <meta property="og:description" content="Free foundation estimating calculator. Produces earthwork, concrete, shuttering, cement, sand, aggregate, brick and reinforcement quantities with a costed bill of quantities." />
+  <meta property="og:image" content="https://twinanalytic.com/assets/about_render.jpg" />
+  <meta property="og:url" content="https://twinanalytic.com/foundation-estimate.html" />
+  <meta property="og:type" content="website" />
+
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Content engine: hydrates this page from data/content.json -->
+  <script src="js/site-content.js"></script>
+  <link rel="stylesheet" href="css/analysis-suite.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(10, 10, 10, 0.85);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-card {
+      width: 100%; max-width: 480px; padding: 2.5rem;
+      background: var(--bg-secondary); border: 1px solid var(--color-gold);
+      transform: scale(0.95); transition: transform 0.3s ease;
+    }
+    .modal-overlay.active .modal-card { transform: scale(1); }
+    .modal-header h3 { font-family: var(--font-serif); font-size: 1.7rem; font-weight: 400; color: var(--color-gold); margin-bottom: 0.5rem; }
+    .modal-header p { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 2rem; line-height: 1.5; }
+    .modal-form .form-group { margin-bottom: 1.2rem; display: flex; flex-direction: column; gap: 0.5rem; text-align: left; }
+    .modal-form label { font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); }
+    .modal-form input {
+      width: 100%; background: rgba(10, 10, 10, 0.5); border: 1px solid var(--border-gold);
+      border-radius: 4px; padding: 0.8rem 1rem; color: var(--text-primary); font-size: 0.95rem;
+    }
+    .modal-form input:focus { outline: none; border-color: var(--color-gold); box-shadow: 0 0 10px rgba(201, 168, 76, 0.15); }
+
+  </style>
+</head>
+<body>
+
+  <a href="#main-content" class="skip-link">Skip to Main Content</a>
+
+  <nav class="navbar scrolled" id="navbar">
+    <div class="container">
+      <a href="index.html" class="logo" data-tw-list="brandLogo">
+        <img src="assets/logo.png" alt="TwinAnalytic Logo" style="height: 38px; width: auto; border-radius: 4px; margin-right: 8px; vertical-align: middle;">
+        Twin<span>Analytic</span>
+      </a>
+      <ul class="nav-links" id="nav-links" data-tw-list="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="bim-viewer.html">BIM Viewer</a></li>
+        <li><a href="calculators.html" class="active">Calculators</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="hamburger" id="hamburger">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main-content" tabindex="-1" class="analysis-page">
+    <div class="container">
+      <header class="page-title-section">
+        <p class="eyebrow">Estimating · Bill of Quantities</p>
+        <h1>Foundation Estimating &amp; Costing</h1>
+        <p class="standard">Builds a complete material take-off for an isolated footing: earthwork, brick and cement soling, RCC, shuttering, reinforcement by bar mark and the mortar constituents from the mix ratio, all priced into a bill of quantities.</p>
+      </header>
+
+      <div class="analysis-grid">
+
+        <!-- INPUTS -->
+        <section class="analysis-card col-inputs">
+          <h3>Design Parameters <span id="unit-toggle-host"></span></h3>
+          <div class="workspace-bar">
+            <button type="button" class="ws-btn" id="btn-save-project" title="Save these inputs under a name">
+              <i class="fa-solid fa-floppy-disk"></i> Save
+            </button>
+            <select class="ws-select" id="saved-project-select"><option value="">Load saved…</option></select>
+            <button type="button" class="ws-btn" id="btn-share-link" title="Copy a link with these inputs baked in">
+              <i class="fa-solid fa-link"></i> Share
+            </button>
+          </div>
+          <form id="calc-form" onsubmit="return false;">
+            <div class="form-group-title">Footing Geometry</div>
+            <div class="input-grid">
+              <div class="input-field">
+                <label>Length, L (ft)</label>
+                <input type="number" id="in-L" value="6" step="0.25" min="1">
+              </div>
+              <div class="input-field">
+                <label>Width, B (ft)</label>
+                <input type="number" id="in-B" value="4" step="0.25" min="1">
+              </div>
+              <div class="input-field">
+                <label>Depth Below EGL (ft)</label>
+                <input type="number" id="in-depth" value="3" step="0.25" min="0">
+              </div>
+              <div class="input-field">
+                <label>RCC Thickness (in)</label>
+                <input type="number" id="in-trcc" value="12" step="1" min="4">
+              </div>
+              <div class="input-field">
+                <label>CC Soling Thickness (in)</label>
+                <input type="number" id="in-tcs" value="3" step="1" min="0">
+              </div>
+              <div class="input-field">
+                <label>Brick Soling Thickness (in)</label>
+                <input type="number" id="in-tbs" value="3" step="1" min="0">
+              </div>
+              <div class="input-field">
+                <label>Side Working Space (in)</label>
+                <input type="number" id="in-cut" value="12" step="1" min="0">
+              </div>
+              <div class="input-field">
+                <label>Side Clear Cover (in)</label>
+                <input type="number" id="in-cover" value="3" step="0.5" min="1">
+              </div>
+            </div>
+
+            <div class="form-group-title">Reinforcement</div>
+            <div class="input-grid">
+              <div class="input-field">
+                <label>Bottom L-dir — Nos</label>
+                <input type="number" id="in-nbl" value="10" step="1" min="0">
+              </div>
+              <div class="input-field">
+                <label>Bottom L-dir — Dia (mm)</label>
+                <input type="number" id="in-dbl" value="16" step="2" min="8">
+              </div>
+              <div class="input-field">
+                <label>Bottom B-dir — Nos</label>
+                <input type="number" id="in-nbb" value="15" step="1" min="0">
+              </div>
+              <div class="input-field">
+                <label>Bottom B-dir — Dia (mm)</label>
+                <input type="number" id="in-dbb" value="12" step="2" min="8">
+              </div>
+              <div class="input-field full">
+                <label>Top Reinforcement</label>
+                <select id="in-hastop">
+                  <option value="yes" selected>Yes — top mat provided</option>
+                  <option value="no">No — bottom mat only</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Top L-dir — Nos</label>
+                <input type="number" id="in-ntl" value="12" step="1" min="0">
+              </div>
+              <div class="input-field">
+                <label>Top L-dir — Dia (mm)</label>
+                <input type="number" id="in-dtl" value="16" step="2" min="8">
+              </div>
+              <div class="input-field">
+                <label>Top B-dir — Nos</label>
+                <input type="number" id="in-ntb" value="15" step="1" min="0">
+              </div>
+              <div class="input-field">
+                <label>Top B-dir — Dia (mm)</label>
+                <input type="number" id="in-dtb" value="20" step="2" min="8">
+              </div>
+              <div class="input-note">Hook allowances are converted to feet before being added to the bar length,
+              so a 9db standard hook adds inches rather than feet to each bar.</div>
+            </div>
+
+            <div class="form-group-title">Mix Ratios &amp; Rates</div>
+            <div class="input-grid">
+              <div class="input-field">
+                <label>RCC Mix — Cement : Sand : Aggregate</label>
+                <input type="text" id="in-rcc" value="1:1.5:3">
+              </div>
+              <div class="input-field">
+                <label>CC Soling Mix</label>
+                <input type="text" id="in-cs" value="1:3:6">
+              </div>
+              <div class="input-field">
+                <label>Brick Soling Mortar</label>
+                <input type="text" id="in-bs" value="1:5">
+              </div>
+              <div class="input-field">
+                <label>Aggregate Type</label>
+                <select id="in-agg">
+                  <option value="Brick" selected>Brick chips</option>
+                  <option value="Stone">Stone chips</option>
+                </select>
+              </div>
+              <div class="input-field">
+                <label>Dry Volume Factor</label>
+                <input type="number" id="in-dry" value="1.5" step="0.05" min="1.2" max="1.8">
+              </div>
+              <div class="input-field">
+                <label>Volume per Cement Bag (cft)</label>
+                <input type="number" id="in-bag" value="1.25" step="0.05" min="1">
+              </div>
+              <div class="input-field">
+                <label>Cement Rate (per bag)</label>
+                <input type="number" id="in-pcem" value="500" step="10" min="0">
+              </div>
+              <div class="input-field">
+                <label>Coarse Sand Rate (per cft)</label>
+                <input type="number" id="in-psc" value="35" step="1" min="0">
+              </div>
+              <div class="input-field">
+                <label>Local Sand Rate (per cft)</label>
+                <input type="number" id="in-psl" value="15" step="1" min="0">
+              </div>
+              <div class="input-field">
+                <label>Brick Chips Rate (per cft)</label>
+                <input type="number" id="in-pbc" value="90" step="1" min="0">
+              </div>
+              <div class="input-field">
+                <label>Stone Chips Rate (per cft)</label>
+                <input type="number" id="in-pst" value="171" step="1" min="0">
+              </div>
+              <div class="input-field">
+                <label>Steel Rate (per tonne)</label>
+                <input type="number" id="in-pstl" value="96000" step="500" min="0">
+              </div>
+              <div class="input-field">
+                <label>Brick Rate (each)</label>
+                <input type="number" id="in-pbr" value="10" step="0.5" min="0">
+              </div>
+              <div class="input-field">
+                <label>Shuttering Rate (per sq.ft)</label>
+                <input type="number" id="in-psh" value="15" step="1" min="0">
+              </div>
+              <div class="input-field">
+                <label>Earthwork Rate (per cft)</label>
+                <input type="number" id="in-pea" value="5" step="1" min="0">
+              </div>
+              <div class="input-field">
+                <label>Bricks per cft of Soling</label>
+                <input type="number" id="in-bpc" value="12" step="0.5" min="1">
+              </div>
+            </div>
+
+            <div class="buttons-block">
+              <button class="btn-calc-primary" id="btn-calculate" type="button">Calculate</button>
+              <button class="btn-calc-ghost" id="btn-reset" type="button">Reset</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- OUTPUT -->
+        <section class="analysis-card col-output tool-outputs-card">
+          <h3>Analysis Output <span class="tool-status-badge pass" id="calc-status">INFO</span></h3>
+          <div class="calc-headline is-info" id="calc-headline">Enter the design parameters to run the analysis.</div>
+          <div class="warning-box" id="calc-warnings"></div>
+          <div class="results-console" id="calc-results"></div>
+          <div class="figure-block" id="calc-figure" style="display:none;"></div>
+          <div class="out-table-block" id="calc-table" style="display:none;"></div>
+
+          <button class="btn-pdf" id="btn-export-pdf" type="button">
+            <i class="fa-solid fa-file-pdf"></i> Download Calculation Report (PDF)
+          </button>
+        </section>
+
+        <!-- STEPS -->
+        <section class="analysis-card col-steps">
+          <h3>Step-by-Step Calculation</h3>
+          <div id="calc-steps"></div>
+        </section>
+
+      </div>
+
+      <div class="suite-crosslinks">
+        <h4>Related Calculators</h4>
+        <div class="crosslink-row">
+          <a href="overturning-check.html">Overturning Moment</a>
+          <a href="combined-footing.html">Combined Footing</a>
+          <a href="development-length.html">Development & Splice</a>
+          <a href="beam-estimate.html">Beam Estimate</a>
+          <a href="footing-design.html">Square Footing</a>
+          <a href="footing-rect-design.html">Rectangular Footing</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-top-gradient"></div>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col brand">
+          <h3 data-tw-list="brandFooter">Twin<span>Analytic</span></h3>
+          <p style="color: var(--color-gold); font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; margin-top: -0.5rem;" data-tw="site.tagline">Construction &amp; Engineering</p>
+          <p data-tw="site.footerBlurb">We combine engineering expertise with digital technologies to create safe, optimized, and reliable structures.</p>
+          <div class="footer-socials" data-tw-list="footerSocials">
+            <a href="https://linkedin.com/company/twinanalytic" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="https://x.com/twinanalytic" target="_blank"><i class="fa-brands fa-x-twitter"></i></a>
+          </div>
+        </div>
+        <div data-tw-list="footerColumns" style="display: contents;">
+        <div class="footer-col">
+          <h3>Load Analysis</h3>
+          <ul class="footer-links">
+            <li><a href="seismic-analysis.html">Seismic Base Shear</a></li>
+            <li><a href="wind-load.html">Wind Load (MWFRS)</a></li>
+            <li><a href="vertical-seismic.html">Vertical Earthquake Effect</a></li>
+            <li><a href="base-shear-check.html">Base Shear Verification</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Compliance Checks</h3>
+          <ul class="footer-links">
+            <li><a href="p-delta-check.html">P-Delta Stability</a></li>
+            <li><a href="drift-check.html">Drift &amp; Sway</a></li>
+            <li><a href="soft-story-check.html">Soft Storey</a></li>
+            <li><a href="torsional-irregularity.html">Torsional Irregularity</a></li>
+            <li><a href="overturning-check.html">Overturning Moment</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Member Design</h3>
+          <ul class="footer-links">
+            <li><a href="beam-design.html">RC Beam Design</a></li>
+            <li><a href="column-design.html">RC Column Design</a></li>
+            <li><a href="slab-design.html">RC Slab Design</a></li>
+            <li><a href="stair-design.html">RC Stair Design</a></li>
+            <li><a href="calculators.html">All Calculators</a></li>
+          </ul>
+        </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p data-tw="site.copyright">&copy; 2026 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
+        <div class="footer-bottom-links" data-tw-list="footerBottomLinks">
+          <a href="privacy.html">Privacy Protocol</a>
+          <a href="sitemap.html">Sitemap</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/calculators.js"></script>
+  <script src="js/bnbc-pdf.js"></script>
+  <script src="js/bnbc-data.js"></script>
+  <script src="js/bnbc-calcs.js"></script>
+  <script src="js/bnbc-design.js"></script>
+  <script src="js/bnbc-design2.js"></script>
+  <script src="js/bnbc-design3.js"></script>
+  <script src="js/bnbc-project.js"></script>
+  <script src="js/bnbc-draw.js"></script>
+  <script src="js/bnbc-figures.js"></script>
+  <script src="js/bnbc-ui.js"></script>
+  <script>
+    BNBCUI.mount({
+      title: 'Foundation Estimating & Costing',
+      slug: 'twinanalytic-foundation-estimate',
+      calc: BNBCDesign.foundationEstimate,
+      figure: BNBCFigures.estimate,
+      collect: function () {
+        function ratio(id, n) {
+          const parts = (document.getElementById(id).value || '').split(':').map(s => parseFloat(s));
+          const out = [];
+          for (let i = 0; i < n; i++) out.push(isFinite(parts[i]) ? parts[i] : 1);
+          return out;
+        }
+        const rcc = ratio('in-rcc', 3), cs = ratio('in-cs', 3), bs = ratio('in-bs', 2);
+        return {
+          L: BNBCUI.v('in-L', 6), B: BNBCUI.v('in-B', 4), depth: BNBCUI.v('in-depth', 3),
+          tRCC: BNBCUI.v('in-trcc', 12), tCS: BNBCUI.v('in-tcs', 3), tBS: BNBCUI.v('in-tbs', 3),
+          sideCut: BNBCUI.v('in-cut', 12), sideCover: BNBCUI.v('in-cover', 3),
+          nBotL: BNBCUI.v('in-nbl', 10), dBotL: BNBCUI.v('in-dbl', 16),
+          nBotB: BNBCUI.v('in-nbb', 15), dBotB: BNBCUI.v('in-dbb', 12),
+          hasTop: BNBCUI.v('in-hastop', 'yes') === 'yes',
+          nTopL: BNBCUI.v('in-ntl', 12), dTopL: BNBCUI.v('in-dtl', 16),
+          nTopB: BNBCUI.v('in-ntb', 15), dTopB: BNBCUI.v('in-dtb', 20),
+          rccC: rcc[0], rccS: rcc[1], rccK: rcc[2],
+          csC: cs[0], csS: cs[1], csK: cs[2],
+          bsC: bs[0], bsS: bs[1],
+          aggregate: BNBCUI.v('in-agg', 'Brick'),
+          dryFactor: BNBCUI.v('in-dry', 1.5), cftPerBag: BNBCUI.v('in-bag', 1.25),
+          bricksPerCft: BNBCUI.v('in-bpc', 12),
+          pCement: BNBCUI.v('in-pcem', 500), pSandC: BNBCUI.v('in-psc', 35),
+          pSandL: BNBCUI.v('in-psl', 15), pBrickChip: BNBCUI.v('in-pbc', 90),
+          pStone: BNBCUI.v('in-pst', 171), pSteel: BNBCUI.v('in-pstl', 96000),
+          pBrick: BNBCUI.v('in-pbr', 10), pShutter: BNBCUI.v('in-psh', 15),
+          pEarth: BNBCUI.v('in-pea', 5)
+        };
+      },
+      pdfInputs: function (i) {
+        return [['Footing L x B', i.L + ' x ' + i.B + ' ft'], ['Depth below EGL', i.depth + ' ft'],
+                ['RCC / CC / Brick soling', i.tRCC + ' / ' + i.tCS + ' / ' + i.tBS + ' in'],
+                ['RCC mix', i.rccC + ':' + i.rccS + ':' + i.rccK],
+                ['Aggregate', i.aggregate], ['Dry volume factor', i.dryFactor]];
+      }
+    });
+  </script>
+
+  <div class="modal-overlay" id="auth-modal">
+    <div class="modal-card glass-card">
+      <div class="modal-header">
+        <h3>Unlock Free Engineering Suite</h3>
+        <p>Enter your professional credentials to run limit-state design checks and download coordinate schematics.</p>
+      </div>
+      <form class="modal-form" id="modal-auth-form">
+        <div class="form-group">
+          <label for="lead-name">Full Name</label>
+          <input type="text" id="lead-name" placeholder="E.g., MD. AHSAN HABIB ANIK" required>
+        </div>
+        <div class="form-group">
+          <label for="lead-email">Business Email</label>
+          <input type="email" id="lead-email" placeholder="anik@twinanalytic.com" required>
+        </div>
+        <div class="form-group">
+          <label for="lead-country">Country</label>
+          <input type="text" id="lead-country" placeholder="E.g., Germany" required>
+        </div>
+        <button type="submit" class="btn btn-gold" style="width: 100%; margin-top: 1rem;">Unlock Calculators</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

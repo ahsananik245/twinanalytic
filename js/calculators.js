@@ -2254,6 +2254,9 @@ function downloadSlabPDF() {
     unit: 'in',
     format: 'letter'
   });
+  /* Latin-1 safe text: jsPDF Helvetica renders Greek and maths
+     symbols as mojibake, so transliterate on the way in. */
+  if (window.BNBCPdf) window.BNBCPdf.harden(doc);
 
   const drawBorder = (pageNo) => {
     // Project metadata below bar
@@ -3584,6 +3587,10 @@ function downloadSlabPDF() {
   doc.text('DESIGNER SIGNATURE', 1.0, sy + 0.52);
   doc.text('REVIEWER SIGNATURE', 5.6, sy + 0.52);
 
+  if (window.BNBCPdf) {
+    const n = doc.getNumberOfPages();
+    for (let i = 1; i <= n; i++) { doc.setPage(i); window.BNBCPdf.footer(doc, i, n); }
+  }
   doc.save(`twinanalytic_slab_report_${new Date().toISOString().split('T')[0]}.pdf`);
 }
 
@@ -3915,6 +3922,9 @@ function downloadColumnPDF() {
     unit: 'in',
     format: 'letter'
   });
+  /* Latin-1 safe text: jsPDF Helvetica renders Greek and maths
+     symbols as mojibake, so transliterate on the way in. */
+  if (window.BNBCPdf) window.BNBCPdf.harden(doc);
 
   let pageNum = 1;
   let cy = 1.8;
@@ -6002,6 +6012,10 @@ function downloadColumnPDF() {
   doc.setTextColor(201, 168, 76);
   doc.text(`Designed per ${code} | CE 317 Method | ${new Date().toLocaleDateString()}`, 0.5, cy);
 
+  if (window.BNBCPdf) {
+    const n = doc.getNumberOfPages();
+    for (let i = 1; i <= n; i++) { doc.setPage(i); window.BNBCPdf.footer(doc, i, n); }
+  }
   doc.save(`twinanalytic_column_report_${new Date().toISOString().split('T')[0]}.pdf`);
 }
 

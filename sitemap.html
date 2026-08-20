@@ -41,11 +41,9 @@
     }
     .sitemap-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 3rem;
-    }
-    @media (max-width: 992px) {
-      .sitemap-grid { grid-template-columns: 1fr 1fr; }
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 2.5rem;
+      align-items: start;
     }
     @media (max-width: 600px) {
       .sitemap-grid { grid-template-columns: 1fr; }
@@ -153,13 +151,59 @@
             </div>
           </div>
 
-          <!-- Col 3: Interactive Suite -->
+          <!-- Col 3: Load analysis and compliance -->
           <div class="sitemap-col">
-            <h3>Calculators Suite</h3>
+            <h3>Load Analysis</h3>
             <div class="sitemap-links">
-              <a href="beam-design.html"><i class="fa-solid fa-chevron-right"></i> Free Beam Design Calculator</a>
-              <a href="column-design.html"><i class="fa-solid fa-chevron-right"></i> Free Column Design Sizer</a>
-              <a href="slab-design.html"><i class="fa-solid fa-chevron-right"></i> Free Slab Thickness Calculator</a>
+              <a href="calculators.html"><i class="fa-solid fa-chevron-right"></i> All Calculators</a>
+              <a href="seismic-analysis.html"><i class="fa-solid fa-chevron-right"></i> Seismic Base Shear</a>
+              <a href="wind-load.html"><i class="fa-solid fa-chevron-right"></i> Wind Load (MWFRS)</a>
+              <a href="vertical-seismic.html"><i class="fa-solid fa-chevron-right"></i> Vertical Earthquake Effect</a>
+              <a href="load-combinations.html"><i class="fa-solid fa-chevron-right"></i> Load Combination Generator</a>
+            </div>
+            <h3 style="margin-top:2rem;">Compliance Checks</h3>
+            <div class="sitemap-links">
+              <a href="base-shear-check.html"><i class="fa-solid fa-chevron-right"></i> Base Shear Verification</a>
+              <a href="p-delta-check.html"><i class="fa-solid fa-chevron-right"></i> P-Delta Stability</a>
+              <a href="drift-check.html"><i class="fa-solid fa-chevron-right"></i> Drift &amp; Sway Limitation</a>
+              <a href="soft-story-check.html"><i class="fa-solid fa-chevron-right"></i> Soft Storey Irregularity</a>
+              <a href="torsional-irregularity.html"><i class="fa-solid fa-chevron-right"></i> Torsional Irregularity</a>
+              <a href="overturning-check.html"><i class="fa-solid fa-chevron-right"></i> Overturning Moment</a>
+            </div>
+          </div>
+
+          <!-- Col 4: Member design -->
+          <div class="sitemap-col">
+            <h3>Member Design</h3>
+            <div class="sitemap-links">
+              <a href="beam-design.html"><i class="fa-solid fa-chevron-right"></i> RC Beam Flexural Design</a>
+              <a href="column-design.html"><i class="fa-solid fa-chevron-right"></i> RC Column Design</a>
+              <a href="circular-column-design.html"><i class="fa-solid fa-chevron-right"></i> Circular Column Interaction</a>
+              <a href="moment-magnifier.html"><i class="fa-solid fa-chevron-right"></i> Slenderness &amp; Moment Magnifier</a>
+              <a href="slab-design.html"><i class="fa-solid fa-chevron-right"></i> RC Slab (Direct Design)</a>
+              <a href="two-way-slab-coeff.html"><i class="fa-solid fa-chevron-right"></i> Two-Way Slab (Coefficient)</a>
+              <a href="cantilever-slab.html"><i class="fa-solid fa-chevron-right"></i> Cantilever Slab / Balcony</a>
+              <a href="stair-design.html"><i class="fa-solid fa-chevron-right"></i> RC Stair Design</a>
+              <a href="shear-wall-design.html"><i class="fa-solid fa-chevron-right"></i> Shear Wall Design</a>
+              <a href="footing-design.html"><i class="fa-solid fa-chevron-right"></i> Square Footing Design</a>
+              <a href="footing-rect-design.html"><i class="fa-solid fa-chevron-right"></i> Rectangular Footing Design</a>
+              <a href="combined-footing.html"><i class="fa-solid fa-chevron-right"></i> Combined Footing Design</a>
+            </div>
+          </div>
+
+          <!-- Col 5: Detailing and estimating -->
+          <div class="sitemap-col">
+            <h3>Detailing</h3>
+            <div class="sitemap-links">
+              <a href="beam-shear-rebar.html"><i class="fa-solid fa-chevron-right"></i> Beam Stirrup Spacing</a>
+              <a href="column-tie-rebar.html"><i class="fa-solid fa-chevron-right"></i> Column Tie Spacing</a>
+              <a href="shear-wall-rebar.html"><i class="fa-solid fa-chevron-right"></i> Shear Wall Rebar</a>
+              <a href="development-length.html"><i class="fa-solid fa-chevron-right"></i> Development &amp; Splice Lengths</a>
+            </div>
+            <h3 style="margin-top:2rem;">Estimating</h3>
+            <div class="sitemap-links">
+              <a href="foundation-estimate.html"><i class="fa-solid fa-chevron-right"></i> Foundation Estimating</a>
+              <a href="beam-estimate.html"><i class="fa-solid fa-chevron-right"></i> Beam Estimating</a>
             </div>
           </div>
         </div>
@@ -194,11 +238,22 @@
           </ul>
         </div>
         <div class="footer-col">
-          <h3>Interactive</h3>
+          <h3>Load Analysis</h3>
           <ul class="footer-links">
-            <li><a href="beam-design.html">Free Beam Design Calculator</a></li>
-            <li><a href="column-design.html">Free Column Design Calculator</a></li>
-            <li><a href="slab-design.html">Free Slab Spans Calculator</a></li>
+            <li><a href="seismic-analysis.html">Seismic Base Shear</a></li>
+            <li><a href="wind-load.html">Wind Load (MWFRS)</a></li>
+            <li><a href="drift-check.html">Drift &amp; Sway Check</a></li>
+            <li><a href="p-delta-check.html">P-Delta Stability</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Member Design</h3>
+          <ul class="footer-links">
+            <li><a href="beam-design.html">RC Beam Design</a></li>
+            <li><a href="column-design.html">RC Column Design</a></li>
+            <li><a href="slab-design.html">RC Slab Design</a></li>
+            <li><a href="stair-design.html">RC Stair Design</a></li>
+            <li><a href="calculators.html">All 26 Calculators</a></li>
           </ul>
         </div>
         <div class="footer-col">

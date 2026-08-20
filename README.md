@@ -45,7 +45,7 @@ The whole public site is editable from a browser, without touching code. Open
 | **Content** | Services, Tools, Standards, Capabilities, Why-Choose-Us, Team, Projects, Articles, Testimonials — all add / reorder / duplicate / delete / hide |
 | **Pages** | Contact details, enquiry form copy, project-type dropdown, social links |
 | **SEO** | Per-page tab title, search description, social sharing image, and banner headings, with length counters |
-| **Calculators** | Show or hide each calculator, edit the lead-gate wording, reset your own unlock state for testing |
+| **Calculators** | The hub page's 5 groups and all 28 calculators — headings, code badges, descriptions, order, and per-group / per-calculator visibility. Plus the lead-gate wording and an unlock reset for testing |
 | **Features** | Lead gate on/off, announcement bar, maintenance mode, section visibility |
 | **Integrations** | Google Apps Script lead endpoint, Google Analytics / Tag Manager IDs |
 | **Leads** | Search, sort, delete, and export submissions as CSV or JSON |

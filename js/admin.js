@@ -109,6 +109,18 @@
     cur[parts[parts.length - 1]] = value;
   }
 
+  // Calculators live inside groups, so both the sidebar badge and the
+  // dashboard tile have to walk the nesting.
+  function countCalculators(data, liveOnly) {
+    return (data && data.calculatorGroups || []).reduce(function (total, group) {
+      if (liveOnly && group.enabled === false) return total;
+      var items = group.items || [];
+      return total + (liveOnly
+        ? items.filter(function (i) { return i.enabled !== false; }).length
+        : items.length);
+    }, 0);
+  }
+
   function $(sel, root) { return (root || document).querySelector(sel); }
   function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
@@ -454,7 +466,7 @@
     setCount('projects', (state.draft.projects || []).length);
     setCount('blog', (state.draft.blog || []).length);
     setCount('testimonials', (state.draft.testimonials || []).length);
-    setCount('calculators', (state.draft.calculators || []).length);
+    setCount('calculators', countCalculators(state.draft));
     setCount('leads', state.leads.length);
     setCount('history', jsonGet(K.BACKUPS, []).length);
   }
@@ -1023,7 +1035,7 @@
         stat((d.services || []).length, 'Services') +
         stat((d.projects || []).length, 'Projects') +
         stat((d.team || []).length, 'Team Members') +
-        stat(((d.calculators || []).filter(function (c) { return c.enabled !== false; })).length, 'Live Calculators') +
+        stat(countCalculators(d, true), 'Live Calculators') +
         stat((d.blog || []).length, 'Articles') +
         stat(state.leads.length, 'Leads Captured') +
       '</div>' +
@@ -1444,7 +1456,7 @@
       services: 'Services', tools: 'Tools', standards: 'Standards', capabilities: 'Capabilities',
       why: 'Why choose us', team: 'Team', projects: 'Projects', projectCategories: 'Project categories',
       projectsPage: 'Projects page', blog: 'Articles', testimonials: 'Testimonials',
-      calculators: 'Calculators', leadGate: 'Lead gate', features: 'Features',
+      calculatorGroups: 'Calculators', leadGate: 'Lead gate', features: 'Features',
       contact: 'Contact', social: 'Social links', footer: 'Footer', pages: 'Page SEO',
       integrations: 'Integrations'
     };

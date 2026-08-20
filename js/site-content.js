@@ -346,16 +346,32 @@
         '<div class="projects-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;">' + cards + '</div>';
     },
 
-    calculators: function (c) {
-      return enabledOnly(c.calculators).map(function (t) {
+    // The calculator hub: categorised groups of cards. Hiding a group hides
+    // it and everything inside it; hiding a single calculator removes only
+    // that card. Either way the calculator's own page stays reachable by
+    // direct link, so an existing bookmark never 404s.
+    calculatorGroups: function (c) {
+      return (c.calculatorGroups || []).filter(function (g) {
+        return g && g.enabled !== false && enabledOnly(g.items).length;
+      }).map(function (g) {
+        var cards = enabledOnly(g.items).map(function (t) {
+          return '' +
+            '<a class="calc-card" href="' + esc(t.href) + '">' +
+              '<i class="' + esc(t.icon) + '" aria-hidden="true"></i>' +
+              '<h3>' + esc(t.name) + '</h3>' +
+              '<p>' + esc(t.desc) + '</p>' +
+              (t.code ? '<div class="calc-code">' + esc(t.code) + '</div>' : '') +
+            '</a>';
+        }).join('');
+
         return '' +
-          '<div class="glass-card launch-card" style="text-align: center; padding: 2.5rem 1.8rem; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">' +
-            '<div>' +
-              '<div style="font-size: 2.8rem; margin-bottom: 1.2rem; color: var(--color-gold);"><i class="' + esc(t.icon) + '"></i></div>' +
-              '<h3 style="font-family: var(--font-serif); font-size: 1.5rem; margin-bottom: 1rem; color: #fff; font-weight: 400;">' + esc(t.name) + '</h3>' +
-              '<p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.9rem; margin-bottom: 2rem;">' + esc(t.desc) + '</p>' +
+          '<div class="calc-group">' +
+            '<div class="calc-group-head">' +
+              '<h2>' + esc(g.title) + '</h2>' +
+              (g.eyebrow ? '<span>' + esc(g.eyebrow) + '</span>' : '') +
+              (g.desc ? '<p>' + esc(g.desc) + '</p>' : '') +
             '</div>' +
-            '<a href="' + esc(t.href) + '" class="btn btn-gold btn-sm" style="display: inline-block; text-decoration: none; width: 100%;">' + esc(t.ctaLabel || ('Launch ' + t.name)) + '</a>' +
+            '<div class="calc-card-grid">' + cards + '</div>' +
           '</div>';
       }).join('');
     },
