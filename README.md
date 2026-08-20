@@ -1,12 +1,12 @@
 # TwinAnalytic — Structural Engineering Consultant & BIM Services
 
-TwinAnalytic is a professional web platform for a structural engineering and BIM (Building Information Modeling) services consultancy. The website showcases professional engineering services, provides an interactive 3D BIM showcase, and features complex engineering calculators (reinforced concrete beam, column, and slab design) compliant with codes like ACI 318 and BNBC 2020.
+TwinAnalytic is a professional web platform for a structural engineering and BIM (Building Information Modeling) services consultancy. The website showcases professional engineering services, provides an interactive 3D BIM showcase, and features a suite of 28 engineering calculators compliant with BNBC 2020 and ACI 318. Every part of the public site is editable from a browser-based control panel — see below.
 
 ---
 
 ## 🚀 How to Run Locally
 
-Since this is a frontend-focused web application, all dependencies (Three.js, Tailwind CSS, Font Awesome, jsPDF) are loaded via high-performance CDNs. 
+Since this is a frontend-focused web application, its few dependencies (Three.js, Font Awesome, jsPDF) are loaded from CDNs. Tailwind's CDN build was removed — it compiled CSS in the browser on every page load; the seventeen utilities that were actually used now live in `css/style.css`.
 
 No `npm install` or compilation step is required! You only need a local web server to run it.
 
