@@ -236,6 +236,18 @@ window.ADMIN_SCHEMA = {
           { key: 'heading', label: 'Heading', type: 'text' },
           { key: 'desc', label: 'Description', type: 'textarea', wide: true }
         ]},
+        { title: 'Free Calculators Section', icon: 'fa-solid fa-calculator', path: 'home.calculatorsSection',
+          desc: 'The band promoting your calculator suite. Group tiles and counts are generated from the Calculators section, so they stay accurate on their own.',
+          fields: [
+          { key: 'enabled', label: 'Show this section', type: 'toggle', wide: true },
+          { key: 'eyebrow', label: 'Small Label', type: 'text' },
+          { key: 'heading', label: 'Heading', type: 'text' },
+          { key: 'desc', label: 'Description', type: 'textarea', wide: true },
+          { key: 'showGroupTiles', label: 'Show the category tiles', type: 'toggle', wide: true,
+            hint: 'Turn off for just a heading and a button.' },
+          { key: 'ctaLabel', label: 'Button Label', type: 'text' },
+          { key: 'ctaHref', label: 'Button Link', type: 'text' }
+        ]},
         { title: 'Technology & Standards Section', icon: 'fa-solid fa-microchip', path: 'home.technologySection', fields: [
           { key: 'enabled', label: 'Show this section', type: 'toggle', wide: true },
           { key: 'eyebrow', label: 'Small Label', type: 'text' },

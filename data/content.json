@@ -177,6 +177,15 @@
       "heading": "Innovative Engineering Pillars",
       "desc": "Twin Analytic offers a comprehensive range of structural engineering and digital twin BIM services built for modern safety and cost efficiency."
     },
+    "calculatorsSection": {
+      "enabled": true,
+      "eyebrow": "Free Engineering Tools",
+      "heading": "28 Calculators, Free to Use",
+      "desc": "Our full BNBC 2020 and ACI 318 analysis suite is open to every engineer — seismic and wind loading, code compliance checks, member design, reinforcement detailing and estimating. No sign-up to browse.",
+      "ctaLabel": "Open the Calculator Suite",
+      "ctaHref": "calculators.html",
+      "showGroupTiles": true
+    },
     "technologySection": {
       "enabled": true,
       "eyebrow": "Our Toolkit",

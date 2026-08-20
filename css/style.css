@@ -2349,3 +2349,111 @@ body .tool-outputs-card h3 {
   border-color: var(--border-gold-hover);
   background: rgba(201, 168, 76, 0.06);
 }
+
+/* ==========================================================================
+   HOME PAGE — CALCULATOR SUITE SHOWCASE
+   A summary band, not a second copy of the hub grid. The tile sizes vary with
+   how many calculators each group holds, so the section reads as a map of the
+   suite rather than another row of equal cards.
+   ========================================================================== */
+
+.calc-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 3rem;
+}
+
+/* Three columns from tablet up. With the largest group taking a double-width
+   tile, five groups fill six cells exactly — no orphan on the last row. */
+@media (min-width: 700px) {
+  .calc-showcase-grid {
+    grid-template-columns: repeat(3, 1fr);
+    /* The double-width tile will not fit wherever it happens to fall, so
+       dense packing lets a later single-width tile backfill the gap instead
+       of leaving a hole in the row. */
+    grid-auto-flow: dense;
+  }
+  .calc-showcase-tile.is-featured { grid-column: span 2; }
+}
+
+.calc-showcase-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.6rem 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: linear-gradient(160deg, rgba(20, 24, 33, 0.7), rgba(13, 17, 23, 0.4));
+  overflow: hidden;
+  transition: border-color 0.25s ease, transform 0.25s ease, background-color 0.25s ease;
+}
+
+.calc-showcase-tile:hover {
+  border-color: var(--border-gold-hover);
+  transform: translateY(-3px);
+}
+
+/* The count is the point of the tile, so it is set large and sits behind the
+   text as a watermark rather than competing with it. */
+.calc-showcase-count {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.9rem;
+  font-family: var(--font-serif);
+  font-size: 3.4rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: rgba(201, 168, 76, 0.13);
+  pointer-events: none;
+}
+
+.calc-showcase-tile h3 {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  margin: 0;
+  /* Keeps a wrapped title clear of the count watermark in the corner. */
+  padding-right: 3rem;
+  text-wrap: balance;
+}
+
+.calc-showcase-code {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+  color: var(--color-gold);
+  margin: 0;
+}
+
+.calc-showcase-sample {
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 0.35rem 0 0;
+  text-wrap: pretty;
+}
+
+.calc-showcase-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.calc-showcase-meta {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 600px) {
+  .calc-showcase-count { font-size: 2.6rem; }
+  .calc-showcase-cta { flex-direction: column; gap: 1rem; }
+}

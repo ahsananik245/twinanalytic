@@ -376,6 +376,53 @@
       }).join('');
     },
 
+    // A summary of the calculator suite for the home page. Deliberately not a
+    // second copy of the hub's 28-card grid — it reports the shape of the
+    // suite and sends people to the hub, so the two pages do not compete.
+    calculatorShowcase: function (c) {
+      var groups = (c.calculatorGroups || []).filter(function (g) {
+        return g && g.enabled !== false && enabledOnly(g.items).length;
+      });
+      if (!groups.length) return '';
+
+      var total = groups.reduce(function (n, g) { return n + enabledOnly(g.items).length; }, 0);
+      var s = get(c, 'home.calculatorsSection') || {};
+
+      // The biggest group is given a double-width tile. With five groups that
+      // fills a three-column grid exactly, and it makes the section read as a
+      // map of the suite rather than another row of identical cards.
+      var largest = groups.reduce(function (best, g) {
+        return enabledOnly(g.items).length > enabledOnly(best.items).length ? g : best;
+      }, groups[0]);
+
+      var tiles = s.showGroupTiles === false ? '' :
+        '<div class="calc-showcase-grid">' +
+          groups.map(function (g) {
+            var items = enabledOnly(g.items);
+            // Name a few so the tile shows what is actually inside.
+            var sample = items.slice(0, 3).map(function (i) { return esc(i.name); }).join(' · ');
+            var more = items.length > 3 ? ' · +' + (items.length - 3) + ' more' : '';
+            var featured = (g === largest && groups.length > 2) ? ' is-featured' : '';
+            return '' +
+              '<a class="calc-showcase-tile' + featured + '" href="calculators.html">' +
+                '<span class="calc-showcase-count">' + items.length + '</span>' +
+                '<h3>' + esc(g.title) + '</h3>' +
+                (g.eyebrow ? '<p class="calc-showcase-code">' + esc(g.eyebrow) + '</p>' : '') +
+                '<p class="calc-showcase-sample">' + sample + more + '</p>' +
+              '</a>';
+          }).join('') +
+        '</div>';
+
+      var cta = s.ctaLabel
+        ? '<div class="calc-showcase-cta">' +
+            '<a href="' + esc(s.ctaHref || 'calculators.html') + '" class="btn btn-gold">' + esc(s.ctaLabel) + '</a>' +
+            '<span class="calc-showcase-meta">' + total + ' calculators &middot; ' + groups.length + ' categories &middot; free to use</span>' +
+          '</div>'
+        : '';
+
+      return tiles + cta;
+    },
+
     blog: function (c) {
       var posts = enabledOnly(c.blog);
       if (!posts.length) {
