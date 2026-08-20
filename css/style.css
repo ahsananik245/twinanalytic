@@ -2230,3 +2230,40 @@ h1, h2, h3,
     transform: none;
   }
 }
+
+/* ==========================================================================
+   TAILWIND COMPATIBILITY SHIM
+   --------------------------------------------------------------------------
+   Four pages loaded cdn.tailwindcss.com, which is Tailwind's browser-based
+   dev build: it ships a compiler and generates CSS at runtime on every page
+   load. Tailwind explicitly says not to use it in production.
+
+   Between them those pages used seventeen utilities, all spacing and a couple
+   of colours. They are reproduced here so the CDN script could be removed.
+   Values match Tailwind's default scale (1 = 0.25rem).
+
+   If you ever want Tailwind properly, install it as a build step and delete
+   this block — do not re-add the CDN.
+   ========================================================================== */
+
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 0.75rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+
+.p-2  { padding: 0.5rem; }
+.pb-1 { padding-bottom: 0.25rem; }
+.px-1 { padding-left: 0.25rem; padding-right: 0.25rem; }
+.px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+.py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+
+.font-bold { font-weight: 700; }
+.rounded   { border-radius: 0.25rem; }
+.w-full    { width: 100%; }
+.hidden    { display: none; }
+
+.bg-green-900   { background-color: #14532d; }
+.border-green-600 { border-color: #16a34a; }
+.text-green-200 { color: #bbf7d0; }
