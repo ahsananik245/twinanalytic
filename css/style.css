@@ -759,6 +759,33 @@ input, select, textarea, button {
   }
 }
 
+/* Grid children size to `min-width: auto`, so the widest thing inside a card —
+   a section drawing, a results table — sets a floor the column cannot shrink
+   below, defeating the collapse above and clipping content on phones. */
+.tool-content-panel.active > * {
+  min-width: 0;
+}
+
+/* Cross-section drawings and interaction diagrams scale down rather than
+   forcing the page wider. */
+.tool-inputs-card svg,
+.tool-outputs-card svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.tool-inputs-card canvas,
+.tool-outputs-card canvas {
+  max-width: 100%;
+}
+
+/* Wide data tables scroll inside their own box. */
+.tool-outputs-card table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
 .tool-inputs-card {
   display: flex;
   flex-direction: column;

@@ -60,6 +60,25 @@
   .analysis-grid .col-steps { order: 3; }
 }
 
+/* Grid and flex children size to `min-width: auto` by default, which means
+   their widest descendant sets a floor the column cannot shrink below. A
+   results table carrying `min-width: 520px` therefore propped every column
+   open and defeated the collapse above, pushing content off-screen on phones.
+   Resetting the floor to zero lets the columns shrink; the individual scroll
+   containers below handle anything that genuinely needs the width. */
+.analysis-grid > *,
+.analysis-card,
+.analysis-card > * {
+  min-width: 0;
+}
+
+/* Anything wide enough to need it scrolls inside its own box rather than
+   widening the page. */
+.out-table-scroll,
+.analysis-card table {
+  max-width: 100%;
+}
+
 .analysis-card {
   background: rgba(20, 24, 33, 0.72);
   backdrop-filter: blur(12px);
