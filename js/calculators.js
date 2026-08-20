@@ -1,16 +1,59 @@
-// Google Sheets Apps Script Web App Integration URL
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOCu31hE-GRIvbTOH2HVb_PaAAFkDnyuqUZ1mRusZDll3NmeJ9JZ4ZBWxI_NRt1vCknQ/exec";
+// Google Sheets Apps Script Web App Integration URL.
+// The admin panel can override this at runtime via data/content.json; this
+// constant is the fallback for when the content engine has not loaded.
+const GOOGLE_SCRIPT_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbwOCu31hE-GRIvbTOH2HVb_PaAAFkDnyuqUZ1mRusZDll3NmeJ9JZ4ZBWxI_NRt1vCknQ/exec";
 
-document.addEventListener('DOMContentLoaded', () => {
+function getScriptUrl() {
+  return window.TW_GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL_DEFAULT;
+}
+
+// Kept for the older call sites further down this file.
+var GOOGLE_SCRIPT_URL = GOOGLE_SCRIPT_URL_DEFAULT;
+
+// True unless the admin has switched the lead gate off in the control panel.
+function leadGateEnabled() {
+  return window.TW_LEAD_GATE_ENABLED !== false;
+}
+
+// Lead-gate wording, overridable from the control panel.
+function gateCopy() {
+  const c = (window.TWContent && window.TWContent.get('leadGate')) || {};
+  return {
+    heading: c.heading || 'Calculation Locked',
+    body: c.body || 'Please enter your name, email, and country to unlock all calculators and download reports.',
+    buttonLabel: c.buttonLabel || 'Unlock Now'
+  };
+}
+
+function initCalculatorsPage() {
   if (window.location.search.includes('lock=1') || window.location.search.includes('reset=1')) {
-    localStorage.removeItem('tools_user_unlocked');
+    try { localStorage.removeItem('tools_user_unlocked'); } catch (e) { /* storage blocked */ }
   }
+  GOOGLE_SCRIPT_URL = getScriptUrl();
   initTabs();
   initCalculators();
   initAdminPanel();
   updateLeadsCount();
   updateLockUI();
-});
+}
+
+// The content engine may flip the lead gate off, so wait for it to settle
+// before deciding whether to blur the results and show the unlock overlay.
+(function bootstrapCalculators() {
+  const start = () => {
+    const ready = window.TWContent && window.TWContent.ready;
+    if (ready && typeof ready.then === 'function') {
+      ready.then(initCalculatorsPage, initCalculatorsPage);
+    } else {
+      initCalculatorsPage();
+    }
+  };
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
+})();
 
 // ==========================================
 // 1. TABS MANAGEMENT
@@ -113,7 +156,7 @@ function initCalculators() {
 
 // Check if user is already authorized; if not, prompt modal form
 function checkAuthAndRun(callback, calcType) {
-  const unlocked = window.isUnlockedSession || (function(){ try { return localStorage.getItem('tools_user_unlocked') === 'true'; } catch(e) { return false; } })();
+  const unlocked = !leadGateEnabled() || window.isUnlockedSession || (function(){ try { return localStorage.getItem('tools_user_unlocked') === 'true'; } catch(e) { return false; } })();
   if (unlocked) {
     if (callback) callback();
   } else {
@@ -134,7 +177,8 @@ function openAuthModal(callback, calcType) {
 
 // Update lock blur and lock overlay UI based on authorization state
 function updateLockUI() {
-  const unlocked = window.isUnlockedSession || (function(){ try { return localStorage.getItem('tools_user_unlocked') === 'true'; } catch(e) { return false; } })();
+  const unlocked = !leadGateEnabled() || window.isUnlockedSession || (function(){ try { return localStorage.getItem('tools_user_unlocked') === 'true'; } catch(e) { return false; } })();
+  const copy = gateCopy();
   const colOutputs = document.querySelectorAll('.tool-outputs-card');
   
   colOutputs.forEach(colOutput => {
@@ -158,12 +202,15 @@ function updateLockUI() {
         overlay.className = 'lock-overlay';
         overlay.innerHTML = `
           <div class="lock-overlay-content">
-            <i class="fa-solid fa-lock"></i>
-            <h4>Calculation Locked</h4>
-            <p>Please enter your name, email, and country to unlock all calculators and download reports.</p>
-            <button class="btn btn-gold btn-sm" onclick="triggerUnlockFlow()">Unlock Now</button>
+            <i class="fa-solid fa-lock" aria-hidden="true"></i>
+            <h4></h4>
+            <p></p>
+            <button type="button" class="btn btn-gold btn-sm" onclick="triggerUnlockFlow()"></button>
           </div>
         `;
+        overlay.querySelector('h4').textContent = copy.heading;
+        overlay.querySelector('p').textContent = copy.body;
+        overlay.querySelector('button').textContent = copy.buttonLabel;
         colOutput.appendChild(overlay);
       }
     } else {

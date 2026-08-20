@@ -55,7 +55,13 @@ def main():
         print(f"[!] Could not open browser automatically: {e}")
 
     try:
-        with socketserver.TCPServer(("127.0.0.1", port), CleanURLHandler) as httpd:
+        # Threaded: a single-threaded server stalls the whole site whenever a
+        # browser holds a keep-alive connection open.
+        class DevServer(socketserver.ThreadingTCPServer):
+            daemon_threads = True
+            allow_reuse_address = True
+
+        with DevServer(("127.0.0.1", port), CleanURLHandler) as httpd:
             httpd.serve_forever()
     except KeyboardInterrupt:
         print("\n[+] Server stopped successfully.")

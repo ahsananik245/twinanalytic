@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+function initSite() {
   // 1. STICKY NAVBAR & ACTIVE NAVIGATION LINKS
   const navbar = document.getElementById('navbar');
   const navLinks = document.querySelectorAll('.nav-links a');
@@ -17,13 +17,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 50) {
-      navbar.classList.add('scrolled');
-    } else {
-      navbar.classList.remove('scrolled');
-    }
-  });
+  if (navbar) {
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    });
+  }
 
   // Smooth scroll logic for local anchors only
   navLinks.forEach(link => {
@@ -54,27 +56,32 @@ document.addEventListener('DOMContentLoaded', () => {
   const hamburger = document.getElementById('hamburger');
   const mobileMenu = document.getElementById('nav-links');
 
-  hamburger.addEventListener('click', () => {
-    hamburger.classList.toggle('active');
-    mobileMenu.classList.toggle('active');
-  });
-
-  // Close mobile menu when clicking outside
-  document.addEventListener('click', (e) => {
-    if (!hamburger.contains(e.target) && !mobileMenu.contains(e.target)) {
-      hamburger.classList.remove('active');
-      mobileMenu.classList.remove('active');
-    }
-  });
-
-  // Close mobile menu when a link is clicked
-  const menuLinks = mobileMenu.querySelectorAll('a');
-  menuLinks.forEach(link => {
-    link.addEventListener('click', () => {
-      hamburger.classList.remove('active');
-      mobileMenu.classList.remove('active');
+  if (hamburger && mobileMenu) {
+    hamburger.addEventListener('click', () => {
+      const isOpen = hamburger.classList.toggle('active');
+      mobileMenu.classList.toggle('active');
+      hamburger.setAttribute('aria-expanded', String(isOpen));
     });
-  });
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!hamburger.contains(e.target) && !mobileMenu.contains(e.target)) {
+        hamburger.classList.remove('active');
+        mobileMenu.classList.remove('active');
+        hamburger.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    // Close mobile menu when a link is clicked
+    const menuLinks = mobileMenu.querySelectorAll('a');
+    menuLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        hamburger.classList.remove('active');
+        mobileMenu.classList.remove('active');
+        hamburger.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
 
   // 3. STATS COUNT-UP ANIMATION
   const statsSection = document.querySelector('.about-stats');
@@ -309,18 +316,56 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         localStorage.setItem('tools_leads', JSON.stringify(leads));
         
-        // Success feedback
+        // Mirror the submission to the configured Google Apps Script endpoint
+        // so contact leads land in the same sheet as calculator leads.
+        const endpoint = window.TW_GOOGLE_SCRIPT_URL;
+        if (endpoint) {
+          fetch(endpoint, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(leads[leads.length - 1])
+          }).catch(() => { /* logging is best-effort; the local copy is authoritative */ });
+        }
+
+        // Success feedback — copy is admin-editable via data/content.json.
+        const copy = (window.TWContent && window.TWContent.get('contact')) || {};
+        const heading = copy.successHeading || 'Proposal Received';
+        const body = copy.successBody || "Your proposal has been received. We'll be in touch within 24 hours.";
+
         const parent = contactForm.parentNode;
+        parent.setAttribute('aria-live', 'polite');
         parent.innerHTML = `
           <div style="text-align: center; padding: 3rem 1.5rem; color: #fff; background: rgba(79, 134, 198, 0.05); border: 1px solid var(--color-gold); border-radius: 8px;" class="fade-up-init fade-up-in">
-            <div style="font-size: 3rem; color: var(--color-gold); margin-bottom: 1.5rem;"><i class="fa-solid fa-circle-check"></i></div>
-            <h3 style="font-family: var(--font-serif); font-size: 1.8rem; margin-bottom: 1rem; color: var(--color-gold);">Proposal Received</h3>
-            <p style="color: var(--text-secondary); max-width: 450px; margin: 0 auto; line-height: 1.6; font-size: 0.95rem;">
-              Your proposal has been received. We'll be in touch within 24 hours.
-            </p>
+            <div style="font-size: 3rem; color: var(--color-gold); margin-bottom: 1.5rem;" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></div>
+            <h3 style="font-family: var(--font-serif); font-size: 1.8rem; margin-bottom: 1rem; color: var(--color-gold);"></h3>
+            <p style="color: var(--text-secondary); max-width: 450px; margin: 0 auto; line-height: 1.6; font-size: 0.95rem;"></p>
           </div>
         `;
+        parent.querySelector('h3').textContent = heading;
+        parent.querySelector('p').textContent = body;
       }
     });
   }
-});
+}
+
+// The content engine can re-render the navbar, footer, and card grids from
+// data/content.json. Binding handlers before that happens would attach them to
+// elements that are about to be replaced, so wait for hydration to settle.
+// If the engine is absent or fails, this still runs on DOMContentLoaded.
+(function bootstrapSite() {
+  const start = () => {
+    const ready = window.TWContent && window.TWContent.ready;
+    if (ready && typeof ready.then === 'function') {
+      ready.then(initSite, initSite);
+    } else {
+      initSite();
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
+})();

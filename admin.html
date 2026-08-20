@@ -1,273 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="assets/favicon.png">
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard — TwinAnalytic</title>
-  <meta name="description" content="Secure administration dashboard for lead logs and client submissions.">
-  <link rel="stylesheet" href="css/style.css">
+  <title>Control Panel — TwinAnalytic</title>
+
+  <!-- This page must never be indexed or followed by crawlers. -->
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+  <meta name="googlebot" content="noindex, nofollow">
+  <meta name="theme-color" content="#08090B">
+  <meta name="description" content="Private administration console for the TwinAnalytic website.">
+
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:wght@400;500&family=Sora:wght@300..700&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    .page-banner {
-      padding: 10rem 0 4rem 0;
-      background: radial-gradient(circle at 10% 20%, rgba(13, 17, 23, 0.95) 0%, rgba(10, 10, 10, 0.98) 90%), 
-                  repeating-linear-gradient(45deg, rgba(201, 168, 76, 0.03) 0px, rgba(201, 168, 76, 0.03) 2px, transparent 2px, transparent 10px);
-      border-bottom: 1px solid var(--border-gold);
-      text-align: center;
-    }
-    .page-banner h1 {
-      font-family: var(--font-serif);
-      font-size: 3.5rem;
-      font-weight: 300;
-      letter-spacing: -0.02em;
-      margin-bottom: 1rem;
-    }
-    .page-banner p {
-      color: var(--color-gold);
-      font-family: var(--font-mono);
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 0.2em;
-    }
-    .admin-section {
-      padding: 4rem 0 8rem 0;
-      background-color: var(--bg-primary);
-    }
-    .admin-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 2rem;
-    }
-    .leads-table-container {
-      overflow-x: auto;
-      margin-top: 2rem;
-      border: 1px solid rgba(255,255,255,0.05);
-      border-radius: 8px;
-    }
-    table.leads-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-family: var(--font-mono);
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      text-align: left;
-    }
-    table.leads-table th {
-      background-color: rgba(255, 255, 255, 0.02);
-      color: var(--color-gold);
-      padding: 1rem;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      font-weight: 600;
-    }
-    table.leads-table td {
-      padding: 1rem;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    table.leads-table tr:hover {
-      background-color: rgba(255,255,255,0.01);
-    }
-  </style>
+  <link rel="stylesheet" href="css/admin.css">
 </head>
-<body>
+<body class="admin-body">
 
-  <!-- NAVIGATION BAR -->
-  <nav class="navbar scrolled" id="navbar">
-    <div class="container">
-      <a href="index.html" class="logo">
-        <img src="assets/logo.png" alt="TwinAnalytic Logo" style="height: 38px; width: auto; border-radius: 4px; margin-right: 8px; vertical-align: middle;">
-        Twin<span>Analytic</span>
-      </a>
-      <ul class="nav-links" id="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="services.html">Services</a></li>
-        <li><a href="bim-viewer.html">BIM Viewer</a></li>
-        <li><a href="calculators.html">Calculators</a></li>
-        <li><a href="projects.html">Projects</a></li>
-        <li><a href="contact.html">Contact</a></li>
-      </ul>
-      <div class="hamburger" id="hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
+  <a href="#a-main-content" class="a-skip-link">Skip to Main Content</a>
+
+  <!-- ======================================================================
+       PASSCODE GATE
+       Client-side only. It keeps casual visitors out of the console; the
+       real security boundary is the GitHub token, which lives only in this
+       browser and is required to change anything on the live site.
+       ====================================================================== -->
+  <div class="a-gate" id="a-gate" role="dialog" aria-modal="true" aria-labelledby="a-gate-title">
+    <div class="a-gate-card">
+      <img src="assets/logo.png" alt="TwinAnalytic" width="132" height="44">
+
+      <h1 id="a-gate-title">Control Panel</h1>
+      <p id="a-gate-sub">Enter your passcode to continue.</p>
+
+      <form id="a-gate-form" autocomplete="off">
+        <div class="a-field">
+          <label for="a-gate-input">Passcode</label>
+          <input
+            type="password"
+            id="a-gate-input"
+            class="a-input"
+            name="admin-passcode"
+            autocomplete="current-password"
+            spellcheck="false"
+            placeholder="e.g. your private phrase…"
+            required>
+        </div>
+
+        <div class="a-field" id="a-gate-confirm-field" hidden>
+          <label for="a-gate-confirm">Confirm Passcode</label>
+          <input
+            type="password"
+            id="a-gate-confirm"
+            class="a-input"
+            name="admin-passcode-confirm"
+            autocomplete="new-password"
+            spellcheck="false"
+            placeholder="Repeat the passcode…">
+        </div>
+
+        <p id="a-gate-error" class="a-field-hint" style="color: var(--a-red); min-height: 1rem;" role="alert" aria-live="polite"></p>
+
+        <button type="submit" class="a-btn a-btn-gold a-btn-block" id="a-gate-submit" style="margin-top: 0.5rem;">
+          Unlock Control Panel
+        </button>
+      </form>
+
+      <p class="a-gate-note">
+        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+        This passcode is stored as a hash in this browser only. It hides the console from
+        casual visitors but is not server-enforced &mdash; treat it as a lock on the door,
+        not a vault. Nothing reaches your live site without your GitHub token.
+      </p>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       APPLICATION SHELL
+       ====================================================================== -->
+  <div class="a-app" id="a-app" hidden>
+
+    <button type="button" class="a-sidebar-scrim" id="a-sidebar-scrim" aria-label="Close navigation menu" hidden></button>
+
+    <!-- SIDEBAR -->
+    <aside class="a-sidebar" id="a-sidebar">
+      <div class="a-brand">
+        <img src="assets/logo.png" alt="" width="30" height="30" aria-hidden="true">
+        <span class="a-brand-text">
+          Twin<span>Analytic</span>
+          <span class="a-brand-sub">Control Panel</span>
+        </span>
+      </div>
+
+      <nav class="a-nav" id="a-nav" aria-label="Control panel sections">
+        <!-- Rendered by js/admin.js from the section schema -->
+      </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="a-main">
+      <header class="a-topbar">
+        <button type="button" class="a-btn a-btn-icon a-menu-toggle" id="a-menu-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="a-sidebar">
+          <i class="fa-solid fa-bars" aria-hidden="true"></i>
+        </button>
+
+        <h1 class="a-topbar-title" id="a-topbar-title">Dashboard</h1>
+
+        <div class="a-topbar-actions">
+          <span class="a-dirty-dot is-clean a-hide-sm" id="a-dirty-indicator" aria-live="polite">All Changes Published</span>
+
+          <button type="button" class="a-btn a-btn-sm" id="a-btn-preview">
+            <i class="fa-solid fa-eye" aria-hidden="true"></i>
+            <span class="a-hide-sm">Preview</span>
+          </button>
+
+          <button type="button" class="a-btn a-btn-sm a-btn-gold" id="a-btn-publish">
+            <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
+            Publish
+          </button>
+        </div>
+      </header>
+
+      <main class="a-content" id="a-main-content" tabindex="-1">
+        <div id="a-panels">
+          <!-- Panels are rendered by js/admin.js -->
+          <p style="color: var(--a-text-faint); font-size: 0.85rem;">Loading control panel…</p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- TOASTS -->
+  <div class="a-toasts" id="a-toasts" role="status" aria-live="polite"></div>
+
+  <!-- CONFIRMATION MODAL -->
+  <div class="a-modal" id="a-modal" hidden role="dialog" aria-modal="true" aria-labelledby="a-modal-title">
+    <div class="a-modal-card">
+      <h3 id="a-modal-title">Are you sure?</h3>
+      <p id="a-modal-body">This action cannot be undone.</p>
+      <div class="a-modal-actions">
+        <button type="button" class="a-btn" id="a-modal-cancel">Cancel</button>
+        <button type="button" class="a-btn a-btn-danger" id="a-modal-confirm">Confirm</button>
       </div>
     </div>
-  </nav>
+  </div>
 
-  <!-- BANNER -->
-  <header class="page-banner">
-    <div class="container">
-      <p>Secure Administration Environment</p>
-      <h1>Submissions &amp; Lead Logs</h1>
-    </div>
-  </header>
-
-  <!-- ADMIN DASHBOARD -->
-  <section class="admin-section">
-    <div class="container">
-      <div class="admin-grid">
-        <!-- Control Card -->
-        <div class="glass-card" style="padding: 2.5rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
-            <div>
-              <h2 style="font-family: var(--font-serif); font-size: 1.8rem; font-weight: 400; margin-bottom: 0.5rem; color: var(--color-gold);">Lead Database Management</h2>
-              <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6;">Review, export, or clear form submissions and calculator interactions logged locally on this browser.</p>
-            </div>
-            <div style="display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
-              <div style="text-align: right;">
-                <span class="text-mono" id="leads-count" style="font-size: 2rem; font-weight: bold; color: var(--color-gold);">0</span>
-                <p style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.1em; margin-top: 0.1rem;">Total Records</p>
-              </div>
-              <button class="btn btn-gold btn-sm" id="btn-export-leads" style="min-height: auto;"><i class="fa-solid fa-file-excel" style="margin-right: 0.5rem;"></i> Export to Excel</button>
-              <button class="btn btn-sm" id="btn-clear-leads" style="background: rgba(245, 34, 45, 0.1); color: #F5222D; border: 1px solid rgba(245, 34, 45, 0.3); min-height: auto; margin-right: 0.5rem;">Clear Database</button>
-              <button class="btn btn-sm" id="btn-lock-calculators" style="background: rgba(255, 255, 255, 0.05); color: #FFF; border: 1px solid rgba(255, 255, 255, 0.2); min-height: auto;"><i class="fa-solid fa-lock" style="margin-right: 0.5rem;"></i> Force Lock (Test)</button>
-            </div>
-          </div>
-
-          <!-- Table wrapper -->
-          <div class="leads-table-container">
-            <table class="leads-table">
-              <thead>
-                <tr>
-                  <th>Full Name</th>
-                  <th>Business Email</th>
-                  <th>Country</th>
-                  <th>Logged Date</th>
-                  <th>Action Source</th>
-                </tr>
-              </thead>
-              <tbody id="leads-table-body">
-                <tr>
-                  <td colspan="5" style="text-align: center; padding: 3rem; color: var(--text-secondary);">No lead records found in the database.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-    <!-- FOOTER -->
-  <footer class="footer">
-    <div class="footer-top-gradient"></div>
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-col brand">
-          <h3>Twin<span>Analytic</span></h3>
-          <p style="color: var(--color-gold); font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; margin-top: -0.5rem;">Construction &amp; Engineering</p>
-          <p>We combine engineering expertise with digital technologies to create safe, optimized, and reliable structures.</p>
-          <div class="footer-socials">
-            <a href="https://linkedin.com/company/twinanalytic" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
-            <a href="https://x.com/twinanalytic" target="_blank"><i class="fa-brands fa-x-twitter"></i></a>
-            <a href="#"><!-- TODO: add real URL --><i class="fa-brands fa-instagram"></i></a>
-            <a href="#"><!-- TODO: add real URL --><i class="fa-brands fa-youtube"></i></a>
-          </div>
-        </div>
-        <div class="footer-col">
-          <h3>Services</h3>
-          <ul class="footer-links">
-            <li><a href="services.html#structural">Structural Engineering</a></li>
-            <li><a href="services.html#bim">BIM &amp; Digital Engineering</a></li>
-            <li><a href="services.html#support">Construction Support</a></li>
-            <li><a href="services.html#consultancy">Engineering Consultancy</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h3>Interactive</h3>
-          <ul class="footer-links">
-            <li><a href="beam-design.html">Free Beam Design Calculator</a></li>
-            <li><a href="column-design.html">Free Column Design Calculator</a></li>
-            <li><a href="slab-design.html">Free Slab Spans Calculator</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h3>Navigation</h3>
-          <ul class="footer-links">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="about.html">About</a></li>
-            <li><a href="services.html">Services</a></li>
-            <li><a href="projects.html">Projects</a></li>
-            <li><a href="contact.html">Contact</a></li>
-          </ul>
-        </div>
-      </div>
-      
-      <div class="footer-bottom">
-        <p>&copy; 2026 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
-        <div class="footer-bottom-links">
-          <a href="privacy.html">Privacy Protocol</a>
-          <a href="sitemap.html">Sitemap</a>
-        </div>
-      </div>
-    </div>
-  </footer>
-
-  <script src="js/main.js"></script>
-  <!-- Load calculators.js script which contains leads export logic -->
-  <script src="js/calculators.js"></script>
-  <script>
-    // Custom DOM loading logic for the admin table
-    document.addEventListener('DOMContentLoaded', () => {
-      renderLeadsTable();
-      
-      // Override clear database callback to refresh this table as well
-      const origClear = window.clearLeadsDatabase;
-      const btnClear = document.getElementById('btn-clear-leads');
-      if (btnClear) {
-        // Remove old listeners by replacing button
-        const newBtn = btnClear.cloneNode(true);
-        btnClear.parentNode.replaceChild(newBtn, btnClear);
-        newBtn.addEventListener('click', () => {
-          const leads = JSON.parse(localStorage.getItem('tools_leads') || '[]');
-          if (leads.length === 0) {
-            alert('Database is already empty.');
-            return;
-          }
-          if (confirm('Are you sure you want to delete all collected lead data? This cannot be undone.')) {
-            localStorage.removeItem('tools_leads');
-            renderLeadsTable();
-            alert('Lead database successfully cleared.');
-          }
-        });
-      }
-    });
-
-    function renderLeadsTable() {
-      const tableBody = document.getElementById('leads-table-body');
-      const countEl = document.getElementById('leads-count');
-      const leads = JSON.parse(localStorage.getItem('tools_leads') || '[]');
-      
-      if (countEl) countEl.textContent = leads.length;
-
-      if (leads.length === 0) {
-        tableBody.innerHTML = `
-          <tr>
-            <td colspan="5" style="text-align: center; padding: 3rem; color: var(--text-secondary);">No lead records found in the database.</td>
-          </tr>
-        `;
-        return;
-      }
-
-      tableBody.innerHTML = leads.map(l => `
-        <tr>
-          <td><strong>${escapeHtml(l.name || 'N/A')}</strong></td>
-          <td><a href="mailto:${escapeHtml(l.email || '')}" style="color: var(--color-gold);">${escapeHtml(l.email || 'N/A')}</a></td>
-          <td>${escapeHtml(l.country || l.phone || 'N/A')}</td>
-          <td>${escapeHtml(l.timestamp || 'N/A')}</td>
-          <td><span style="font-size: 0.75rem; background: rgba(201, 168, 76, 0.1); border: 1px solid rgba(201, 168, 76, 0.2); padding: 0.2rem 0.5rem; border-radius: 4px; color: var(--color-gold);">${escapeHtml(l.calcType || 'N/A')}</span></td>
-        </tr>
-      `).join('');
-    }
-
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
-  </script>
+  <script src="js/admin-schema.js"></script>
+  <script src="js/admin.js"></script>
 </body>
 </html>

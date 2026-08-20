@@ -20,3 +20,9 @@ node_modules/
 # OS metadata files
 .DS_Store
 Thumbs.db
+
+# Agent skills (tooling, not site content — must not be published to the web).
+# skills-lock.json is kept so the installed skill set stays reproducible:
+#   npx skills add <repo>
+.agents/
+.claude/skills/

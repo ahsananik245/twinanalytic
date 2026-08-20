@@ -1,0 +1,573 @@
+{
+  "_meta": {
+    "schemaVersion": 1,
+    "updatedAt": "2026-08-20T00:00:00.000Z",
+    "note": "Single source of truth for all editable TwinAnalytic site content. Edit via /admin.html - do not hand-edit unless you know the schema."
+  },
+  "site": {
+    "brandFirst": "Twin",
+    "brandSecond": "Analytic",
+    "tagline": "Construction & Engineering",
+    "logo": "assets/logo.png",
+    "logoHeight": 38,
+    "favicon": "assets/favicon.png",
+    "domain": "https://twinanalytic.com",
+    "footerBlurb": "We combine engineering expertise with digital technologies to create safe, optimized, and reliable structures.",
+    "copyright": "© 2026 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin."
+  },
+  "theme": {
+    "bgPrimary": "#0A0A0A",
+    "bgSecondary": "#0D1117",
+    "textPrimary": "#F5F5F5",
+    "textSecondary": "#9AA0A6",
+    "colorGold": "#C9A84C",
+    "colorGoldLight": "#E8C97E",
+    "colorSteelBlue": "#2A6496",
+    "colorAccentBlue": "#4F86C6",
+    "fontSerif": "'Playfair Display', Georgia, serif",
+    "fontSans": "'Sora', -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontMono": "'JetBrains Mono', monospace",
+    "baseFontSize": "16px"
+  },
+  "features": {
+    "maintenanceMode": false,
+    "maintenanceMessage": "TwinAnalytic is undergoing scheduled maintenance. We'll be back shortly.",
+    "leadGate": true,
+    "showBimViewer": true,
+    "showBlogSection": true,
+    "showTeamSection": true,
+    "showTestimonials": false,
+    "announcement": {
+      "enabled": false,
+      "text": "New: Rectangular footing designer is now live.",
+      "linkLabel": "Try it",
+      "linkHref": "footing-rect-design.html",
+      "dismissible": true
+    }
+  },
+  "contact": {
+    "email": "solutions@twinanalytic.com",
+    "phone": "+49 (69) 829-4820",
+    "emailLabel": "Email Communication",
+    "phoneLabel": "Direct Operations Line",
+    "address": "",
+    "heading": "Connect with TwinAnalytic",
+    "intro": "Ready to secure structural optimization, set up high-precision BIM models, or deploy real-time digital twins? Let's discuss details.",
+    "formButtonLabel": "Start Your Project With Us",
+    "successHeading": "Proposal Received",
+    "successBody": "Your proposal has been received. We'll be in touch within 24 hours.",
+    "projectTypes": [
+      {
+        "value": "structural",
+        "label": "Structural Engineering"
+      },
+      {
+        "value": "bim",
+        "label": "BIM & Digital Engineering"
+      },
+      {
+        "value": "support",
+        "label": "Construction Support"
+      },
+      {
+        "value": "consultancy",
+        "label": "Engineering Consultancy"
+      }
+    ]
+  },
+  "social": [
+    {
+      "id": "linkedin",
+      "icon": "fa-brands fa-linkedin-in",
+      "url": "https://linkedin.com/company/twinanalytic",
+      "enabled": true
+    },
+    {
+      "id": "x",
+      "icon": "fa-brands fa-x-twitter",
+      "url": "https://x.com/twinanalytic",
+      "enabled": true
+    },
+    {
+      "id": "instagram",
+      "icon": "fa-brands fa-instagram",
+      "url": "",
+      "enabled": false
+    },
+    {
+      "id": "youtube",
+      "icon": "fa-brands fa-youtube",
+      "url": "",
+      "enabled": false
+    }
+  ],
+  "nav": {
+    "links": [
+      {
+        "label": "Home",
+        "href": "index.html",
+        "enabled": true
+      },
+      {
+        "label": "About",
+        "href": "about.html",
+        "enabled": true
+      },
+      {
+        "label": "Services",
+        "href": "services.html",
+        "enabled": true
+      },
+      {
+        "label": "BIM Viewer",
+        "href": "bim-viewer.html",
+        "enabled": true
+      },
+      {
+        "label": "Calculators",
+        "href": "calculators.html",
+        "enabled": true
+      },
+      {
+        "label": "Projects",
+        "href": "projects.html",
+        "enabled": true
+      },
+      {
+        "label": "Contact",
+        "href": "contact.html",
+        "enabled": true
+      }
+    ],
+    "cta": {
+      "label": "Get a Quote",
+      "href": "contact.html",
+      "enabled": true
+    }
+  },
+  "home": {
+    "hero": {
+      "tagline": "Twin Analytic — Engineering Smarter. Building Stronger.",
+      "titleLine1": "Engineering Smarter.",
+      "titleLine2": "Building Stronger.",
+      "desc": "Twin Analytic delivers structural engineering, BIM solutions, and construction support services using modern technology and precise engineering practices.",
+      "primaryCta": {
+        "label": "Get a Free Consultation",
+        "href": "#contact",
+        "enabled": true
+      },
+      "secondaryCta": {
+        "label": "View Our Services",
+        "href": "#services",
+        "enabled": true
+      }
+    },
+    "about": {
+      "eyebrow": "About Twin Analytic",
+      "heading": "Engineering Smarter. Building Stronger.",
+      "body": "Twin Analytic is an emerging construction and engineering company focused on delivering innovative, efficient, and quality-driven solutions. We combine engineering expertise with digital technologies to create safe, optimized, and reliable structures.",
+      "visionTitle": "Our Vision",
+      "visionBody": "To lead the transition to digital-first structural engineering and Building Information Modeling workflows, ensuring precision design, material efficiency, and seamless construction execution.",
+      "image": "assets/about_render.jpg",
+      "imageAlt": "Twin Analytic Structural Engineering & BIM Renders"
+    },
+    "servicesSection": {
+      "enabled": true,
+      "eyebrow": "Our Services",
+      "heading": "Innovative Engineering Pillars",
+      "desc": "Twin Analytic offers a comprehensive range of structural engineering and digital twin BIM services built for modern safety and cost efficiency."
+    },
+    "technologySection": {
+      "enabled": true,
+      "eyebrow": "Our Toolkit",
+      "heading": "Tools, Tech & Design Standards",
+      "desc": "We leverage industry-leading computation software and adhere to rigorous international design codes to ensure structural safety and optimized execution.",
+      "toolsTitle": "Engineering Tools & Technology",
+      "toolsBody": "Our engineers use advanced computational modeling, finite element analysis (FEA), and building information management solutions to deliver precise designs.",
+      "standardsTitle": "Design Standards",
+      "standardsBody": "We ensure compliance with local and international building codes for loading calculations, concrete reinforcement design, and seismic safety requirements."
+    },
+    "bimSection": {
+      "enabled": true,
+      "eyebrow": "BIM Portal",
+      "heading": "Explore Our Digital Twin",
+      "desc": "Interact with our interactive structural model skeleton. Hover to highlight and click components to fetch live BIM metadata parameters."
+    },
+    "capabilitiesSection": {
+      "enabled": true,
+      "eyebrow": "Our Expertise",
+      "heading": "Engineering Capabilities",
+      "desc": "Sample engineering work and project demonstrations. We utilize high-fidelity modeling and analysis software to deliver reliable blueprints."
+    },
+    "whySection": {
+      "enabled": true,
+      "eyebrow": "Our Benchmarks",
+      "heading": "Why Choose Twin Analytic",
+      "desc": "We combine advanced technologies with rigorous standard methodologies to deliver structural optimization and predictable project outcomes."
+    },
+    "teamSection": {
+      "enabled": true,
+      "eyebrow": "Meet Our Team",
+      "heading": "Executive Leadership",
+      "desc": "Our leadership combines computational geometry, structural engineering, and BIM execution to deliver precise engineering solutions.",
+      "hiringNote": "We are growing. Engineering and technology roles open —",
+      "hiringLinkLabel": "contact us",
+      "hiringLinkHref": "contact.html"
+    },
+    "blogSection": {
+      "enabled": true,
+      "eyebrow": "Twin Insights",
+      "heading": "Latest Technical R&D",
+      "desc": "Read detailed design breakdowns, BIM methodology workflows, and software integration strategies.",
+      "emptyMessage": "Technical articles and R&D breakdowns coming soon."
+    }
+  },
+  "services": [
+    {
+      "id": "structural",
+      "icon": "fa-solid fa-ruler-combined",
+      "title": "Structural Engineering",
+      "items": [
+        "RCC Building Design",
+        "Steel Structure Design",
+        "Structural Analysis",
+        "Seismic and Wind Analysis"
+      ],
+      "href": "structural-design.html",
+      "enabled": true
+    },
+    {
+      "id": "bim",
+      "icon": "fa-solid fa-cube",
+      "title": "BIM & Digital Engineering",
+      "items": [
+        "Revit Structural Modeling",
+        "BIM Coordination",
+        "Clash Detection",
+        "Construction Documentation",
+        "Model-Based Workflows"
+      ],
+      "href": "bim-modeling.html",
+      "enabled": true
+    },
+    {
+      "id": "support",
+      "icon": "fa-solid fa-helmet-safety",
+      "title": "Construction Support",
+      "items": [
+        "Technical Consultancy",
+        "Site Engineering Support",
+        "Design Review",
+        "Project Coordination"
+      ],
+      "href": "construction-supervision.html",
+      "enabled": true
+    },
+    {
+      "id": "consultancy",
+      "icon": "fa-solid fa-lightbulb",
+      "title": "Engineering Consultancy",
+      "items": [
+        "Design Optimization",
+        "Structural Review",
+        "Engineering Solutions"
+      ],
+      "href": "project-management.html",
+      "enabled": true
+    }
+  ],
+  "tools": [
+    "ETABS",
+    "SAP2000",
+    "SAFE",
+    "Revit",
+    "AutoCAD",
+    "SOFiSTiK",
+    "Civil 3D"
+  ],
+  "standards": [
+    "BNBC",
+    "ACI",
+    "ASCE",
+    "Eurocode"
+  ],
+  "capabilities": [
+    {
+      "icon": "fa-solid fa-chart-area",
+      "title": "Structural Analysis Models",
+      "desc": "Finite element models demonstrating stress distribution, deflection analysis, and load paths under dynamic forces.",
+      "enabled": true
+    },
+    {
+      "icon": "fa-solid fa-cubes",
+      "title": "BIM Models",
+      "desc": "Detailed 3D structural Revit models ready for multi-disciplinary coordination and clash detection routines.",
+      "enabled": true
+    },
+    {
+      "icon": "fa-solid fa-compass-drafting",
+      "title": "Engineering Drawings",
+      "desc": "Detailed construction-ready drawings, column schedules, reinforcement detailing, and footing plans.",
+      "enabled": true
+    },
+    {
+      "icon": "fa-solid fa-file-invoice",
+      "title": "Construction Documentation",
+      "desc": "Structural design reports, load calculations, bill of quantities (BOQ), and technical specifications.",
+      "enabled": true
+    }
+  ],
+  "why": [
+    {
+      "icon": "fa-solid fa-cube",
+      "title": "Modern Engineering",
+      "desc": "Utilizing high-precision BIM workflows, computational analysis tools, and integrated digital coordinate coordination.",
+      "enabled": true
+    },
+    {
+      "icon": "fa-solid fa-shield-halved",
+      "title": "Quality Focus",
+      "desc": "Rigorous code-based computations (BNBC, ACI, ASCE, Eurocode) ensuring absolute structural stability and safety.",
+      "enabled": true
+    },
+    {
+      "icon": "fa-solid fa-chart-line",
+      "title": "Efficient Design",
+      "desc": "Optimized member dimensions and rebar distribution designed to minimize material waste, construction time, and costs.",
+      "enabled": true
+    },
+    {
+      "icon": "fa-solid fa-comments",
+      "title": "Client Focus",
+      "desc": "Professional delivery, transparent progress documentation, and direct collaborative line with our engineering team.",
+      "enabled": true
+    }
+  ],
+  "team": [
+    {
+      "name": "MD. Ahsan Habib Anik",
+      "role": "Founder & CEO",
+      "photo": "assets/team_ceo.jpg",
+      "qualification": "B.Sc. in Civil Engineering (Structural)",
+      "experience": "Founder of TwinAnalytic, building hands-on experience in structural design, BIM coordination, and digital twin workflows.",
+      "expertise": "Structural Engineering, BIM Coordination, Digital Twins",
+      "linkedin": "https://linkedin.com/company/twinanalytic",
+      "twitter": "https://x.com/twinanalytic",
+      "enabled": true
+    }
+  ],
+  "projects": [],
+  "projectsPage": {
+    "emptyMessage": "Our first projects are underway. Case studies will be published here upon completion.",
+    "emptyCtaLabel": "Get in Touch",
+    "emptyCtaHref": "contact.html",
+    "showFilters": true
+  },
+  "projectCategories": [
+    {
+      "value": "all",
+      "label": "All Projects"
+    },
+    {
+      "value": "commercial",
+      "label": "Commercial"
+    },
+    {
+      "value": "residential",
+      "label": "Residential"
+    },
+    {
+      "value": "industrial",
+      "label": "Industrial"
+    },
+    {
+      "value": "infrastructure",
+      "label": "Infrastructure"
+    }
+  ],
+  "testimonials": [],
+  "blog": [],
+  "calculators": [
+    {
+      "id": "beam",
+      "name": "Free RC Beam Designer",
+      "desc": "Perform free advanced reinforced concrete beam flexural design per ACI 318 & BNBC 2020. Supports Singly, Doubly, and T-Beam sections with live SVG scaling, stress block visualizations, and calculation breakdowns.",
+      "icon": "fa-solid fa-layer-group",
+      "href": "beam-design.html",
+      "ctaLabel": "Launch Beam Designer",
+      "enabled": true,
+      "requireLead": true
+    },
+    {
+      "id": "column",
+      "name": "Free RC Column Designer",
+      "desc": "Calculate rectangular tied or circular spiral column capacity under axial loads and moments per ACI 318 code. Features live interaction diagrams and rebar layout drawings.",
+      "icon": "fa-solid fa-cube",
+      "href": "column-design.html",
+      "ctaLabel": "Launch Column Designer",
+      "enabled": true,
+      "requireLead": true
+    },
+    {
+      "id": "slab",
+      "name": "Free RC Slab Designer",
+      "desc": "One-way and two-way slab thickness checks and reinforcement distribution per ACI 318 minimum thickness coefficients.",
+      "icon": "fa-solid fa-table-cells",
+      "href": "slab-design.html",
+      "ctaLabel": "Launch Slab Designer",
+      "enabled": true,
+      "requireLead": true
+    },
+    {
+      "id": "footing",
+      "name": "Free Square Footing Designer",
+      "desc": "Isolated square footing sizing, bearing pressure checks, punching and one-way shear, and rebar detailing.",
+      "icon": "fa-solid fa-square",
+      "href": "footing-design.html",
+      "ctaLabel": "Launch Footing Designer",
+      "enabled": true,
+      "requireLead": true
+    },
+    {
+      "id": "footing-rect",
+      "name": "Free Rectangular Footing Designer",
+      "desc": "Rectangular isolated footing design with biaxial moment handling, bearing checks, and reinforcement schedules.",
+      "icon": "fa-solid fa-square",
+      "href": "footing-rect-design.html",
+      "ctaLabel": "Launch Rectangular Footing Designer",
+      "enabled": true,
+      "requireLead": true
+    }
+  ],
+  "leadGate": {
+    "heading": "Calculation Locked",
+    "body": "Please enter your name, email, and country to unlock all calculators and download reports.",
+    "buttonLabel": "Unlock Now",
+    "modalTitle": "Unlock Engineering Tools",
+    "modalBody": "Enter your details once to unlock every calculator and PDF report on this site."
+  },
+  "pages": {
+    "index": {
+      "title": "Twin Analytic — Structural Engineering Consultant & BIM Services",
+      "description": "TwinAnalytic is a structural engineering consultancy delivering RCC building design, steel structure design, BIM modeling, and digital twin services.",
+      "ogImage": "assets/about_render.jpg"
+    },
+    "about": {
+      "title": "About Us — TwinAnalytic",
+      "description": "Learn about TwinAnalytic's mission, values, and the engineering leadership behind our structural and BIM services.",
+      "ogImage": "assets/about_render.jpg",
+      "bannerEyebrow": "Architects of Digital Reality",
+      "bannerHeading": "About TwinAnalytic"
+    },
+    "services": {
+      "title": "Computational Engineering Services — TwinAnalytic",
+      "description": "Structural engineering, BIM modeling, MEP, feasibility, construction supervision, and project management services.",
+      "ogImage": "assets/about_render.jpg",
+      "bannerEyebrow": "Expertise & Technologies",
+      "bannerHeading": "Computational Engineering Services"
+    },
+    "projects": {
+      "title": "Our Portfolio — TwinAnalytic",
+      "description": "Explore TwinAnalytic's architectural landmarks. A gallery of our commercial, residential, industrial, and infrastructure designs, optimized via digital twins.",
+      "ogImage": "assets/about_render.jpg",
+      "bannerEyebrow": "Landmark Architecture",
+      "bannerHeading": "Project Portfolio"
+    },
+    "contact": {
+      "title": "Contact Us — TwinAnalytic",
+      "description": "Get in touch with TwinAnalytic for structural engineering, BIM modeling, and digital twin consultation.",
+      "ogImage": "assets/about_render.jpg",
+      "bannerEyebrow": "Initiate Coordination Consults",
+      "bannerHeading": "Contact Our Offices"
+    },
+    "calculators": {
+      "title": "Free Structural Calculators — TwinAnalytic",
+      "description": "Free online RC beam, column, slab, and footing design calculators compliant with ACI 318 and BNBC 2020.",
+      "ogImage": "assets/about_render.jpg",
+      "bannerEyebrow": "Precision Analysis Suite",
+      "bannerHeading": "Free Structural Member Calculators"
+    }
+  },
+  "footer": {
+    "columns": [
+      {
+        "title": "Services",
+        "links": [
+          {
+            "label": "Structural Engineering",
+            "href": "services.html#structural"
+          },
+          {
+            "label": "BIM & Digital Engineering",
+            "href": "services.html#bim"
+          },
+          {
+            "label": "Construction Support",
+            "href": "services.html#support"
+          },
+          {
+            "label": "Engineering Consultancy",
+            "href": "services.html#consultancy"
+          }
+        ]
+      },
+      {
+        "title": "Interactive",
+        "links": [
+          {
+            "label": "Free Beam Design Calculator",
+            "href": "beam-design.html"
+          },
+          {
+            "label": "Free Column Design Calculator",
+            "href": "column-design.html"
+          },
+          {
+            "label": "Free Slab Spans Calculator",
+            "href": "slab-design.html"
+          }
+        ]
+      },
+      {
+        "title": "Navigation",
+        "links": [
+          {
+            "label": "Home",
+            "href": "index.html"
+          },
+          {
+            "label": "About",
+            "href": "about.html"
+          },
+          {
+            "label": "Services",
+            "href": "services.html"
+          },
+          {
+            "label": "Projects",
+            "href": "projects.html"
+          },
+          {
+            "label": "Contact",
+            "href": "contact.html"
+          }
+        ]
+      }
+    ],
+    "bottomLinks": [
+      {
+        "label": "Privacy Protocol",
+        "href": "privacy.html"
+      },
+      {
+        "label": "Sitemap",
+        "href": "sitemap.html"
+      }
+    ]
+  },
+  "integrations": {
+    "googleScriptUrl": "https://script.google.com/macros/s/AKfycbwOCu31hE-GRIvbTOH2HVb_PaAAFkDnyuqUZ1mRusZDll3NmeJ9JZ4ZBWxI_NRt1vCknQ/exec",
+    "gaMeasurementId": "",
+    "gtmContainerId": ""
+  }
+}

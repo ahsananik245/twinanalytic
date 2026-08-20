@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
 
+# Private administration console — not for indexing.
+Disallow: /admin.html
+Disallow: /admin
+
 Sitemap: https://twinanalytic.com/sitemap.xml

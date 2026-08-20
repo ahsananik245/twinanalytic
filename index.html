@@ -6,6 +6,7 @@
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0A0A0A">
   <title>Twin Analytic — Structural Engineering Consultant &amp; BIM Services</title>
   <meta name="description" content="TwinAnalytic is a structural engineering consultancy delivering RCC building design, steel structure design, BIM modeling, and digital twin services.">
   
@@ -16,6 +17,8 @@
   <meta property="og:url" content="https://twinanalytic.com/index.html" />
   <meta property="og:type" content="website" />
   <link rel="stylesheet" href="css/style.css">
+  <!-- Content engine: hydrates this page from data/content.json -->
+  <script src="js/site-content.js"></script>
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- jsPDF Library -->
@@ -117,14 +120,16 @@
 </head>
 <body>
 
+  <a href="#main-content" class="skip-link">Skip to Main Content</a>
+
   <!-- NAVIGATION BAR -->
   <nav class="navbar" id="navbar">
     <div class="container">
-      <a href="#" class="logo">
+      <a href="#" class="logo" data-tw-list="brandLogo">
         <img src="assets/logo.png" alt="TwinAnalytic Logo" style="height: 38px; width: auto; border-radius: 4px; margin-right: 8px; vertical-align: middle;">
         Twin<span>Analytic</span>
       </a>
-      <ul class="nav-links" id="nav-links">
+      <ul class="nav-links" id="nav-links" data-tw-list="navLinks">
         <li><a href="index.html" class="active">Home</a></li>
         <li><a href="about.html">About</a></li>
         <li><a href="services.html">Services</a></li>
@@ -133,7 +138,7 @@
         <li><a href="projects.html">Projects</a></li>
         <li><a href="contact.html">Contact</a></li>
       </ul>
-      <div class="nav-actions">
+      <div class="nav-actions" data-tw-list="navCta">
         <a href="contact.html" class="btn btn-gold btn-sm">Get a Quote</a>
       </div>
       <div class="hamburger" id="hamburger">
@@ -149,13 +154,19 @@
     <canvas id="hero-canvas"></canvas>
     <div class="hero-overlay"></div>
     <div class="container">
-      <div class="hero-content fade-up-init fade-up-in">
-        <span class="hero-tagline">Twin Analytic — Engineering Smarter. Building Stronger.</span>
-        <h1>Engineering Smarter.<br><span>Building Stronger.</span></h1>
-        <p class="hero-desc">Twin Analytic delivers structural engineering, BIM solutions, and construction support services using modern technology and precise engineering practices.</p>
+      <div class="hero-content fade-up-init fade-up-in" id="main-content" tabindex="-1">
+        <span class="hero-tagline" data-tw="home.hero.tagline">Twin Analytic — Engineering Smarter. Building Stronger.</span>
+        <h1 data-tw-list="heroTitle">Engineering Smarter.<br><span>Building Stronger.</span></h1>
+        <p class="hero-desc" data-tw="home.hero.desc">Twin Analytic delivers structural engineering, BIM solutions, and construction support services using modern technology and precise engineering practices.</p>
         <div class="hero-actions">
-          <a href="#contact" class="btn btn-gold">Get a Free Consultation</a>
-          <a href="#services" class="btn btn-ghost">View Our Services</a>
+          <a href="#contact" class="btn btn-gold"
+             data-tw="home.hero.primaryCta.label"
+             data-tw-attr="href:home.hero.primaryCta.href"
+             data-tw-show="home.hero.primaryCta.enabled">Get a Free Consultation</a>
+          <a href="#services" class="btn btn-ghost"
+             data-tw="home.hero.secondaryCta.label"
+             data-tw-attr="href:home.hero.secondaryCta.href"
+             data-tw-show="home.hero.secondaryCta.enabled">View Our Services</a>
         </div>
       </div>
     </div>
@@ -166,17 +177,19 @@
     <div class="container">
       <div class="about-grid">
         <div class="about-img-container fade-up-init">
-          <img src="assets/about_render.jpg" alt="Twin Analytic Structural Engineering & BIM Renders" id="about-image">
+          <img src="assets/about_render.jpg" alt="Twin Analytic Structural Engineering & BIM Renders" id="about-image"
+               width="960" height="720" loading="lazy"
+               data-tw-attr="src:home.about.image; alt:home.about.imageAlt">
         </div>
         <div class="about-text fade-up-init">
           <div class="section-header" style="text-align: left; margin-bottom: 2rem;">
-            <h2><span>About Twin Analytic</span>Engineering Smarter. Building Stronger.</h2>
+            <h2 data-tw-list="sectionHeading:home.about"><span>About Twin Analytic</span>Engineering Smarter. Building Stronger.</h2>
           </div>
-          <p>Twin Analytic is an emerging construction and engineering company focused on delivering innovative, efficient, and quality-driven solutions. We combine engineering expertise with digital technologies to create safe, optimized, and reliable structures.</p>
-          
+          <p data-tw="home.about.body">Twin Analytic is an emerging construction and engineering company focused on delivering innovative, efficient, and quality-driven solutions. We combine engineering expertise with digital technologies to create safe, optimized, and reliable structures.</p>
+
           <div style="margin-top: 2rem; border-top: 1px solid var(--border-gold); padding-top: 1.5rem;">
-            <h4 style="font-family: var(--font-serif); font-size: 1.25rem; color: var(--color-gold); margin-bottom: 0.5rem;">Our Vision</h4>
-            <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary);">To lead the transition to digital-first structural engineering and Building Information Modeling workflows, ensuring precision design, material efficiency, and seamless construction execution.</p>
+            <h4 style="font-family: var(--font-serif); font-size: 1.25rem; color: var(--color-gold); margin-bottom: 0.5rem;" data-tw="home.about.visionTitle">Our Vision</h4>
+            <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary);" data-tw="home.about.visionBody">To lead the transition to digital-first structural engineering and Building Information Modeling workflows, ensuring precision design, material efficiency, and seamless construction execution.</p>
           </div>
         </div>
       </div>
@@ -186,14 +199,14 @@
   <div class="divider"></div>
 
   <!-- SERVICES SECTION -->
-  <section class="section-padding" id="services">
+  <section class="section-padding" id="services" data-tw-show="home.servicesSection.enabled">
     <div class="container">
       <div class="section-header fade-up-init">
-        <h2><span>Our Services</span>Innovative Engineering Pillars</h2>
-        <p>Twin Analytic offers a comprehensive range of structural engineering and digital twin BIM services built for modern safety and cost efficiency.</p>
+        <h2 data-tw-list="sectionHeading:home.servicesSection"><span>Our Services</span>Innovative Engineering Pillars</h2>
+        <p data-tw="home.servicesSection.desc">Twin Analytic offers a comprehensive range of structural engineering and digital twin BIM services built for modern safety and cost efficiency.</p>
       </div>
-      
-      <div class="services-grid">
+
+      <div class="services-grid" data-tw-list="services">
         <!-- Service 1: Structural Engineering -->
         <div class="service-card glass-card fade-up-init">
           <div class="service-icon"><i class="fa-solid fa-ruler-combined"></i></div>
@@ -248,21 +261,21 @@
   <div class="divider"></div>
 
   <!-- TECHNOLOGY & STANDARDS -->
-  <section class="section-padding" id="technology" style="background: linear-gradient(180deg, var(--bg-primary), var(--bg-secondary));">
+  <section class="section-padding" id="technology" style="background: linear-gradient(180deg, var(--bg-primary), var(--bg-secondary));" data-tw-show="home.technologySection.enabled">
     <div class="container">
       <div class="section-header fade-up-init">
-        <h2><span>Our Toolkit</span>Tools, Tech &amp; Design Standards</h2>
-        <p>We leverage industry-leading computation software and adhere to rigorous international design codes to ensure structural safety and optimized execution.</p>
+        <h2 data-tw-list="sectionHeading:home.technologySection"><span>Our Toolkit</span>Tools, Tech &amp; Design Standards</h2>
+        <p data-tw="home.technologySection.desc">We leverage industry-leading computation software and adhere to rigorous international design codes to ensure structural safety and optimized execution.</p>
       </div>
 
       <div class="about-grid" style="align-items: stretch;">
         <!-- Column 1: Tools & Technology -->
         <div class="glass-card fade-up-init" style="display: flex; flex-direction: column; justify-content: space-between; padding: 2.5rem;">
           <div>
-            <h3 style="font-family: var(--font-serif); font-size: 1.8rem; font-weight: 400; margin-bottom: 1.5rem; color: var(--color-gold);">Engineering Tools &amp; Technology</h3>
-            <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.6;">Our engineers use advanced computational modeling, finite element analysis (FEA), and building information management solutions to deliver precise designs.</p>
+            <h3 style="font-family: var(--font-serif); font-size: 1.8rem; font-weight: 400; margin-bottom: 1.5rem; color: var(--color-gold);" data-tw="home.technologySection.toolsTitle">Engineering Tools &amp; Technology</h3>
+            <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.6;" data-tw="home.technologySection.toolsBody">Our engineers use advanced computational modeling, finite element analysis (FEA), and building information management solutions to deliver precise designs.</p>
           </div>
-          <div style="display: flex; flex-wrap: wrap; gap: 0.8rem;">
+          <div style="display: flex; flex-wrap: wrap; gap: 0.8rem;" data-tw-list="toolTags">
             <span style="font-family: var(--font-mono); font-size: 0.85rem; padding: 0.5rem 1rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; color: #fff;">ETABS</span>
             <span style="font-family: var(--font-mono); font-size: 0.85rem; padding: 0.5rem 1rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; color: #fff;">SAP2000</span>
             <span style="font-family: var(--font-mono); font-size: 0.85rem; padding: 0.5rem 1rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; color: #fff;">SAFE</span>
@@ -276,10 +289,10 @@
         <!-- Column 2: Design Standards -->
         <div class="glass-card fade-up-init" style="display: flex; flex-direction: column; justify-content: space-between; padding: 2.5rem;">
           <div>
-            <h3 style="font-family: var(--font-serif); font-size: 1.8rem; font-weight: 400; margin-bottom: 1.5rem; color: var(--color-gold);">Design Standards</h3>
-            <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.6;">We ensure compliance with local and international building codes for loading calculations, concrete reinforcement design, and seismic safety requirements.</p>
+            <h3 style="font-family: var(--font-serif); font-size: 1.8rem; font-weight: 400; margin-bottom: 1.5rem; color: var(--color-gold);" data-tw="home.technologySection.standardsTitle">Design Standards</h3>
+            <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.6;" data-tw="home.technologySection.standardsBody">We ensure compliance with local and international building codes for loading calculations, concrete reinforcement design, and seismic safety requirements.</p>
           </div>
-          <div style="display: flex; flex-wrap: wrap; gap: 0.8rem;">
+          <div style="display: flex; flex-wrap: wrap; gap: 0.8rem;" data-tw-list="standardTags">
             <span style="font-family: var(--font-mono); font-size: 0.85rem; padding: 0.5rem 1rem; background: rgba(201, 168, 76, 0.05); border: 1px solid var(--border-gold); border-radius: 4px; color: var(--color-gold);">BNBC</span>
             <span style="font-family: var(--font-mono); font-size: 0.85rem; padding: 0.5rem 1rem; background: rgba(201, 168, 76, 0.05); border: 1px solid var(--border-gold); border-radius: 4px; color: var(--color-gold);">ACI</span>
             <span style="font-family: var(--font-mono); font-size: 0.85rem; padding: 0.5rem 1rem; background: rgba(201, 168, 76, 0.05); border: 1px solid var(--border-gold); border-radius: 4px; color: var(--color-gold);">ASCE</span>
@@ -293,11 +306,11 @@
   <div class="divider"></div>
 
   <!-- 3D BIM VIEWER SECTION -->
-  <section class="section-padding bim-section" id="bim-viewer">
+  <section class="section-padding bim-section" id="bim-viewer" data-tw-show="features.showBimViewer">
     <div class="container">
       <div class="section-header fade-up-init">
-        <h2><span>BIM Portal</span>Explore Our Digital Twin</h2>
-        <p>Interact with our interactive structural model skeleton. Hover to highlight and click components to fetch live BIM metadata parameters.</p>
+        <h2 data-tw-list="sectionHeading:home.bimSection"><span>BIM Portal</span>Explore Our Digital Twin</h2>
+        <p data-tw="home.bimSection.desc">Interact with our interactive structural model skeleton. Hover to highlight and click components to fetch live BIM metadata parameters.</p>
       </div>
 
       <div class="bim-grid fade-up-init">
@@ -351,14 +364,14 @@
 
 
   <!-- ENGINEERING CAPABILITIES -->
-  <section class="section-padding" id="projects">
+  <section class="section-padding" id="projects" data-tw-show="home.capabilitiesSection.enabled">
     <div class="container">
       <div class="section-header fade-up-init">
-        <h2><span>Our Expertise</span>Engineering Capabilities</h2>
-        <p>Sample engineering work and project demonstrations. We utilize high-fidelity modeling and analysis software to deliver reliable blueprints.</p>
+        <h2 data-tw-list="sectionHeading:home.capabilitiesSection"><span>Our Expertise</span>Engineering Capabilities</h2>
+        <p data-tw="home.capabilitiesSection.desc">Sample engineering work and project demonstrations. We utilize high-fidelity modeling and analysis software to deliver reliable blueprints.</p>
       </div>
 
-      <div class="why-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+      <div class="why-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));" data-tw-list="capabilities">
         <!-- Capability 1 -->
         <div class="why-card glass-card fade-up-init" style="text-align: center; padding: 2.5rem 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
           <div class="why-icon" style="margin: 0 auto 1.5rem auto; float: none;"><i class="fa-solid fa-chart-area"></i></div>
@@ -390,14 +403,14 @@
   <div class="divider"></div>
 
   <!-- WHY CHOOSE US -->
-  <section class="section-padding" id="why-choose-us">
+  <section class="section-padding" id="why-choose-us" data-tw-show="home.whySection.enabled">
     <div class="container">
       <div class="section-header fade-up-init">
-        <h2><span>Our Benchmarks</span>Why Choose Twin Analytic</h2>
-        <p>We combine advanced technologies with rigorous standard methodologies to deliver structural optimization and predictable project outcomes.</p>
+        <h2 data-tw-list="sectionHeading:home.whySection"><span>Our Benchmarks</span>Why Choose Twin Analytic</h2>
+        <p data-tw="home.whySection.desc">We combine advanced technologies with rigorous standard methodologies to deliver structural optimization and predictable project outcomes.</p>
       </div>
 
-      <div class="why-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+      <div class="why-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));" data-tw-list="why">
         <div class="why-card fade-up-init">
           <div class="why-icon"><i class="fa-solid fa-cube"></i></div>
           <h3>Modern Engineering</h3>
@@ -425,14 +438,14 @@
   <div class="divider"></div>
 
   <!-- TEAM SECTION -->
-  <section class="section-padding" id="team">
+  <section class="section-padding" id="team" data-tw-show="features.showTeamSection">
     <div class="container">
       <div class="section-header fade-up-init">
-        <h2><span>Meet Our Team</span>Executive Leadership</h2>
-        <p>Our leadership combines computational geometry, structural engineering, and BIM execution to deliver precise engineering solutions.</p>
+        <h2 data-tw-list="sectionHeading:home.teamSection"><span>Meet Our Team</span>Executive Leadership</h2>
+        <p data-tw="home.teamSection.desc">Our leadership combines computational geometry, structural engineering, and BIM execution to deliver precise engineering solutions.</p>
       </div>
 
-      <div class="team-grid" style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+      <div class="team-grid" style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;" data-tw-list="team">
         <!-- Team 1 -->
         <div class="team-card fade-up-init" style="max-width: 420px; text-align: left; padding: 2rem; background: var(--bg-card); border: 1px solid var(--border-gold); border-radius: 12px; transition: var(--transition-smooth);">
           <div class="team-photo-wrap" style="width: 100%; height: 300px; overflow: hidden; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid rgba(255,255,255,0.05);">
@@ -454,7 +467,7 @@
         </div>
       </div>
       <div style="text-align: center; margin-top: 3rem;" class="fade-up-init">
-        <p style="color: var(--text-secondary); font-size: 0.95rem; font-style: italic;">We are growing. Engineering and technology roles open — <a href="contact.html" style="color: var(--color-gold); text-decoration: underline;">contact us</a>.</p>
+        <p style="color: var(--text-secondary); font-size: 0.95rem; font-style: italic;"><span data-tw="home.teamSection.hiringNote">We are growing. Engineering and technology roles open —</span> <a href="contact.html" style="color: var(--color-gold); text-decoration: underline;" data-tw="home.teamSection.hiringLinkLabel" data-tw-attr="href:home.teamSection.hiringLinkHref">contact us</a>.</p>
       </div>
     </div>
   </section>
@@ -462,16 +475,18 @@
 
 
   <!-- BLOG / INSIGHTS -->
-  <section class="section-padding" id="blog">
+  <section class="section-padding" id="blog" data-tw-show="features.showBlogSection">
     <div class="container">
       <div class="section-header fade-up-init">
-        <h2><span>Twin Insights</span>Latest Technical R&amp;D</h2>
-        <p>Read detailed design breakdowns, BIM methodology workflows, and software integration strategies.</p>
+        <h2 data-tw-list="sectionHeading:home.blogSection"><span>Twin Insights</span>Latest Technical R&amp;D</h2>
+        <p data-tw="home.blogSection.desc">Read detailed design breakdowns, BIM methodology workflows, and software integration strategies.</p>
       </div>
 
-      <!-- Grid -->
-      <div style="text-align: center; padding: 3rem 2rem; border: 1px dashed rgba(255,255,255,0.1); background: rgba(255,255,255,0.01); border-radius: 8px; max-width: 500px; margin: 3rem auto 0 auto;" class="fade-up-init">
-        <p style="color: var(--text-secondary); font-size: 1rem;">Technical articles and R&D breakdowns coming soon.</p>
+      <!-- Article grid, or the placeholder while no articles are published -->
+      <div data-tw-list="blog">
+        <div style="text-align: center; padding: 3rem 2rem; border: 1px dashed rgba(255,255,255,0.1); background: rgba(255,255,255,0.01); border-radius: 8px; max-width: 500px; margin: 3rem auto 0 auto;" class="fade-up-init">
+          <p style="color: var(--text-secondary); font-size: 1rem;">Technical articles and R&D breakdowns coming soon.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -485,22 +500,22 @@
         <!-- Info -->
         <div class="contact-info fade-up-init">
           <div>
-            <h3>Connect with TwinAnalytic</h3>
-            <p>Ready to secure structural optimization, set up high-precision BIM models, or deploy real-time digital twins? Let's discuss details.</p>
+            <h3 data-tw="contact.heading">Connect with TwinAnalytic</h3>
+            <p data-tw="contact.intro">Ready to secure structural optimization, set up high-precision BIM models, or deploy real-time digital twins? Let's discuss details.</p>
           </div>
           <div class="contact-methods">
             <div class="contact-method-item">
-              <div class="contact-method-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
+              <div class="contact-method-icon" aria-hidden="true"><i class="fa-solid fa-envelope-open-text"></i></div>
               <div class="contact-method-text">
-                <h4>Email Communication</h4>
-                <p>solutions@twinanalytic.com</p>
+                <h4 data-tw="contact.emailLabel">Email Communication</h4>
+                <p data-tw="contact.email">solutions@twinanalytic.com</p>
               </div>
             </div>
             <div class="contact-method-item">
-              <div class="contact-method-icon"><i class="fa-solid fa-phone-volume"></i></div>
+              <div class="contact-method-icon" aria-hidden="true"><i class="fa-solid fa-phone-volume"></i></div>
               <div class="contact-method-text">
-                <h4>Direct Operations Line</h4>
-                <p>+49 (69) 829-4820</p>
+                <h4 data-tw="contact.phoneLabel">Direct Operations Line</h4>
+                <p data-tw="contact.phone">+49 (69) 829-4820</p>
               </div>
             </div>
           </div>
@@ -526,7 +541,7 @@
               </div>
               <div class="form-group">
                 <label for="c-type">Project Type</label>
-                <select id="c-type">
+                <select id="c-type" name="project-type" data-tw-list="contactProjectTypes">
                   <option value="structural">Structural Engineering</option>
                   <option value="bim">BIM &amp; Digital Engineering</option>
                   <option value="support">Construction Support</option>
@@ -542,7 +557,7 @@
               <label for="c-msg">Message</label>
               <textarea id="c-msg" placeholder="Tell us about the project layout, size, and specific engineering requirements..." required></textarea>
             </div>
-            <button type="submit" class="btn btn-gold" style="width: 100%; margin-top: 1rem;">Start Your Project With Us</button>
+            <button type="submit" class="btn btn-gold" style="width: 100%; margin-top: 1rem;" data-tw="contact.formButtonLabel">Start Your Project With Us</button>
           </form>
         </div>
       </div>
@@ -557,16 +572,17 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-col brand">
-          <h3>Twin<span>Analytic</span></h3>
-          <p style="color: var(--color-gold); font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; margin-top: -0.5rem;">Construction &amp; Engineering</p>
-          <p>We combine engineering expertise with digital technologies to create safe, optimized, and reliable structures.</p>
-          <div class="footer-socials">
+          <h3 data-tw-list="brandFooter">Twin<span>Analytic</span></h3>
+          <p style="color: var(--color-gold); font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; margin-top: -0.5rem;" data-tw="site.tagline">Construction &amp; Engineering</p>
+          <p data-tw="site.footerBlurb">We combine engineering expertise with digital technologies to create safe, optimized, and reliable structures.</p>
+          <div class="footer-socials" data-tw-list="footerSocials">
             <a href="https://linkedin.com/company/twinanalytic" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
             <a href="https://x.com/twinanalytic" target="_blank"><i class="fa-brands fa-x-twitter"></i></a>
             <a href="#"><!-- TODO: add real URL --><i class="fa-brands fa-instagram"></i></a>
             <a href="#"><!-- TODO: add real URL --><i class="fa-brands fa-youtube"></i></a>
           </div>
         </div>
+        <div data-tw-list="footerColumns" style="display: contents;">
         <div class="footer-col">
           <h3>Services</h3>
           <ul class="footer-links">
@@ -594,11 +610,12 @@
             <li><a href="contact.html">Contact</a></li>
           </ul>
         </div>
+        </div>
       </div>
       
       <div class="footer-bottom">
-        <p>&copy; 2026 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
-        <div class="footer-bottom-links">
+        <p data-tw="site.copyright">&copy; 2026 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
+        <div class="footer-bottom-links" data-tw-list="footerBottomLinks">
           <a href="privacy.html">Privacy Protocol</a>
           <a href="sitemap.html">Sitemap</a>
         </div>

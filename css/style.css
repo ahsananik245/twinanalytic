@@ -1833,3 +1833,373 @@ input, select, textarea, button {
   line-height: 1.5 !important;
 }
 
+
+/* ==========================================================================
+   CONTENT ENGINE — injected UI (announcement bar, maintenance, preview badge)
+   Rendered by js/site-content.js from data/content.json.
+   ========================================================================== */
+
+.tw-announcement {
+  position: relative;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.7rem 3rem 0.7rem 1.25rem;
+  background: linear-gradient(90deg, rgba(201, 168, 76, 0.14), rgba(201, 168, 76, 0.06));
+  border-bottom: 1px solid var(--border-gold);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.tw-announcement a {
+  color: var(--color-gold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 500;
+}
+
+.tw-announcement a:hover {
+  color: var(--color-gold-light);
+}
+
+.tw-announcement-close {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.tw-announcement-close:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.tw-announcement-close:focus-visible {
+  outline: none;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.35);
+}
+
+/* The navbar is fixed, so it has to drop below the bar when one is shown. */
+body.has-announcement .navbar {
+  top: 3rem;
+}
+
+/* --- Maintenance mode ---------------------------------------------------- */
+
+.tw-maintenance {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem calc(1.5rem + env(safe-area-inset-left)) 2rem calc(1.5rem + env(safe-area-inset-right));
+  background:
+    radial-gradient(circle at 10% 20%, rgba(13, 17, 23, 0.95) 0%, rgba(10, 10, 10, 0.98) 90%),
+    var(--bg-primary);
+  text-align: center;
+}
+
+.tw-maintenance-inner {
+  max-width: 32rem;
+}
+
+.tw-maintenance-inner img {
+  height: 56px;
+  width: auto;
+  border-radius: 6px;
+  margin-bottom: 2rem;
+}
+
+.tw-maintenance-inner h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 300;
+  color: var(--text-primary);
+  margin-bottom: 1.25rem;
+  text-wrap: balance;
+}
+
+.tw-maintenance-inner h1 span {
+  color: var(--color-gold);
+}
+
+.tw-maintenance-inner p {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 2rem;
+  text-wrap: pretty;
+}
+
+.tw-maintenance-inner a {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--color-gold);
+  border-bottom: 1px solid var(--border-gold);
+  padding-bottom: 2px;
+}
+
+/* --- Draft preview badge ------------------------------------------------- */
+
+.tw-preview-badge {
+  position: fixed;
+  left: 50%;
+  bottom: calc(1.25rem + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 1.15rem;
+  border-radius: 999px;
+  background: rgba(13, 17, 23, 0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--color-gold);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.tw-preview-badge i {
+  color: var(--color-gold);
+}
+
+.tw-preview-badge a {
+  color: var(--color-gold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tw-announcement-close {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   POLISH LAYER
+   Additive refinements: focus visibility, motion preferences, typographic
+   detail, and interaction feedback. Nothing here changes the layout — it
+   only sharpens what is already there.
+   ========================================================================== */
+
+/* Tells the browser to render native scrollbars, form controls, and the
+   caret for a dark UI. */
+html {
+  color-scheme: dark;
+  -webkit-tap-highlight-color: rgba(201, 168, 76, 0.18);
+}
+
+/* Enumerated rather than `all`: transitioning every property forces the
+   browser to watch layout properties it never needs to animate. */
+:root {
+  --transition-smooth: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                       opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                       background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                       border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                       box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                       color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-quick: transform 0.2s ease, opacity 0.2s ease,
+                      background-color 0.2s ease, border-color 0.2s ease,
+                      box-shadow 0.2s ease, color 0.2s ease;
+}
+
+/* --- Focus visibility ----------------------------------------------------
+   Keyboard users need to see where they are. :focus-visible keeps the ring
+   off mouse clicks. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible,
+.btn:focus-visible,
+.filter-btn:focus-visible,
+.bim-control-btn:focus-visible,
+.tool-tab-btn:focus-visible,
+.carousel-dot:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+.hamburger:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 4px;
+}
+
+/* --- Skip link ------------------------------------------------------------ */
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 5000;
+  padding: 0.85rem 1.4rem;
+  background: var(--color-gold);
+  color: #100D05;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 0 0 6px 0;
+}
+
+.skip-link:focus {
+  left: 0;
+}
+
+/* --- Anchor targets -------------------------------------------------------
+   The navbar is fixed, so in-page jumps must stop below it. */
+section[id],
+header[id],
+[id^="panel-"] {
+  scroll-margin-top: 6.5rem;
+}
+
+/* --- Typographic detail --------------------------------------------------- */
+
+h1, h2, h3,
+.section-header h2,
+.page-banner h1 {
+  text-wrap: balance;
+}
+
+.hero-desc,
+.section-header p,
+.about-text p,
+.why-card p,
+.service-card p {
+  text-wrap: pretty;
+}
+
+/* Figures line up in columns and do not jitter while counting up. */
+.stat-num,
+.bim-val,
+.text-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background: rgba(201, 168, 76, 0.3);
+  color: #fff;
+}
+
+/* --- Interaction feedback ------------------------------------------------- */
+
+.btn {
+  touch-action: manipulation;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.service-card,
+.why-card,
+.launch-card,
+.team-card,
+.project-card {
+  will-change: transform;
+}
+
+.service-card:hover,
+.why-card:hover,
+.launch-card:hover,
+.project-card:hover {
+  border-color: var(--border-gold-hover);
+  box-shadow: var(--shadow-gold-hover);
+}
+
+.team-card:hover {
+  border-color: var(--border-gold-hover);
+  transform: translateY(-4px);
+}
+
+/* Footer and nav links get a clearer hover than a colour shift alone. */
+.footer-links a:hover,
+.footer-bottom-links a:hover {
+  color: var(--color-gold);
+  padding-left: 4px;
+}
+
+.footer-links a {
+  display: inline-block;
+  transition: color 0.2s ease, padding-left 0.2s ease;
+}
+
+.footer-socials a:hover {
+  border-color: var(--color-gold);
+  transform: translateY(-2px);
+}
+
+/* --- Scrollbar ------------------------------------------------------------ */
+
+@supports selector(::-webkit-scrollbar) {
+  ::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #24282F;
+    border: 2px solid var(--bg-primary);
+    border-radius: 999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #343A45;
+  }
+}
+
+/* --- Motion preferences ---------------------------------------------------
+   Respects the operating system setting. Scroll-triggered content must still
+   be readable, so faded elements are forced visible rather than left at
+   opacity 0. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .fade-up-init {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .btn:active {
+    transform: none;
+  }
+}

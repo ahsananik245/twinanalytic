@@ -29,6 +29,76 @@ Then navigate to `http://localhost:8000/index.html` in your browser.
 
 ---
 
+## 🎛️ Admin Control Panel
+
+The whole public site is editable from a browser, without touching code. Open
+`/admin.html` (locally: `http://localhost:8000/admin.html`).
+
+### What it controls
+
+| Area | What you can change |
+| --- | --- |
+| **Site Identity** | Brand name, logo, favicon, tagline, footer text, copyright |
+| **Theme & Colours** | Full palette, font stacks, five one-click presets. Border, glow, and shadow tints derive from the accent colour automatically |
+| **Menus & Footer** | Header menu items, header button, every footer column and link |
+| **Home Page** | Hero copy and buttons, About block, and the headings of all seven sections — each with an on/off switch |
+| **Content** | Services, Tools, Standards, Capabilities, Why-Choose-Us, Team, Projects, Articles, Testimonials — all add / reorder / duplicate / delete / hide |
+| **Pages** | Contact details, enquiry form copy, project-type dropdown, social links |
+| **SEO** | Per-page tab title, search description, social sharing image, and banner headings, with length counters |
+| **Calculators** | Show or hide each calculator, edit the lead-gate wording, reset your own unlock state for testing |
+| **Features** | Lead gate on/off, announcement bar, maintenance mode, section visibility |
+| **Integrations** | Google Apps Script lead endpoint, Google Analytics / Tag Manager IDs |
+| **Leads** | Search, sort, delete, and export submissions as CSV or JSON |
+| **History** | The last 15 publishes, restorable |
+
+### How content reaches the live site
+
+```
+admin.html  →  draft in your browser  →  Publish  →  data/content.json on GitHub  →  Vercel rebuild
+```
+
+`js/site-content.js` loads on every page and applies `data/content.json` to the
+markup through `data-tw*` attributes. **The hardcoded HTML is always the
+fallback** — if the JSON fails to load, every page still renders exactly as it
+did before the content layer existed.
+
+### First-time setup
+
+1. Open `/admin.html` and create a passcode (stored as a SHA-256 hash in that
+   browser only).
+2. Go to **Settings → GitHub Connection** and paste a token.
+
+   Create the token at **GitHub → Settings → Developer settings → Personal
+   access tokens → Fine-grained tokens** with:
+   - **Repository access:** *Only select repositories* → this repo only
+   - **Permissions → Repository permissions → Contents:** *Read and write*
+   - Nothing else, and a short expiry.
+
+   Scoped that narrowly, the token can edit this one repository and nothing
+   else. It is stored only in your browser and is sent only to `api.github.com`.
+3. Press **Test Connection**, then edit and **Publish**.
+
+No token? **Publish → Manual Publish** downloads `content.json` for you to
+upload through the GitHub web interface instead.
+
+### Security boundary
+
+The passcode is **client-side only**. It hides the console from casual visitors
+but is not server-enforced — anyone can read the page source. The real
+protection is the GitHub token: without it, nothing can change the live site.
+`admin.html` is excluded in `robots.txt` and carries `noindex, nofollow`.
+
+### Handy URLs
+
+| URL | Effect |
+| --- | --- |
+| `index.html?preview=1` | Preview your unpublished draft |
+| `index.html?preview=0` | Leave preview mode |
+| `index.html?nomaint=1` | Bypass maintenance mode |
+| `calculators.html?lock=1` | Reset the calculator lead gate |
+
+---
+
 ## 📂 Project Structure
 
 ```
@@ -44,7 +114,7 @@ TwinAnalytic/
 ├── slab-design.html             # RC Slab design & thickness checker
 ├── bim-viewer.html              # Mock interactive 3D BIM Viewer page
 ├── 3d-visualization.html        # Interactive 3D visualization showcase page
-├── admin.html                   # Admin Dashboard for lead and log tracking
+├── admin.html                   # Admin control panel (see above)
 ├── digital-twin.html            # Detailed service page: Digital Twin
 ├── structural-design.html       # Detailed service page: Structural Design
 ├── bim-modeling.html            # Detailed service page: BIM Modeling
@@ -59,9 +129,15 @@ TwinAnalytic/
 ├── vercel.json                  # Production clean routing configurations
 ├── dev-server.py                # Python local server with clean URL support
 ├── update_logos.py              # Script to update text logos to image logos
+├── data/
+│   └── content.json             # Single source of truth for all editable content
 ├── css/
-│   └── style.css                # Global stylesheet containing core design system
+│   ├── style.css                # Global stylesheet containing core design system
+│   └── admin.css                # Control panel stylesheet (standalone)
 ├── js/
+│   ├── site-content.js          # Content engine — hydrates pages from content.json
+│   ├── admin.js                 # Control panel application
+│   ├── admin-schema.js          # Declarative field definitions for the panel
 │   ├── main.js                  # Global UI interactions (navbars, menus, stats)
 │   ├── calculators.js           # Structural math and calculations engine
 │   └── three-scene.js           # Three.js 3D Wireframe building and BIM mockup
