@@ -125,6 +125,8 @@
     textSecondary: '--text-secondary',
     colorGold: '--color-gold',
     colorGoldLight: '--color-gold-light',
+    colorSteel: '--color-steel',
+    colorSteelDim: '--color-steel-dim',
     colorSteelBlue: '--color-steel-blue',
     colorAccentBlue: '--color-accent-blue',
     fontSerif: '--font-serif',

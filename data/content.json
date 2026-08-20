@@ -24,6 +24,8 @@
     "textSecondary": "#9AA0A6",
     "colorGold": "#C9A84C",
     "colorGoldLight": "#E8C97E",
+    "colorSteel": "#B7B6B6",
+    "colorSteelDim": "#7E8288",
     "colorSteelBlue": "#2A6496",
     "colorAccentBlue": "#4F86C6",
     "fontSerif": "'Playfair Display', Georgia, serif",

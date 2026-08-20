@@ -32,7 +32,9 @@ window.ADMIN_SCHEMA = {
   // Images that ship with the repo, offered in every image field.
   assetLibrary: [
     'assets/logo.png',
+    'assets/logo-lockup.png',
     'assets/favicon.png',
+    'assets/brand-banner.jpg',
     'assets/about_render.jpg',
     'assets/team_ceo.jpg',
     'assets/team_cto.jpg',
@@ -66,13 +68,16 @@ window.ADMIN_SCHEMA = {
             { key: 'brandFirst', label: 'Brand Name — First Part', type: 'text', placeholder: 'Twin…' },
             { key: 'brandSecond', label: 'Brand Name — Highlighted Part', type: 'text', placeholder: 'Analytic…' },
             { key: 'tagline', label: 'Tagline', type: 'text', wide: true, hint: 'Shown under the brand name in the footer.' },
+            { key: 'slogan', label: 'Slogan', type: 'text', wide: true, hint: 'Shown in the footer under the description.' },
             { key: 'domain', label: 'Live Domain', type: 'url', hint: 'Used to build absolute URLs for social sharing previews.' }
           ]
         },
         {
           title: 'Logo & Favicon', icon: 'fa-solid fa-image', path: 'site',
           fields: [
-            { key: 'logo', label: 'Logo', type: 'image' },
+            { key: 'logo', label: 'Logo Mark', type: 'image' },
+            { key: 'logoLockup', label: 'Full Lockup', type: 'image',
+              hint: 'Mark plus wordmark. Used on the control panel sign-in screen.' },
             { key: 'favicon', label: 'Favicon', type: 'image' },
             { key: 'logoHeight', label: 'Logo Height (px)', type: 'number', min: 16, max: 120 }
           ]
@@ -99,6 +104,9 @@ window.ADMIN_SCHEMA = {
           fields: [
             { key: 'colorGold', label: 'Accent (Gold)', type: 'color' },
             { key: 'colorGoldLight', label: 'Accent — Light', type: 'color' },
+            { key: 'colorSteel', label: 'Steel (technical labels)', type: 'color',
+              hint: 'Used for code references and monospace metadata, so gold stays reserved for actions.' },
+            { key: 'colorSteelDim', label: 'Steel — Dim', type: 'color' },
             { key: 'bgPrimary', label: 'Background — Primary', type: 'color' },
             { key: 'bgSecondary', label: 'Background — Secondary', type: 'color' },
             { key: 'textPrimary', label: 'Text — Primary', type: 'color' },

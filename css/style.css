@@ -10,6 +10,11 @@
   --text-secondary: #9AA0A6;
   --color-gold: #C9A84C;
   --color-gold-light: #E8C97E;
+  /* Sampled from the steel half of the TA mark. Gold is reserved for actions
+     and brand moments; steel carries technical metadata — code references,
+     monospace labels, measured values — so the accent keeps its meaning. */
+  --color-steel: #B7B6B6;
+  --color-steel-dim: #7E8288;
   --color-steel-blue: #2A6496;
   --color-accent-blue: #4F86C6;
   --border-gold: rgba(201, 168, 76, 0.2);
@@ -2421,7 +2426,7 @@ body .tool-outputs-card h3 {
   font-size: 3.4rem;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  color: rgba(201, 168, 76, 0.13);
+  color: rgba(183, 182, 182, 0.12);
   pointer-events: none;
 }
 
@@ -2441,7 +2446,7 @@ body .tool-outputs-card h3 {
   font-size: 0.66rem;
   text-transform: uppercase;
   letter-spacing: 0.11em;
-  color: var(--color-gold);
+  color: var(--color-steel);
   margin: 0;
 }
 
@@ -2472,4 +2477,15 @@ body .tool-outputs-card h3 {
 @media (max-width: 600px) {
   .calc-showcase-count { font-size: 2.6rem; }
   .calc-showcase-cta { flex-direction: column; gap: 1rem; }
+}
+
+/* The brand slogan, sitting under the footer description. */
+.footer-slogan {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--color-steel);
+  margin-top: -1.2rem;
+  margin-bottom: 2rem;
 }
