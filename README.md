@@ -127,6 +127,16 @@ source. There the real protection is the token itself.
 Either way `admin.html` is excluded in `robots.txt` and carries
 `noindex, nofollow`.
 
+### Caching
+
+`vercel.json` sets `Cache-Control: public, max-age=0, must-revalidate` on
+`/js/` and `/css/`. Vercel's default is a 4-hour browser cache, which meant an
+updated control panel could keep serving a stale copy for hours after a
+deploy. These files carry ETags, so revalidation costs a 304 with no body.
+
+`data/content.json` already revalidates by default, so published content goes
+live immediately. `/admin.html` and `/api/` are `no-store`.
+
 ### Handy URLs
 
 | URL | Effect |
