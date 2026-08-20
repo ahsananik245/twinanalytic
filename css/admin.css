@@ -108,10 +108,10 @@ body.admin-body,
 }
 
 .a-gate-card img {
-  height: 44px;
-  width: auto;
-  border-radius: 6px;
-  margin-bottom: 1.5rem;
+  width: min(240px, 78%);
+  height: auto;
+  margin: 0 auto 1.5rem;
+  display: block;
 }
 
 .a-gate-card h1 {
@@ -181,9 +181,8 @@ body.admin-body,
 }
 
 .a-brand img {
-  height: 30px;
+  height: 32px;
   width: auto;
-  border-radius: 5px;
 }
 
 .a-brand-text {

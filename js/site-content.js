@@ -179,9 +179,10 @@
     brandLogo: function (c) {
       var s = c.site || {};
       var h = s.logoHeight || 38;
+      // The mark is a transparent PNG, so it needs no rounded box behind it.
       var img = s.logo
         ? '<img src="' + esc(s.logo) + '" alt="' + esc((s.brandFirst || '') + (s.brandSecond || '') + ' logo') + '"' +
-          ' height="' + h + '" style="height: ' + h + 'px; width: auto; border-radius: 4px; margin-right: 8px; vertical-align: middle;">'
+          ' height="' + h + '" style="height: ' + h + 'px; width: auto; margin-right: 10px; vertical-align: middle;">'
         : '';
       return img + esc(s.brandFirst) + '<span>' + esc(s.brandSecond) + '</span>';
     },

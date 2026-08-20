@@ -244,15 +244,28 @@ input, select, textarea, button {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  /* space-between alone lets the wordmark, the seven links and the button
+     touch when they happen to fill the row exactly. An explicit gap
+     guarantees separation regardless of how the widths land. */
+  gap: clamp(1rem, 1.6vw, 2.5rem);
+  /* The bar carries more than the body column does, so it gets a wider track
+     than the 1200px content measure. */
+  max-width: 1400px;
 }
 
 .logo {
   font-family: var(--font-serif);
-  font-size: 1.8rem;
+  /* Scales a little with the viewport so the wordmark never crowds the menu. */
+  font-size: clamp(1.35rem, 1.1rem + 0.7vw, 1.8rem);
   font-weight: 500;
   color: var(--text-primary);
   letter-spacing: -0.01em;
-  display: inline-block;
+  /* Flex + nowrap keeps the mark and the wordmark on one line. As a flex item
+     of the navbar it would otherwise shrink and wrap the text under the mark. */
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  flex-shrink: 0;
   position: relative;
 }
 
@@ -272,7 +285,8 @@ input, select, textarea, button {
 
 .nav-links {
   display: flex;
-  gap: 2.2rem;
+  /* Fluid gap so seven links plus the button fit without colliding. */
+  gap: clamp(1rem, 0.2rem + 1.3vw, 2.2rem);
   align-items: center;
 }
 
@@ -284,6 +298,8 @@ input, select, textarea, button {
   color: var(--text-secondary);
   position: relative;
   padding: 0.5rem 0;
+  /* A wrapped menu item ("BIM Viewer") breaks the navbar's baseline. */
+  white-space: nowrap;
 }
 
 .nav-links a:hover,

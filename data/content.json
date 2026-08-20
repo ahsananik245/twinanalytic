@@ -7,13 +7,15 @@
   "site": {
     "brandFirst": "Twin",
     "brandSecond": "Analytic",
-    "tagline": "Construction & Engineering",
+    "tagline": "Construction & Consultancy",
     "logo": "assets/logo.png",
     "logoHeight": 38,
     "favicon": "assets/favicon.png",
     "domain": "https://twinanalytic.com",
     "footerBlurb": "We combine engineering expertise with digital technologies to create safe, optimized, and reliable structures.",
-    "copyright": "© 2026 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin."
+    "copyright": "© 2026 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.",
+    "logoLockup": "assets/logo-lockup.png",
+    "slogan": "Building Tomorrow, Together"
   },
   "theme": {
     "bgPrimary": "#0A0A0A",
@@ -407,40 +409,40 @@
     "index": {
       "title": "Twin Analytic — Structural Engineering Consultant & BIM Services",
       "description": "TwinAnalytic is a structural engineering consultancy delivering RCC building design, steel structure design, BIM modeling, and digital twin services.",
-      "ogImage": "assets/about_render.jpg"
+      "ogImage": "assets/brand-banner.jpg"
     },
     "about": {
       "title": "About Us — TwinAnalytic",
       "description": "Learn about TwinAnalytic, our leadership team, our history, and how we are engineering the future using Building Information Modeling (BIM) and Digital Twins.",
-      "ogImage": "assets/about_render.jpg",
+      "ogImage": "assets/brand-banner.jpg",
       "bannerEyebrow": "Architects of Digital Reality",
       "bannerHeading": "About TwinAnalytic"
     },
     "services": {
       "title": "Our Services — TwinAnalytic",
       "description": "Explore TwinAnalytic's technical services, ranging from high-precision BIM Level 3 modeling and structural finite element analysis (FEA) to real-time digital twin integrations.",
-      "ogImage": "assets/about_render.jpg",
+      "ogImage": "assets/brand-banner.jpg",
       "bannerEyebrow": "Expertise & Technologies",
       "bannerHeading": "Computational Engineering Services"
     },
     "projects": {
       "title": "Our Portfolio — TwinAnalytic",
       "description": "Explore TwinAnalytic's architectural landmarks. A gallery of our commercial, residential, industrial, and infrastructure designs, optimized via digital twins.",
-      "ogImage": "assets/about_render.jpg",
+      "ogImage": "assets/brand-banner.jpg",
       "bannerEyebrow": "Landmark Architecture",
       "bannerHeading": "Project Portfolio"
     },
     "contact": {
       "title": "Contact Offices — TwinAnalytic",
       "description": "Reach out to TwinAnalytic. Submit structural project specifications for a quote on BIM coordination modeling or digital twin installations.",
-      "ogImage": "assets/about_render.jpg",
+      "ogImage": "assets/brand-banner.jpg",
       "bannerEyebrow": "Initiate Coordination Consults",
       "bannerHeading": "Contact Our Offices"
     },
     "calculators": {
       "title": "Free BNBC 2020 & ACI 318 Structural Calculators — TwinAnalytic",
       "description": "Twenty-eight free structural engineering calculators to BNBC 2020 and ACI 318: seismic base shear, wind load, P-delta, drift, irregularity checks, beam, column, slab, stair, shear wall and footing design, reinforcement detailing and estimating.",
-      "ogImage": "assets/about_render.jpg",
+      "ogImage": "assets/brand-banner.jpg",
       "bannerEyebrow": "Precision Analysis Suite",
       "bannerHeading": "Free Structural Engineering Calculators"
     }
