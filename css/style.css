@@ -109,7 +109,7 @@ input, select, textarea, button {
 
 .section-header h2 {
   font-family: var(--font-serif);
-  font-size: 3rem;
+  font-size: clamp(1.9rem, 1.53rem + 1.63vw, 3rem);
   font-weight: 400;
   letter-spacing: -0.02em;
   margin-bottom: 1rem;
@@ -381,7 +381,8 @@ input, select, textarea, button {
 
 .hero h1 {
   font-family: var(--font-serif);
-  font-size: 4.8rem;
+  /* Fluid: see the FLUID TYPE SCALE block near the end of this file. */
+  font-size: clamp(2.2rem, 1.33rem + 3.85vw, 4.8rem);
   line-height: 1.1;
   font-weight: 300;
   letter-spacing: -0.03em;
@@ -396,7 +397,7 @@ input, select, textarea, button {
 }
 
 .hero-desc {
-  font-size: 1.25rem;
+  font-size: clamp(1rem, 0.92rem + 0.37vw, 1.25rem);
   color: var(--text-secondary);
   margin-bottom: 3rem;
   font-weight: 300;
@@ -1715,9 +1716,6 @@ input, select, textarea, button {
     transform: rotate(-45deg) translate(6px, -6px);
   }
 
-  .hero h1 {
-    font-size: 3rem;
-  }
 
   .about-grid {
     grid-template-columns: 1fr;
@@ -1728,9 +1726,6 @@ input, select, textarea, button {
     height: 320px;
   }
 
-  .section-header h2 {
-    font-size: 2.2rem;
-  }
 
   .stat-num {
     font-size: 2.2rem;
@@ -1743,9 +1738,6 @@ input, select, textarea, button {
   body .page-banner {
     padding: 8rem 0 3.5rem 0;
   }
-  body .page-banner h1 {
-    font-size: 2.6rem;
-  }
 }
 
 @media (max-width: 768px) {
@@ -1754,9 +1746,6 @@ input, select, textarea, button {
   }
   body .page-banner {
     padding: 7rem 0 3rem 0;
-  }
-  body .page-banner h1 {
-    font-size: 2.2rem;
   }
   body .bim-grid {
     height: auto;
@@ -2267,3 +2256,52 @@ h1, h2, h3,
 .bg-green-900   { background-color: #14532d; }
 .border-green-600 { border-color: #16a34a; }
 .text-green-200 { color: #bbf7d0; }
+
+/* ==========================================================================
+   FLUID TYPE SCALE
+   --------------------------------------------------------------------------
+   Headings used to step between fixed sizes at breakpoints, so on a phone the
+   title alone could fill the first screen before any content appeared. These
+   scale continuously with the viewport instead.
+
+   Each value is clamp(min, rem + vw, max). The rem term matters: a pure `vw`
+   preferred value ignores the user's font-size setting and breaks zoom
+   (WCAG 1.4.4). Keeping a rem component means the text still responds to
+   browser zoom and to a larger default font size.
+
+   Two title patterns exist across the site and both are declared in per-page
+   <style> blocks, which would otherwise win on source order. The selectors
+   below carry an extra element to outrank them rather than editing 44 files.
+   ========================================================================== */
+
+body .page-banner h1 {
+  font-size: clamp(1.75rem, 1.17rem + 2.59vw, 3.5rem);
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+body .page-title-section h1 {
+  font-size: clamp(1.6rem, 1.2rem + 1.78vw, 2.8rem);
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+/* The eyebrow above each title tracks the heading down so the pairing keeps
+   its proportions on small screens. */
+body .page-banner p,
+body .page-title-section p {
+  font-size: clamp(0.7rem, 0.65rem + 0.22vw, 0.9rem);
+}
+
+/* Banner padding was tuned for a large fixed heading; with fluid type it can
+   tighten on small screens and stop the title owning the whole first view. */
+body .page-banner {
+  padding: clamp(7rem, 5.5rem + 6vw, 10rem) 0 clamp(2.25rem, 1.5rem + 3vw, 4rem);
+}
+
+/* Card and panel headings inside the calculators. */
+body .analysis-card h3,
+body .tool-inputs-card h3,
+body .tool-outputs-card h3 {
+  font-size: clamp(1.1rem, 0.98rem + 0.5vw, 1.6rem);
+}
