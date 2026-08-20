@@ -1,7 +1,7 @@
 {
   "_meta": {
     "schemaVersion": 1,
-    "updatedAt": "2026-08-20T00:00:00.000Z",
+    "updatedAt": "2026-08-20T18:00:39.992Z",
     "note": "Single source of truth for all editable TwinAnalytic site content. Edit via /admin.html - do not hand-edit unless you know the schema."
   },
   "site": {
@@ -365,12 +365,12 @@
   },
   "projectCategories": [
     {
-      "value": "all",
-      "label": "All Projects"
-    },
-    {
       "value": "commercial",
       "label": "Commercial"
+    },
+    {
+      "value": "all",
+      "label": "All Projects"
     },
     {
       "value": "residential",
@@ -728,6 +728,30 @@
       ]
     },
     {
+      "title": "Estimating",
+      "eyebrow": "Quantities & Costing",
+      "desc": "Convert a finished design into quantities and a priced bill.",
+      "enabled": true,
+      "items": [
+        {
+          "name": "Foundation Estimating",
+          "icon": "fa-solid fa-file-invoice-dollar",
+          "href": "foundation-estimate.html",
+          "desc": "Earthwork, soling, RCC, shuttering, reinforcement by bar mark and mortar constituents, priced into a bill of quantities.",
+          "code": "Bill of Quantities",
+          "enabled": true
+        },
+        {
+          "name": "Beam Estimating",
+          "icon": "fa-solid fa-clipboard-list",
+          "href": "beam-estimate.html",
+          "desc": "Bar bending schedule with cut lengths and stirrup take-off across any number of spans, with a costed BOQ.",
+          "code": "Bar Bending Schedule",
+          "enabled": true
+        }
+      ]
+    },
+    {
       "title": "Reinforcement Detailing",
       "eyebrow": "ACI 318 Chapters 18 & 25",
       "desc": "Turn analysis demands into buildable bar spacing and lengths.",
@@ -763,30 +787,6 @@
           "href": "development-length.html",
           "desc": "Tension, compression, standard hook and Class A and B splice lengths for every metric bar size.",
           "code": "ACI 318M Ch. 25",
-          "enabled": true
-        }
-      ]
-    },
-    {
-      "title": "Estimating",
-      "eyebrow": "Quantities & Costing",
-      "desc": "Convert a finished design into quantities and a priced bill.",
-      "enabled": true,
-      "items": [
-        {
-          "name": "Foundation Estimating",
-          "icon": "fa-solid fa-file-invoice-dollar",
-          "href": "foundation-estimate.html",
-          "desc": "Earthwork, soling, RCC, shuttering, reinforcement by bar mark and mortar constituents, priced into a bill of quantities.",
-          "code": "Bill of Quantities",
-          "enabled": true
-        },
-        {
-          "name": "Beam Estimating",
-          "icon": "fa-solid fa-clipboard-list",
-          "href": "beam-estimate.html",
-          "desc": "Bar bending schedule with cut lengths and stirrup take-off across any number of spans, with a costed BOQ.",
-          "code": "Bar Bending Schedule",
           "enabled": true
         }
       ]
