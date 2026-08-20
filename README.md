@@ -130,12 +130,24 @@ Either way `admin.html` is excluded in `robots.txt` and carries
 ### Caching
 
 `vercel.json` sets `Cache-Control: public, max-age=0, must-revalidate` on
-`/js/` and `/css/`. Vercel's default is a 4-hour browser cache, which meant an
-updated control panel could keep serving a stale copy for hours after a
-deploy. These files carry ETags, so revalidation costs a 304 with no body.
+`/js/` and `/css/`, so an updated control panel or content engine is picked up
+on the next load rather than hours later. These files carry ETags, so
+revalidating costs a 304 with no body. `/admin.html` and `/api/` are
+`no-store`. `data/content.json` already revalidates, so published content goes
+live immediately.
 
-`data/content.json` already revalidates by default, so published content goes
-live immediately. `/admin.html` and `/api/` are `no-store`.
+> **⚠️ One manual step is still outstanding.**
+>
+> The domain is proxied through **Cloudflare** (`Server: cloudflare`,
+> `cf-cache-status` present), and Cloudflare **overrides the origin's
+> `Cache-Control`**. Its default Browser Cache TTL is 4 hours — exactly the
+> `max-age=14400` still being served — so the rules above never reach visitors.
+>
+> To fix, in the Cloudflare dashboard for this domain:
+> **Caching → Configuration → Browser Cache TTL → _Respect Existing Headers_**
+>
+> Until that is changed, a deploy can take up to 4 hours to reach someone who
+> has already visited. A hard refresh (`Ctrl+Shift+R`) bypasses it meanwhile.
 
 ### Handy URLs
 
