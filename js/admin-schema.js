@@ -284,6 +284,14 @@ window.ADMIN_SCHEMA = {
           { key: 'heading', label: 'Heading', type: 'text' },
           { key: 'desc', label: 'Description', type: 'textarea', wide: true }
         ]},
+        { title: 'How We Work Section', icon: 'fa-solid fa-list-ol', path: 'home.processSection',
+          desc: 'The engagement sequence shown between Why Choose Us and the team.',
+          fields: [
+          { key: 'enabled', label: 'Show this section', type: 'toggle', wide: true },
+          { key: 'eyebrow', label: 'Small Label', type: 'text' },
+          { key: 'heading', label: 'Heading', type: 'text' },
+          { key: 'desc', label: 'Description', type: 'textarea', wide: true }
+        ]},
         { title: 'Team Section', icon: 'fa-solid fa-users', path: 'home.teamSection', fields: [
           { key: 'enabled', label: 'Show this section', type: 'toggle', wide: true },
           { key: 'eyebrow', label: 'Small Label', type: 'text' },
@@ -375,6 +383,26 @@ window.ADMIN_SCHEMA = {
     },
 
     {
+      id: 'process', label: 'How We Work', icon: 'fa-solid fa-list-ol', group: 'Content',
+      title: 'Engagement Process',
+      desc: 'The ordered steps a client goes through with you, shown on the home page.',
+      cards: [
+        {
+          title: 'Process Steps', icon: 'fa-solid fa-list-ol', path: 'process', type: 'list',
+          itemLabel: 'title', addLabel: 'Add Step',
+          emptyText: 'No steps yet. The How We Work section will fall back to its built-in copy.',
+          fields: [
+            { key: 'step', label: 'Step Number', type: 'text', placeholder: '01' },
+            { key: 'title', label: 'Step Title', type: 'text' },
+            { key: 'icon', label: 'Icon', type: 'icon' },
+            { key: 'desc', label: 'Description', type: 'textarea', wide: true },
+            { key: 'enabled', label: 'Show this step', type: 'toggle' }
+          ]
+        }
+      ]
+    },
+
+    {
       id: 'team', label: 'Team', icon: 'fa-solid fa-users', group: 'Content',
       title: 'Team Members',
       desc: 'Leadership profiles shown on the home page and the About page.',
@@ -430,11 +458,15 @@ window.ADMIN_SCHEMA = {
         },
         {
           title: 'Empty State', icon: 'fa-solid fa-inbox', path: 'projectsPage',
-          desc: 'Shown on the Projects page while you have no published projects.',
+          desc: 'Shown on the Projects page while you have no published projects. Add a project above and this is replaced by the gallery automatically.',
           fields: [
-            { key: 'emptyMessage', label: 'Placeholder Message', type: 'textarea', wide: true },
-            { key: 'emptyCtaLabel', label: 'Button Label', type: 'text' },
-            { key: 'emptyCtaHref', label: 'Button Link', type: 'text' },
+            { key: 'emptyHeading', label: 'Heading', type: 'text', wide: true },
+            { key: 'emptyMessage', label: 'Message', type: 'textarea', wide: true },
+            { key: 'emptyCtaLabel', label: 'Primary Button Label', type: 'text' },
+            { key: 'emptyCtaHref', label: 'Primary Button Link', type: 'text' },
+            { key: 'emptySecondaryLabel', label: 'Secondary Button Label', type: 'text' },
+            { key: 'emptySecondaryHref', label: 'Secondary Button Link', type: 'text' },
+            { key: 'emptyNote', label: 'Small Print Under the Buttons', type: 'textarea', wide: true },
             { key: 'showFilters', label: 'Show category filter buttons', type: 'toggle', wide: true }
           ]
         }

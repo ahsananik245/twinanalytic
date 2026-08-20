@@ -308,11 +308,20 @@
       var list = enabledOnly(c.projects);
       var page = c.projectsPage || {};
 
+      // No published case studies yet. Rather than an apologetic placeholder,
+      // say plainly why and point at the work that genuinely is public.
       if (!list.length) {
         return '' +
-          '<div style="text-align: center; padding: 6rem 1.5rem; border: 1px dashed var(--border-gold); background: rgba(255,255,255,0.02); border-radius: 8px; max-width: 600px; margin: 4rem auto 0 auto;" class="fade-up-init">' +
-            '<p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 2rem; font-size: 1.15rem;">' + esc(page.emptyMessage) + '</p>' +
-            (page.emptyCtaLabel ? '<a href="' + esc(page.emptyCtaHref || 'contact.html') + '" class="btn btn-gold">' + esc(page.emptyCtaLabel) + '</a>' : '') +
+          '<div class="projects-empty fade-up-init">' +
+            (page.emptyHeading ? '<h2>' + esc(page.emptyHeading) + '</h2>' : '') +
+            '<p>' + esc(page.emptyMessage) + '</p>' +
+            '<div class="projects-empty-actions">' +
+              (page.emptyCtaLabel
+                ? '<a href="' + esc(page.emptyCtaHref || 'calculators.html') + '" class="btn btn-gold">' + esc(page.emptyCtaLabel) + '</a>' : '') +
+              (page.emptySecondaryLabel
+                ? '<a href="' + esc(page.emptySecondaryHref || 'contact.html') + '" class="btn btn-ghost">' + esc(page.emptySecondaryLabel) + '</a>' : '') +
+            '</div>' +
+            (page.emptyNote ? '<p class="projects-empty-note">' + esc(page.emptyNote) + '</p>' : '') +
           '</div>';
       }
 
@@ -424,6 +433,22 @@
         : '';
 
       return tiles + cta;
+    },
+
+    // The engagement sequence. Rendered as a numbered rail rather than another
+    // card grid, both because a process is inherently ordered and to break the
+    // centred-header-plus-grid rhythm the rest of the page settles into.
+    process: function (c) {
+      return enabledOnly(c.process).map(function (s, i) {
+        return '' +
+          '<li class="process-step fade-up-init" style="transition-delay: ' + (i * 60) + 'ms;">' +
+            '<span class="process-step-num">' + esc(s.step || String(i + 1).padStart(2, '0')) + '</span>' +
+            '<div class="process-step-body">' +
+              '<h3>' + (s.icon ? '<i class="' + esc(s.icon) + '" aria-hidden="true"></i>' : '') + esc(s.title) + '</h3>' +
+              '<p>' + esc(s.desc) + '</p>' +
+            '</div>' +
+          '</li>';
+      }).join('');
     },
 
     blog: function (c) {

@@ -218,6 +218,12 @@
       "heading": "Why Choose Twin Analytic",
       "desc": "We combine advanced technologies with rigorous standard methodologies to deliver structural optimization and predictable project outcomes."
     },
+    "processSection": {
+      "enabled": true,
+      "eyebrow": "How We Work",
+      "heading": "From Brief to Site Support",
+      "desc": "Every engagement runs the same disciplined sequence, so you always know which stage the work is at and what you receive at the end of it."
+    },
     "teamSection": {
       "enabled": true,
       "eyebrow": "Meet Our Team",
@@ -371,9 +377,13 @@
   ],
   "projects": [],
   "projectsPage": {
-    "emptyMessage": "Our first projects are underway. Case studies will be published here upon completion.",
-    "emptyCtaLabel": "Get in Touch",
-    "emptyCtaHref": "contact.html",
+    "emptyHeading": "Case Studies in Preparation",
+    "emptyMessage": "We do not publish client work without written consent, and our first consented case studies are still being prepared. In the meantime the clearest picture of how we work is our published analysis suite: twenty-eight BNBC 2020 and ACI 318 calculators, free and open to inspect.",
+    "emptyCtaLabel": "Open the Calculator Suite",
+    "emptyCtaHref": "calculators.html",
+    "emptySecondaryLabel": "Request a Capability Statement",
+    "emptySecondaryHref": "contact.html",
+    "emptyNote": "A capability statement covering software, codes, deliverables and references is available on request.",
     "showFilters": true
   },
   "projectCategories": [
@@ -803,6 +813,43 @@
           "enabled": true
         }
       ]
+    }
+  ],
+  "process": [
+    {
+      "step": "01",
+      "icon": "fa-solid fa-clipboard-list",
+      "title": "Brief & Feasibility",
+      "desc": "We establish the structural brief: occupancy and loading, site and soil constraints, the governing code, and the client's cost and programme limits.",
+      "enabled": true
+    },
+    {
+      "step": "02",
+      "icon": "fa-solid fa-diagram-project",
+      "title": "Analysis & Modelling",
+      "desc": "An analytical model is built in ETABS or SAP2000, with load cases and combinations set out to BNBC 2020 or ASCE 7, and the results checked against hand calculations.",
+      "enabled": true
+    },
+    {
+      "step": "03",
+      "icon": "fa-solid fa-ruler-combined",
+      "title": "Design & Optimisation",
+      "desc": "Members are sized to ACI 318 and BNBC 2020, then optimised for material efficiency and buildability rather than simply passing the check.",
+      "enabled": true
+    },
+    {
+      "step": "04",
+      "icon": "fa-solid fa-file-lines",
+      "title": "Documentation",
+      "desc": "You receive construction drawings, reinforcement detailing, column and beam schedules, quantities, and a calculation report that shows the reasoning.",
+      "enabled": true
+    },
+    {
+      "step": "05",
+      "icon": "fa-solid fa-helmet-safety",
+      "title": "Construction Support",
+      "desc": "We stay available through construction for RFIs, site queries, and design review as conditions on the ground change.",
+      "enabled": true
     }
   ]
 }

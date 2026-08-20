@@ -2489,3 +2489,167 @@ body .tool-outputs-card h3 {
   margin-top: -1.2rem;
   margin-bottom: 2rem;
 }
+
+/* ==========================================================================
+   HOW WE WORK — engagement process
+   The one section on the home page that is not a centred header over a card
+   grid. Ordered content laid out as an ordered rail, which also breaks the
+   page's rhythm so it does not read as one repeated template.
+   ========================================================================== */
+
+.process-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: start;
+}
+
+.process-intro > p {
+  color: var(--text-secondary);
+  font-size: 1.02rem;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+.process-cta {
+  margin-top: 2rem;
+}
+
+/* The intro tracks alongside the steps on tall screens. */
+@media (min-width: 900px) {
+  .process-intro {
+    position: sticky;
+    top: 8rem;
+  }
+}
+
+.process-rail {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+/* The spine the steps hang from. */
+.process-rail::before {
+  content: '';
+  position: absolute;
+  left: 1.35rem;
+  top: 0.6rem;
+  bottom: 0.6rem;
+  width: 1px;
+  background: linear-gradient(180deg, var(--border-gold), rgba(183, 182, 182, 0.12));
+}
+
+.process-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.7rem minmax(0, 1fr);
+  gap: 1.25rem;
+  padding-bottom: 2.25rem;
+}
+
+.process-step:last-child {
+  padding-bottom: 0;
+}
+
+.process-step-num {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 2.7rem;
+  height: 2.7rem;
+  border-radius: 50%;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-gold);
+  color: var(--color-gold);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.process-step-body h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-serif);
+  font-size: 1.22rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  margin: 0.3rem 0 0.5rem;
+  text-wrap: balance;
+}
+
+.process-step-body h3 i {
+  font-size: 0.9rem;
+  color: var(--color-steel);
+}
+
+.process-step-body p {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.7;
+  margin: 0;
+  text-wrap: pretty;
+}
+
+@media (max-width: 899px) {
+  .process-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ==========================================================================
+   PROJECTS — empty state
+   Shown until consented case studies are published. It states the position
+   plainly and routes to the work that is genuinely public.
+   ========================================================================== */
+
+.projects-empty {
+  max-width: 46rem;
+  margin: 3rem auto 0;
+  padding: clamp(2.5rem, 5vw, 4rem) clamp(1.5rem, 4vw, 3rem);
+  border: 1px solid var(--border-gold);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(201, 168, 76, 0.05), transparent 60%),
+    rgba(255, 255, 255, 0.015);
+  text-align: center;
+}
+
+.projects-empty h2 {
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.1rem);
+  font-weight: 400;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  text-wrap: balance;
+}
+
+.projects-empty > p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.8;
+  max-width: 38rem;
+  margin: 0 auto 2.25rem;
+  text-wrap: pretty;
+}
+
+.projects-empty-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.projects-empty-note {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.7;
+  color: var(--color-steel-dim);
+  text-wrap: pretty;
+}
