@@ -2653,3 +2653,21 @@ body .tool-outputs-card h3 {
   color: var(--color-steel-dim);
   text-wrap: pretty;
 }
+
+/* The calculator suite is the strongest thing on the page, so it gets its own
+   banded treatment rather than sitting in the same flat field as everything
+   else. Hairlines top and bottom read as a chapter break while scrolling. */
+.calc-showcase {
+  position: relative;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(201, 168, 76, 0.045), transparent 62%),
+    linear-gradient(180deg, var(--bg-secondary), var(--bg-primary));
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Two chapter breaks in a row is one too many; the band is the divider. */
+.calc-showcase + .divider,
+.divider:has(+ .calc-showcase) {
+  display: none;
+}

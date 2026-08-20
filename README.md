@@ -39,10 +39,10 @@ The whole public site is editable from a browser, without touching code. Open
 | Area | What you can change |
 | --- | --- |
 | **Site Identity** | Brand name, logo, favicon, tagline, footer text, copyright |
-| **Theme & Colours** | Full palette, font stacks, five one-click presets. Border, glow, and shadow tints derive from the accent colour automatically |
+| **Theme & Colours** | Full palette including the steel used for technical labels, font stacks, five one-click presets. Border, glow, and shadow tints derive from the accent colour automatically |
 | **Menus & Footer** | Header menu items, header button, every footer column and link |
 | **Home Page** | Hero copy and buttons, About block, and the headings of all seven sections — each with an on/off switch |
-| **Content** | Services, Tools, Standards, Capabilities, Why-Choose-Us, Team, Projects, Articles, Testimonials — all add / reorder / duplicate / delete / hide |
+| **Content** | Services, Tools, Standards, Capabilities, Why-Choose-Us, How We Work, Team, Projects, Articles, Testimonials — all add / reorder / duplicate / delete / hide |
 | **Pages** | Contact details, enquiry form copy, project-type dropdown, social links |
 | **SEO** | Per-page tab title, search description, social sharing image, and banner headings, with length counters |
 | **Calculators** | The hub page's 5 groups and all 28 calculators — headings, code badges, descriptions, order, and per-group / per-calculator visibility. Plus the lead-gate wording and an unlock reset for testing |
@@ -187,6 +187,7 @@ TwinAnalytic/
 │   └── admin.css                # Control panel stylesheet (standalone)
 ├── js/
 │   ├── site-content.js          # Content engine — hydrates pages from content.json
+│   ├── hero-scene.js            # Home hero: self-assembling structural frame
 │   ├── admin.js                 # Control panel application
 │   ├── admin-schema.js          # Declarative field definitions for the panel
 │   ├── main.js                  # Global UI interactions (navbars, menus, stats)
