@@ -149,6 +149,25 @@ live immediately.
 > Until that is changed, a deploy can take up to 4 hours to reach someone who
 > has already visited. A hard refresh (`Ctrl+Shift+R`) bypasses it meanwhile.
 
+### Analytics
+
+Vercel Web Analytics and Speed Insights are wired up and on by default, under
+**Integrations** in the control panel. They were chosen over Google Analytics
+deliberately: they are **cookieless and first-party**, so the site needs no
+consent banner — which matters because the privacy policy claims GDPR
+compliance. GA4 would set cookies and oblige us to add one. The GA field is
+still there if it is ever wanted; it is empty and therefore inert.
+
+> **One manual step:** the scripts only resolve once analytics is switched on
+> for the project. In the Vercel dashboard go to **Analytics** in the sidebar,
+> select the project, and press **Enable** — then do the same under **Speed
+> Insights**. Until then the two script requests 404 harmlessly and nothing
+> is recorded.
+
+If the dashboard shows a project-specific script path rather than the standard
+`/_vercel/insights/script.js`, paste it into **Analytics Script Path** in the
+same panel.
+
 ### Handy URLs
 
 | URL | Effect |

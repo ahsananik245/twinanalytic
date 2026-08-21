@@ -629,7 +629,43 @@
   // =========================================================================
   // ANALYTICS
   // =========================================================================
+  function loadScript(src) {
+    var s = document.createElement('script');
+    s.defer = true;
+    s.src = src;
+    document.head.appendChild(s);
+    return s;
+  }
+
   function applyAnalytics(c) {
+    // --- Vercel Web Analytics ---------------------------------------------
+    // Cookieless and first-party: the request goes to this domain, not to a
+    // third party, so it needs no consent banner. That matters here because
+    // the privacy page claims GDPR compliance — Google Analytics would oblige
+    // us to add one.
+    if (get(c, 'integrations.vercelAnalytics') && !window.__twVaLoaded) {
+      window.__twVaLoaded = true;
+      // Queue shim, so events fired before the script lands are not lost.
+      window.va = window.va || function () {
+        (window.vaq = window.vaq || []).push(arguments);
+      };
+      loadScript(get(c, 'integrations.vercelAnalyticsPath') || '/_vercel/insights/script.js');
+    }
+
+    // --- Vercel Speed Insights --------------------------------------------
+    // Core Web Vitals measured on real visitors' devices, rather than the
+    // synthetic numbers a lab test produces.
+    if (get(c, 'integrations.vercelSpeedInsights') && !window.__twSiLoaded) {
+      window.__twSiLoaded = true;
+      window.si = window.si || function () {
+        (window.siq = window.siq || []).push(arguments);
+      };
+      loadScript('/_vercel/speed-insights/script.js');
+    }
+
+    // --- Google Analytics 4 ------------------------------------------------
+    // Off unless an ID is set. Note that enabling this sets cookies and puts
+    // the site into consent-banner territory in the EU.
     var ga = get(c, 'integrations.gaMeasurementId');
     if (ga && !window.__twGaLoaded) {
       window.__twGaLoaded = true;

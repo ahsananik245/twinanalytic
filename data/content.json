@@ -547,6 +547,9 @@
   },
   "integrations": {
     "googleScriptUrl": "https://script.google.com/macros/s/AKfycbwOCu31hE-GRIvbTOH2HVb_PaAAFkDnyuqUZ1mRusZDll3NmeJ9JZ4ZBWxI_NRt1vCknQ/exec",
+    "vercelAnalytics": true,
+    "vercelSpeedInsights": true,
+    "vercelAnalyticsPath": "",
     "gaMeasurementId": "",
     "gtmContainerId": ""
   },

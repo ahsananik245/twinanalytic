@@ -723,8 +723,15 @@ window.ADMIN_SCHEMA = {
           fields: [
             { key: 'googleScriptUrl', label: 'Google Apps Script Endpoint', type: 'url', wide: true, mono: true,
               hint: 'Calculator and contact leads are POSTed here in addition to being stored in the visitor\'s browser.' },
+            { key: 'vercelAnalytics', label: 'Vercel Web Analytics', type: 'toggle', wide: true,
+              hint: 'Page views and referrers, measured first-party. Cookieless, so it needs no consent banner. You must also press Enable under Analytics in your Vercel dashboard.' },
+            { key: 'vercelSpeedInsights', label: 'Vercel Speed Insights', type: 'toggle', wide: true,
+              hint: 'Core Web Vitals from real visitors rather than a lab test. Enable it in the Vercel dashboard too.' },
+            { key: 'vercelAnalyticsPath', label: 'Analytics Script Path (advanced)', type: 'text', wide: true, mono: true,
+              placeholder: '/_vercel/insights/script.js',
+              hint: 'Only set this if your Vercel dashboard shows a project-specific script path. Blank uses the standard one.' },
             { key: 'gaMeasurementId', label: 'Google Analytics Measurement ID', type: 'text', mono: true, placeholder: 'G-XXXXXXXXXX',
-              hint: 'Leave blank to load no analytics at all.' },
+              hint: 'Optional and off by default. GA4 sets cookies, which means you would need a consent banner in the EU. Vercel Analytics above avoids that.' },
             { key: 'gtmContainerId', label: 'Google Tag Manager Container ID', type: 'text', mono: true, placeholder: 'GTM-XXXXXXX' }
           ]
         }
