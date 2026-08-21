@@ -18,6 +18,9 @@
   --a-text-faint: #6B7280;
   --a-gold: #C9A84C;
   --a-gold-light: #E8C97E;
+  /* Same split the public site uses: gold for actions, steel for
+     technical metadata, so the panel reads like the site it edits. */
+  --a-steel: #B7B6B6;
   --a-green: #35C88B;
   --a-red: #F0505A;
   --a-amber: #E0A030;
@@ -955,9 +958,9 @@ body.admin-body,
   font-size: 0.68rem;
   padding: 0.15rem 0.45rem;
   border-radius: 4px;
-  background: rgba(201, 168, 76, 0.1);
-  border: 1px solid rgba(201, 168, 76, 0.22);
-  color: var(--a-gold);
+  background: rgba(183, 182, 182, 0.08);
+  border: 1px solid rgba(183, 182, 182, 0.18);
+  color: var(--a-steel);
   max-width: 18rem;
   overflow: hidden;
   text-overflow: ellipsis;
