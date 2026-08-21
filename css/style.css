@@ -147,8 +147,6 @@ input, select, textarea, button {
 /* --- GLASSMORPHISM CARD --- */
 .glass-card {
   background: var(--bg-card);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-gold);
   border-radius: 12px;
   padding: 2.5rem;
@@ -2152,14 +2150,6 @@ h1, h2, h3,
   transform: translateY(1px);
 }
 
-.service-card,
-.why-card,
-.launch-card,
-.team-card,
-.project-card {
-  will-change: transform;
-}
-
 .service-card:hover,
 .why-card:hover,
 .launch-card:hover,
@@ -2670,4 +2660,12 @@ body .tool-outputs-card h3 {
 .calc-showcase + .divider,
 .divider:has(+ .calc-showcase) {
   display: none;
+}
+
+/* The BIM sidebar is the only glass card that overlays live content — the 3D
+   canvas — so it is the only one where a backdrop blur is actually visible
+   and worth its cost. */
+.bim-sidebar.glass-card {
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
