@@ -12,7 +12,7 @@
     "logoHeight": 38,
     "favicon": "assets/favicon.png",
     "domain": "https://twinanalytic.com",
-    "footerBlurb": "We combine engineering expertise with digital technologies to create safe, optimized, and reliable structures.",
+    "footerBlurb": "Structural engineering and BIM, delivered to code and documented so it can be checked.",
     "copyright": "© 2026 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.",
     "logoLockup": "assets/logo-lockup.png",
     "slogan": "Building Tomorrow, Together"
@@ -152,27 +152,27 @@
   },
   "home": {
     "hero": {
-      "tagline": "Twin Analytic — Engineering Smarter. Building Stronger.",
+      "tagline": "Structural Engineering & BIM Consultancy",
       "titleLine1": "Engineering Smarter.",
       "titleLine2": "Building Stronger.",
-      "desc": "Twin Analytic delivers structural engineering, BIM solutions, and construction support services using modern technology and precise engineering practices.",
+      "desc": "Structural design, BIM coordination, and construction support — engineered to BNBC 2020 and ACI 318, with every calculation shown.",
       "primaryCta": {
-        "label": "Get a Free Consultation",
+        "label": "Start a Project",
         "href": "#contact",
         "enabled": true
       },
       "secondaryCta": {
-        "label": "View Our Services",
-        "href": "#services",
+        "label": "See Our Work",
+        "href": "#calculators",
         "enabled": true
       }
     },
     "about": {
       "eyebrow": "About Twin Analytic",
       "heading": "Engineering Smarter. Building Stronger.",
-      "body": "Twin Analytic is an emerging construction and engineering company focused on delivering innovative, efficient, and quality-driven solutions. We combine engineering expertise with digital technologies to create safe, optimized, and reliable structures.",
+      "body": "Twin Analytic is a structural engineering and BIM consultancy. We size members, model structures, and produce the drawings and calculation reports that get a building approved and built — working to Bangladeshi and international codes, and showing our reasoning at every step.",
       "visionTitle": "Our Vision",
-      "visionBody": "To lead the transition to digital-first structural engineering and Building Information Modeling workflows, ensuring precision design, material efficiency, and seamless construction execution.",
+      "visionBody": "To make digital-first structural engineering the default rather than the exception: models that stay in step with the drawings, calculations that can be audited, and material used only where the structure needs it.",
       "image": "assets/about_render.jpg",
       "imageAlt": "Twin Analytic Structural Engineering & BIM Renders"
     },
@@ -180,7 +180,7 @@
       "enabled": true,
       "eyebrow": "Our Services",
       "heading": "Innovative Engineering Pillars",
-      "desc": "Twin Analytic offers a comprehensive range of structural engineering and digital twin BIM services built for modern safety and cost efficiency."
+      "desc": "Four disciplines, one team. Each one delivered against a named code, with documentation you can hand straight to a contractor."
     },
     "calculatorsSection": {
       "enabled": true,
@@ -211,13 +211,13 @@
       "enabled": true,
       "eyebrow": "Our Expertise",
       "heading": "Engineering Capabilities",
-      "desc": "Sample engineering work and project demonstrations. We utilize high-fidelity modeling and analysis software to deliver reliable blueprints."
+      "desc": "The deliverables you receive — models, drawings, schedules, and the calculations behind them."
     },
     "whySection": {
       "enabled": true,
       "eyebrow": "Our Benchmarks",
       "heading": "Why Choose Twin Analytic",
-      "desc": "We combine advanced technologies with rigorous standard methodologies to deliver structural optimization and predictable project outcomes."
+      "desc": "Why clients stay with us: work that is checked, documented, and defensible."
     },
     "processSection": {
       "enabled": true,

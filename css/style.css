@@ -2705,3 +2705,146 @@ html.no-blueprint body::before {
   position: relative;
   z-index: 1;
 }
+
+/* ==========================================================================
+   METALLIC TREATMENT
+   --------------------------------------------------------------------------
+   The wordmark in the brand artwork runs silver into gold, with a highlight
+   band across the middle of each letter. That gradient is the single most
+   distinctive thing about the identity, so it is reproduced here and used
+   sparingly — on the hero's accent line and a few key numbers, not on every
+   heading, or it stops reading as special.
+   ========================================================================== */
+
+:root {
+  --gradient-metal: linear-gradient(
+    112deg,
+    #EDEDED 0%,
+    #B7B6B6 22%,
+    #8A8A8A 38%,
+    #C9A84C 62%,
+    #E8C97E 80%,
+    #B08C36 100%
+  );
+  --gradient-hairline: linear-gradient(
+    90deg,
+    transparent,
+    rgba(183, 182, 182, 0.35),
+    rgba(201, 168, 76, 0.45),
+    transparent
+  );
+}
+
+.metal-text {
+  background: var(--gradient-metal);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Browsers without background-clip:text would render the text invisible, so
+   they keep a solid colour instead. */
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+  .metal-text {
+    color: var(--color-gold-light);
+    -webkit-text-fill-color: var(--color-gold-light);
+  }
+}
+
+/* The hero's second line carries the treatment — one moment, high in the page. */
+.hero h1 span {
+  background: var(--gradient-metal);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+  .hero h1 span {
+    color: var(--color-gold-light);
+    -webkit-text-fill-color: var(--color-gold-light);
+  }
+}
+
+/* Dividers pick up the same silver-into-gold run. */
+.divider {
+  background: var(--gradient-hairline);
+}
+
+/* ==========================================================================
+   REFINEMENT PASS
+   Small things that separate considered from templated: optical letter
+   spacing on display type, hairline weight, and restrained hover depth.
+   ========================================================================== */
+
+/* Large serif type needs negative tracking to avoid looking loose; small
+   uppercase type needs positive tracking to stay legible. */
+.hero h1,
+.page-banner h1,
+.page-title-section h1 {
+  letter-spacing: -0.028em;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+.section-header h2 {
+  letter-spacing: -0.022em;
+}
+
+.hero-tagline,
+.section-header h2 span {
+  font-feature-settings: "kern" 1;
+}
+
+/* Cards: a hairline that catches the light at the top edge, the way a
+   physical panel would. Cheap — one gradient, no extra layers. */
+.glass-card,
+.calc-card,
+.calc-showcase-tile,
+.projects-empty {
+  position: relative;
+}
+
+.glass-card::after,
+.calc-showcase-tile::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.09), transparent);
+  pointer-events: none;
+}
+
+/* Hover lifts a little and warms the edge rather than glowing. */
+.service-card:hover,
+.why-card:hover,
+.launch-card:hover,
+.calc-showcase-tile:hover {
+  transform: translateY(-3px);
+}
+
+/* Buttons: a touch more presence, still restrained. */
+.btn-gold {
+  background-image: linear-gradient(160deg, var(--color-gold-light), var(--color-gold) 60%);
+  letter-spacing: 0.11em;
+}
+
+.btn-ghost {
+  border-color: rgba(183, 182, 182, 0.35);
+  color: var(--text-primary);
+}
+
+.btn-ghost:hover {
+  border-color: var(--color-gold);
+  background: rgba(201, 168, 76, 0.07);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-card:hover,
+  .why-card:hover,
+  .launch-card:hover,
+  .calc-showcase-tile:hover {
+    transform: none;
+  }
+}
