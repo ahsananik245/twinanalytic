@@ -18,6 +18,10 @@
                rather than shimmering continuously: motion should perform,
                then stop, not breathe.
 
+   Throughout, a field of sparkle motes drifts around the frame. They stay
+   away from the flat plan, arrive with the structure, twinkle independently at
+   rest, and flare white as the analysis wavefront passes through them.
+
    Care taken:
    - Colours come from the live CSS custom properties, so the control panel's
      palette drives the hero too.
@@ -273,6 +277,106 @@ function initHeroScene() {
   var nodes = new THREE.Points(nodeGeom, nodeMat);
   frame.add(nodes);
 
+  // ---- sparkles ----------------------------------------------------------
+  // A field of motes drifting around the frame. Two jobs: give the empty space
+  // some depth at rest, and catch the light when the analysis wavefront passes,
+  // so a scan throws off sparks rather than only lighting the members.
+  //
+  // Every particle is integrated in the vertex shader from its seed and a
+  // single uTime uniform. The old hero looped over 180 particles in JS on
+  // every frame and wrote the whole position buffer back; this costs one
+  // uniform write regardless of count.
+  var SPARK_COUNT = 220;
+
+  var SPARK_VERT = `
+    uniform float uTime;
+    uniform float uScanY;
+    uniform float uScanOn;
+    uniform float uSize;
+    uniform float uOpacity;
+    attribute vec3 aSeed;        // x: drift speed, y: twinkle rate, z: size
+    varying float vAlpha;
+    varying float vHot;
+
+    void main() {
+      vec3 pos = position;
+
+      // Slow upward drift that wraps, plus a lazy lateral sway. Each mote uses
+      // its own seed so the field never pulses in unison.
+      float span = 14.0;
+      pos.y = mod(pos.y + uTime * aSeed.x + span * 0.5, span) - span * 0.5;
+      pos.x += sin(uTime * 0.18 + aSeed.y * 6.2831) * 0.42;
+      pos.z += cos(uTime * 0.13 + aSeed.z * 6.2831) * 0.42;
+
+      vec4 wp = modelMatrix * vec4(pos, 1.0);
+
+      // Individual twinkle: mostly dim, occasionally bright.
+      float tw = sin(uTime * (0.7 + aSeed.y * 2.2) + aSeed.z * 12.0);
+      float twinkle = pow(max(0.0, tw), 1.8);
+
+      // Motes near the wavefront flare as it goes past.
+      float d = abs(wp.y - uScanY);
+      float flare = exp(-pow(d / 0.9, 2.0)) * uScanOn;
+
+      vHot = flare;
+      vAlpha = (0.18 + twinkle * 0.95 + flare * 1.8) * uOpacity;
+
+      vec4 mv = viewMatrix * wp;
+      gl_PointSize = uSize * (0.5 + aSeed.z) * (1.0 + flare * 2.5) * (12.0 / -mv.z);
+      gl_Position = projectionMatrix * mv;
+    }
+  `;
+
+  var SPARK_FRAG = `
+    uniform vec3 uColor;
+    uniform vec3 uHot;
+    varying float vAlpha;
+    varying float vHot;
+    void main() {
+      float r = length(gl_PointCoord - vec2(0.5));
+      if (r > 0.5) discard;
+      float falloff = pow(1.0 - r * 2.0, 1.6);
+      gl_FragColor = vec4(mix(uColor, uHot, clamp(vHot, 0.0, 1.0)), falloff * vAlpha);
+    }
+  `;
+
+  var sparkPos = new Float32Array(SPARK_COUNT * 3);
+  var sparkSeed = new Float32Array(SPARK_COUNT * 3);
+  for (var si = 0; si < SPARK_COUNT; si++) {
+    // Distributed through a box a little wider than the frame, so motes read
+    // as being in the same space as the structure rather than behind it.
+    sparkPos[si * 3] = (Math.random() - 0.5) * 13;
+    sparkPos[si * 3 + 1] = (Math.random() - 0.5) * 14;
+    sparkPos[si * 3 + 2] = (Math.random() - 0.5) * 11;
+    sparkSeed[si * 3] = 0.08 + Math.random() * 0.22;   // drift speed
+    sparkSeed[si * 3 + 1] = Math.random();             // twinkle rate
+    sparkSeed[si * 3 + 2] = Math.random();             // size / phase
+  }
+
+  var sparkGeom = new THREE.BufferGeometry();
+  sparkGeom.setAttribute('position', new THREE.BufferAttribute(sparkPos, 3));
+  sparkGeom.setAttribute('aSeed', new THREE.BufferAttribute(sparkSeed, 3));
+
+  var sparkMat = new THREE.ShaderMaterial({
+    vertexShader: SPARK_VERT,
+    fragmentShader: SPARK_FRAG,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    uniforms: {
+      uColor: { value: GOLD_LIGHT.clone() },
+      uHot: { value: new THREE.Color('#FFFFFF') },
+      uTime: { value: 0 },
+      uScanY: { value: -999 },
+      uScanOn: { value: 0 },
+      uSize: { value: 3.6 },
+      uOpacity: { value: 1 }
+    }
+  });
+
+  var sparks = new THREE.Points(sparkGeom, sparkMat);
+  frame.add(sparks);
+
   // Collect each group's distinct materials once, so the animation touches
   // every material exactly once per frame.
   function collect(group) {
@@ -465,11 +569,16 @@ function initHeroScene() {
 
     if (t < T_PLAN) {
       applyPlan(t);
+      // No motes over the drawing — a plan is a flat document.
+      sparkMat.uniforms.uOpacity.value = 0;
       frame.rotation.y = 0;
       setScan(frame.position.y + SCAN_FROM * frame.scale.y, 0);
       nodeMat.uniforms.uScanOn.value = 0;
     } else if (t < liftEnd) {
       applyLift(t);
+      // They arrive as the frame does, so the space fills with it.
+      sparkMat.uniforms.uOpacity.value =
+        clamp01((t - T_PLAN) / T_LIFT) * opacityScale;
       frame.rotation.y = 0.35 * easeInOutCubic((t - T_PLAN) / T_LIFT);
       setScan(frame.position.y + SCAN_FROM * frame.scale.y, 0);
       nodeMat.uniforms.uScanOn.value = 0;
@@ -508,13 +617,20 @@ function initHeroScene() {
         setScan(y, strength);
         nodeMat.uniforms.uScanY.value = y;
         nodeMat.uniforms.uScanOn.value = strength;
+        sparkMat.uniforms.uScanY.value = y;
+        sparkMat.uniforms.uScanOn.value = strength;
       } else {
         // Genuinely at rest between passes: no idle wobble.
         setScan(frame.position.y + (SCAN_TO + 99) * frame.scale.y, 0);
         nodeMat.uniforms.uScanOn.value = 0;
+        sparkMat.uniforms.uScanOn.value = 0;
       }
       nodeMat.uniforms.uOpacity.value = opacityScale;
+      sparkMat.uniforms.uOpacity.value = opacityScale;
     }
+
+    // One uniform write drives the whole sparkle field.
+    sparkMat.uniforms.uTime.value = t;
 
     pointer.x += (target.x - pointer.x) * 0.04;
     pointer.y += (target.y - pointer.y) * 0.04;
@@ -545,6 +661,8 @@ function initHeroScene() {
     nodeMat.uniforms.uScanOn.value = 0.5;
     nodeMat.uniforms.uScanY.value = parked;
     nodeMat.uniforms.uOpacity.value = opacityScale;
+    sparkMat.uniforms.uTime.value = 0;
+    sparkMat.uniforms.uOpacity.value = opacityScale * 0.5;
     placeCamera(T_TOTAL, 0, 0);
     renderer.render(scene, camera);
   } else {
