@@ -256,7 +256,9 @@ window.ADMIN_SCHEMA = {
           { key: 'ctaLabel', label: 'Button Label', type: 'text' },
           { key: 'ctaHref', label: 'Button Link', type: 'text' }
         ]},
-        { title: 'Technology & Standards Section', icon: 'fa-solid fa-microchip', path: 'home.technologySection', fields: [
+        { title: 'Tools & Standards (now on the About page)', icon: 'fa-solid fa-microchip', path: 'home.technologySection',
+          desc: 'This band was moved off the home page to shorten it. The copy still lives here; it renders on About.',
+          fields: [
           { key: 'enabled', label: 'Show this section', type: 'toggle', wide: true },
           { key: 'eyebrow', label: 'Small Label', type: 'text' },
           { key: 'heading', label: 'Heading', type: 'text' },
@@ -272,7 +274,9 @@ window.ADMIN_SCHEMA = {
           { key: 'heading', label: 'Heading', type: 'text' },
           { key: 'desc', label: 'Description', type: 'textarea', wide: true }
         ]},
-        { title: 'Capabilities Section', icon: 'fa-solid fa-diagram-project', path: 'home.capabilitiesSection', fields: [
+        { title: 'Capabilities Section (off by default)', icon: 'fa-solid fa-diagram-project', path: 'home.capabilitiesSection',
+          desc: 'Switched off because How We Work now covers the same deliverables. Turn it back on if you want both.',
+          fields: [
           { key: 'enabled', label: 'Show this section', type: 'toggle', wide: true },
           { key: 'eyebrow', label: 'Small Label', type: 'text' },
           { key: 'heading', label: 'Heading', type: 'text' },

@@ -37,7 +37,7 @@
     "maintenanceMode": false,
     "maintenanceMessage": "TwinAnalytic is undergoing scheduled maintenance. We'll be back shortly.",
     "leadGate": true,
-    "showBimViewer": true,
+    "showBimViewer": false,
     "showBlogSection": true,
     "showTeamSection": true,
     "showTestimonials": false,
@@ -192,7 +192,7 @@
       "showGroupTiles": true
     },
     "technologySection": {
-      "enabled": true,
+      "enabled": false,
       "eyebrow": "Our Toolkit",
       "heading": "Tools, Tech & Design Standards",
       "desc": "We leverage industry-leading computation software and adhere to rigorous international design codes to ensure structural safety and optimized execution.",
@@ -208,7 +208,7 @@
       "desc": "Interact with our interactive structural model skeleton. Hover to highlight and click components to fetch live BIM metadata parameters."
     },
     "capabilitiesSection": {
-      "enabled": true,
+      "enabled": false,
       "eyebrow": "Our Expertise",
       "heading": "Engineering Capabilities",
       "desc": "The deliverables you receive — models, drawings, schedules, and the calculations behind them."
