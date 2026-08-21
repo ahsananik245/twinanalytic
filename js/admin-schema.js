@@ -677,6 +677,8 @@ window.ADMIN_SCHEMA = {
           fields: [
             { key: 'leadGate', label: 'Require visitor details before calculators run', type: 'toggle', wide: true,
               hint: 'Turn off to make every calculator completely open. You will stop collecting leads from them.' },
+            { key: 'blueprintTexture', label: 'Show the blueprint grid behind the site', type: 'toggle', wide: true,
+              hint: 'The faint drafting linework from the brand artwork. Turn off for a flat background.' },
             { key: 'showBimViewer', label: 'Show the 3D BIM viewer on the home page', type: 'toggle', wide: true },
             { key: 'showTeamSection', label: 'Show the team section', type: 'toggle', wide: true },
             { key: 'showBlogSection', label: 'Show the Insights section', type: 'toggle', wide: true },

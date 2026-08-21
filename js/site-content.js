@@ -154,6 +154,12 @@
     if (theme.baseFontSize) root.style.fontSize = theme.baseFontSize;
   }
 
+  // The faint drafting grid behind the page, matching the brand artwork.
+  function applyBlueprint(c) {
+    var on = get(c, 'features.blueprintTexture');
+    document.documentElement.classList.toggle('no-blueprint', on === false);
+  }
+
   function hexToRgb(hex) {
     if (!hex) return null;
     var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(String(hex).trim());
@@ -730,6 +736,7 @@
     window.TWContent.data = c;
 
     applyTheme(c.theme);
+    applyBlueprint(c);
     applyLeadGate(c);
     if (applyMaintenance(c)) return;
 

@@ -18,8 +18,8 @@
     "slogan": "Building Tomorrow, Together"
   },
   "theme": {
-    "bgPrimary": "#0A0A0A",
-    "bgSecondary": "#0D1117",
+    "bgPrimary": "#131313",
+    "bgSecondary": "#1C1C1B",
     "textPrimary": "#F5F5F5",
     "textSecondary": "#9AA0A6",
     "colorGold": "#C9A84C",
@@ -47,7 +47,8 @@
       "linkLabel": "Try it",
       "linkHref": "footing-rect-design.html",
       "dismissible": true
-    }
+    },
+    "blueprintTexture": true
   },
   "contact": {
     "email": "solutions@twinanalytic.com",

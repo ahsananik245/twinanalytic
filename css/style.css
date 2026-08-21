@@ -2,10 +2,13 @@
 
 /* --- CUSTOM PROPERTIES --- */
 :root {
-  --bg-primary: #0A0A0A;
-  --bg-secondary: #0D1117;
-  --bg-card: rgba(26, 26, 46, 0.15);
-  --bg-card-hover: rgba(26, 26, 46, 0.25);
+  /* Warm charcoal sampled from the brand artwork. The old values were a
+     pure black and a *cool* blue-black, which fought the warm neutral the
+     mark was designed on. */
+  --bg-primary: #131313;
+  --bg-secondary: #1C1C1B;
+  --bg-card: rgba(255, 255, 255, 0.028);
+  --bg-card-hover: rgba(255, 255, 255, 0.05);
   --text-primary: #F5F5F5;
   --text-secondary: #9AA0A6;
   --color-gold: #C9A84C;
@@ -2668,4 +2671,37 @@ body .tool-outputs-card h3 {
 .bim-sidebar.glass-card {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
+}
+
+/* ==========================================================================
+   BLUEPRINT FIELD
+   The brand artwork sits on charcoal overlaid with faint drafting linework
+   rather than flat black. This reproduces that at a strength you read as
+   depth rather than as a grid — 2.2% white, which is below the threshold
+   where it competes with content.
+
+   Toggled by features.blueprintTexture in the control panel; the engine adds
+   .no-blueprint to <html> when it is off.
+   ========================================================================== */
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+html.no-blueprint body::before {
+  display: none;
+}
+
+/* The hero paints its own field, so the texture must not double up over it. */
+.hero {
+  position: relative;
+  z-index: 1;
 }
