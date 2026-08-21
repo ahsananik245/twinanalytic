@@ -152,10 +152,12 @@ function initHeroScene() {
     var aspect = width / height;
     var wide = aspect > 1.35;
     var mid = aspect > 0.95;
-    var offsetX = wide ? 5.7 : (mid ? 2.6 : 0);
-    var scale = wide ? 1 : (mid ? 0.8 : 0.5);
-    var baseY = wide ? -4.0 : (mid ? -4.4 : -6.4);
-    opacityScale = wide ? 1 : (mid ? 0.8 : 0.45);
+    var offsetX = wide ? 5.7 : (mid ? 2.6 : 0.9);
+    var scale = wide ? 1 : (mid ? 0.8 : 0.72);
+    var baseY = wide ? -4.0 : (mid ? -4.4 : -5.6);
+    // On a phone the frame sits behind the copy, so it stays lighter than on
+    // desktop — but the previous 0.45 made it effectively invisible.
+    opacityScale = wide ? 1 : (mid ? 0.8 : 0.85);
     lookX = wide ? 1.6 : offsetX * 0.5;
     frame.position.set(offsetX, baseY, 0);
     frame.scale.setScalar(scale);

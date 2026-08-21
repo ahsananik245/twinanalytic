@@ -9,6 +9,7 @@
   <meta name="theme-color" content="#0A0A0A">
   <title>About Us — TwinAnalytic</title>
   <meta name="description" content="Learn about TwinAnalytic, our leadership team, our history, and how we are engineering the future using Building Information Modeling (BIM) and Digital Twins.">
+  <link rel="canonical" href="https://twinanalytic.com/about.html">
 
   <!-- Open Graph Meta Tags -->
   <meta property="og:title" content="About Us — TwinAnalytic" />
@@ -109,6 +110,43 @@
       .timeline-dot { left: 20px; }
     }
   </style>
+  <!-- Structured data: identifies the organisation and this page to search engines -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "AboutPage",
+        "name": "About Us — TwinAnalytic",
+        "url": "https://twinanalytic.com/about.html",
+        "description": "Learn about TwinAnalytic, our leadership team, our history, and how we are engineering the future using Building Information Modeling (BIM) and Digital Twins.",
+        "isPartOf": {
+          "@id": "https://twinanalytic.com/#website"
+        },
+        "about": {
+          "@id": "https://twinanalytic.com/#organization"
+        }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://twinanalytic.com/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "About Us",
+            "item": "https://twinanalytic.com/about.html"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 

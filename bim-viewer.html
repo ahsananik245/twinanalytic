@@ -9,6 +9,7 @@
   <meta name="theme-color" content="#0A0A0A">
   <title>BIM Portal — TwinAnalytic</title>
   <meta name="description" content="Access TwinAnalytic's interactive BIM Portal. Explore structural details, loads, and materials on our interactive 3D skeleton digital twin model.">
+  <link rel="canonical" href="https://twinanalytic.com/bim-viewer.html">
   <!-- Open Graph Meta Tags -->
   <meta property="og:title" content="BIM Portal — TwinAnalytic" />
   <meta property="og:description" content="Access TwinAnalytic's interactive BIM Portal. Explore structural details, loads, and materials on our interactive 3D skeleton digital twin model." />
@@ -48,6 +49,51 @@
       background-color: var(--bg-primary);
     }
   </style>
+  <!-- Structured data: identifies the organisation and this page to search engines -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Service",
+        "name": "Interactive BIM Model Viewer",
+        "serviceType": "Interactive BIM Model Viewer",
+        "url": "https://twinanalytic.com/bim-viewer.html",
+        "description": "Access TwinAnalytic's interactive BIM Portal. Explore structural details, loads, and materials on our interactive 3D skeleton digital twin model.",
+        "provider": {
+          "@id": "https://twinanalytic.com/#organization"
+        },
+        "areaServed": {
+          "@type": "Place",
+          "name": "Worldwide"
+        }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://twinanalytic.com/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Services",
+            "item": "https://twinanalytic.com/services.html"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Interactive BIM Model Viewer",
+            "item": "https://twinanalytic.com/bim-viewer.html"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 
