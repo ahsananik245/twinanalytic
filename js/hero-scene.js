@@ -3,7 +3,7 @@
    --------------------------------------------------------------------------
    A structural drawing that becomes the building it describes.
 
-   The sequence runs once, in three phases:
+   The sequence runs in four phases:
 
      1. PLAN   The camera looks straight down and the frame lies flat, so what
                you see is a column grid with its setting-out lines — an actual
@@ -11,7 +11,12 @@
                drawn, rather than fading in as a lump.
      2. LIFT   The camera arcs down to a three-quarter view while the storeys
                inflate and stack upward, bottom first.
-     3. REST   Slow drift and a little pointer parallax. Nothing demanding.
+     3. SCAN   An analysis wavefront sweeps the finished frame from footing to
+               roof. Members light along their length as it crosses them and
+               the joints ignite — the model being solved, not decoration.
+     4. REST   Still, with pointer parallax. The scan re-runs on a long cycle
+               rather than shimmering continuously: motion should perform,
+               then stop, not breathe.
 
    Care taken:
    - Colours come from the live CSS custom properties, so the control panel's
@@ -73,14 +78,68 @@ function initHeroScene() {
 
   var storeys = [];
 
+  // Lines use a shader rather than LineBasicMaterial so the analysis scan can
+  // be evaluated per fragment: a member lights along its length as the
+  // wavefront crosses it, instead of a whole storey switching at once.
+  var SCAN_VERT = `
+    varying vec3 vWorld;
+    void main() {
+      vec4 wp = modelMatrix * vec4(position, 1.0);
+      vWorld = wp.xyz;
+      gl_Position = projectionMatrix * viewMatrix * wp;
+    }
+  `;
+
+  var SCAN_FRAG = `
+    uniform vec3 uColor;
+    uniform vec3 uHot;
+    uniform float uOpacity;
+    uniform float uScanY;
+    uniform float uScanOn;
+    varying vec3 vWorld;
+    void main() {
+      float d = vWorld.y - uScanY;
+      // A bright band riding the wavefront, with a short trail behind it.
+      float rim = exp(-pow(d / 0.45, 2.0));
+      float trail = smoothstep(0.0, -2.6, d);
+      float lit = mix(1.0, trail + rim, uScanOn);
+      vec3 col = mix(uColor, uHot, clamp(rim * 1.5 * uScanOn, 0.0, 1.0));
+      float a = uOpacity * clamp(lit + rim * 1.8 * uScanOn, 0.0, 1.6);
+      if (a < 0.004) discard;
+      gl_FragColor = vec4(col, a);
+    }
+  `;
+
+  var scanMaterials = [];
+
   // A material records the opacity it should settle at. Materials are shared
-  // between many lines, so the animation must scale from this stored value —
-  // reading the live opacity back would compound once per line and fade the
+  // between many lines, so the build must scale from this stored value —
+  // reading the live value back would compound once per line and fade the
   // whole frame to nothing within a second.
   function lineMat(color, opacity) {
-    var m = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: opacity });
+    var m = new THREE.ShaderMaterial({
+      vertexShader: SCAN_VERT,
+      fragmentShader: SCAN_FRAG,
+      transparent: true,
+      depthWrite: false,
+      uniforms: {
+        uColor: { value: color.clone() },
+        uHot: { value: new THREE.Color('#FFF3D0') },
+        uOpacity: { value: opacity },
+        uScanY: { value: -999 },
+        uScanOn: { value: 0 }
+      }
+    });
     m.userData.baseOpacity = opacity;
+    scanMaterials.push(m);
     return m;
+  }
+
+  function setScan(y, on) {
+    for (var i = 0; i < scanMaterials.length; i++) {
+      scanMaterials[i].uniforms.uScanY.value = y;
+      scanMaterials[i].uniforms.uScanOn.value = on;
+    }
   }
 
   function segment(a, b, material, group) {
@@ -152,6 +211,68 @@ function initHeroScene() {
   }
   frame.add(setout);
 
+  // ---- joints ------------------------------------------------------------
+  // A point at every beam-column intersection. They ignite as the analysis
+  // wavefront passes, which is what makes the frame read as a model being
+  // solved rather than a picture of a building. Drawn as one additive Points
+  // object, so 96 glowing nodes cost a single draw call.
+  var NODE_VERT = `
+    uniform float uScanY;
+    uniform float uScanOn;
+    uniform float uSize;
+    uniform float uOpacity;
+    varying float vGlow;
+    void main() {
+      vec4 wp = modelMatrix * vec4(position, 1.0);
+      float d = wp.y - uScanY;
+      float rim = exp(-pow(d / 0.5, 2.0));
+      float settled = smoothstep(0.0, -1.8, d);
+      vGlow = (settled * 0.35 + rim * 1.0) * uScanOn * uOpacity;
+      vec4 mv = viewMatrix * wp;
+      gl_PointSize = uSize * (1.0 + rim * 2.2) * (14.0 / -mv.z);
+      gl_Position = projectionMatrix * mv;
+    }
+  `;
+
+  var NODE_FRAG = `
+    uniform vec3 uColor;
+    varying float vGlow;
+    void main() {
+      // Round, soft-edged sprite. Square points read as pixels, not nodes.
+      float r = length(gl_PointCoord - vec2(0.5));
+      if (r > 0.5) discard;
+      float falloff = pow(1.0 - r * 2.0, 2.0);
+      gl_FragColor = vec4(uColor, falloff * vGlow);
+    }
+  `;
+
+  var nodePositions = [];
+  for (var ns = 0; ns < STOREYS; ns++) {
+    for (var nx = 0; nx < COLS_X; nx++) {
+      for (var nz = 0; nz < COLS_Z; nz++) {
+        nodePositions.push(-halfX + nx * BAY_X, (ns + 1) * STOREY_H, -halfZ + nz * BAY_Z);
+      }
+    }
+  }
+  var nodeGeom = new THREE.BufferGeometry();
+  nodeGeom.setAttribute('position', new THREE.Float32BufferAttribute(nodePositions, 3));
+  var nodeMat = new THREE.ShaderMaterial({
+    vertexShader: NODE_VERT,
+    fragmentShader: NODE_FRAG,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    uniforms: {
+      uColor: { value: new THREE.Color('#FFE9B0') },
+      uScanY: { value: -999 },
+      uScanOn: { value: 0 },
+      uSize: { value: 2.6 },
+      uOpacity: { value: 1 }
+    }
+  });
+  var nodes = new THREE.Points(nodeGeom, nodeMat);
+  frame.add(nodes);
+
   // Collect each group's distinct materials once, so the animation touches
   // every material exactly once per frame.
   function collect(group) {
@@ -187,18 +308,35 @@ function initHeroScene() {
   // ---- timeline ----------------------------------------------------------
   var T_PLAN = 1.5;     // the drawing plots on, seen from overhead
   var T_LIFT = 2.3;     // camera arcs down while the storeys rise
-  var T_TOTAL = T_PLAN + T_LIFT;
+  var T_SCAN = 2.4;     // an analysis wavefront sweeps the finished frame
+  var T_TOTAL = T_PLAN + T_LIFT + T_SCAN;
+
+  // The frame spans y = 0 to STOREYS * STOREY_H in local space; the scan runs
+  // from just below the pad to just past the roof so nothing is missed.
+  var SCAN_FROM = -1.2;
+  var SCAN_TO = STOREYS * STOREY_H + 1.2;
+
+  // After the intro the analysis re-runs on a long cycle. Motion has to
+  // perform rather than idle, so this is a deliberate periodic beat with a
+  // long quiet gap, not a permanent shimmer.
+  var RESCAN_EVERY = 16;   // seconds between passes
+  var RESCAN_LEN = 2.4;    // how long a pass takes
 
   function easeOutCubic(p) { return 1 - Math.pow(1 - p, 3); }
   function easeInOutCubic(p) {
     return p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
   }
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+  function smoothstepLocal(a, b, v) {
+    var t = clamp01((v - a) / (b - a));
+    return t * t * (3 - 2 * t);
+  }
 
   function setGroupOpacity(group, factor) {
     var mats = group.userData.materials;
     for (var i = 0; i < mats.length; i++) {
-      mats[i].opacity = mats[i].userData.baseOpacity * factor * opacityScale;
+      mats[i].uniforms.uOpacity.value =
+        mats[i].userData.baseOpacity * factor * opacityScale;
     }
   }
 
@@ -323,15 +461,59 @@ function initHeroScene() {
     elapsed += clock.getDelta();
     var t = elapsed;
 
+    var liftEnd = T_PLAN + T_LIFT;
+
     if (t < T_PLAN) {
       applyPlan(t);
       frame.rotation.y = 0;
-    } else if (t < T_TOTAL) {
+      setScan(frame.position.y + SCAN_FROM * frame.scale.y, 0);
+      nodeMat.uniforms.uScanOn.value = 0;
+    } else if (t < liftEnd) {
       applyLift(t);
       frame.rotation.y = 0.35 * easeInOutCubic((t - T_PLAN) / T_LIFT);
+      setScan(frame.position.y + SCAN_FROM * frame.scale.y, 0);
+      nodeMat.uniforms.uScanOn.value = 0;
     } else {
       settle();
-      frame.rotation.y = 0.35 + (t - T_TOTAL) * 0.045;
+      frame.rotation.y = 0.35 + (t - liftEnd) * 0.045;
+
+      // The intro scan, then a periodic re-run.
+      var since = t - liftEnd;
+      var sp = -1;
+      if (since < T_SCAN) {
+        sp = since / T_SCAN;
+      } else {
+        // The repeat sits at the END of each cycle. Putting it at the start
+        // meant it fired the instant the intro scan finished — two sweeps
+        // back to back, then a long silence, which reads as a stutter rather
+        // than a periodic analysis pass.
+        var cycle = (since - T_SCAN) % RESCAN_EVERY;
+        var quiet = RESCAN_EVERY - RESCAN_LEN;
+        if (cycle >= quiet) sp = (cycle - quiet) / RESCAN_LEN;
+      }
+
+      if (sp >= 0) {
+        // Travels linearly. An eased sweep covers most of the height in the
+        // first third and then crawls, which reads as a glitch rather than a
+        // scan — a survey pass should move at a constant rate.
+        //
+        // SCAN_FROM/TO are in the frame's local space, but the shader measures
+        // world position, and the frame is offset and scaled. Converting here
+        // rather than in the shader keeps it to one multiply per pass instead
+        // of one per fragment.
+        var localY = SCAN_FROM + (SCAN_TO - SCAN_FROM) * sp;
+        var y = frame.position.y + localY * frame.scale.y;
+        // Fade the effect in and out so a pass never starts or stops abruptly.
+        var strength = Math.min(1, sp / 0.08) * (1 - smoothstepLocal(0.82, 1, sp));
+        setScan(y, strength);
+        nodeMat.uniforms.uScanY.value = y;
+        nodeMat.uniforms.uScanOn.value = strength;
+      } else {
+        // Genuinely at rest between passes: no idle wobble.
+        setScan(frame.position.y + (SCAN_TO + 99) * frame.scale.y, 0);
+        nodeMat.uniforms.uScanOn.value = 0;
+      }
+      nodeMat.uniforms.uOpacity.value = opacityScale;
     }
 
     pointer.x += (target.x - pointer.x) * 0.04;
@@ -355,8 +537,14 @@ function initHeroScene() {
   }
 
   if (reduceMotion) {
+    // Finished frame, analysed, completely static.
     settle();
     frame.rotation.y = 0.35;
+    var parked = frame.position.y + (SCAN_TO + 99) * frame.scale.y;
+    setScan(parked, 0);
+    nodeMat.uniforms.uScanOn.value = 0.5;
+    nodeMat.uniforms.uScanY.value = parked;
+    nodeMat.uniforms.uOpacity.value = opacityScale;
     placeCamera(T_TOTAL, 0, 0);
     renderer.render(scene, camera);
   } else {
