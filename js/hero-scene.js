@@ -1,21 +1,26 @@
 /* ==========================================================================
    TwinAnalytic — Hero scene
    --------------------------------------------------------------------------
-   A reinforced-concrete moment frame that assembles itself storey by storey,
-   then settles into a slow orbit with a little pointer parallax.
+   A structural drawing that becomes the building it describes.
 
-   Why a rectangular frame rather than the twisted helix this replaces: the
-   helix read as generic sci-fi. A column-and-beam grid is what this practice
-   actually designs, and it echoes the tower inside the TA mark.
+   The sequence runs once, in three phases:
 
-   Behaviour it is careful about:
-   - Colours are read from the live CSS custom properties, so changing the
-     palette in the control panel restyles the hero too.
-   - Honours prefers-reduced-motion by drawing one static frame and stopping.
-   - Stops rendering entirely while scrolled out of view, so it is not burning
-     a GPU loop for the whole visit.
-   - Positions itself from the viewport aspect so it never sits under the
-     headline on narrow screens.
+     1. PLAN   The camera looks straight down and the frame lies flat, so what
+               you see is a column grid with its setting-out lines — an actual
+               structural plan. It plots on in order, the way a drawing gets
+               drawn, rather than fading in as a lump.
+     2. LIFT   The camera arcs down to a three-quarter view while the storeys
+               inflate and stack upward, bottom first.
+     3. REST   Slow drift and a little pointer parallax. Nothing demanding.
+
+   Care taken:
+   - Colours come from the live CSS custom properties, so the control panel's
+     palette drives the hero too.
+   - prefers-reduced-motion skips to the finished frame and renders once.
+   - Rendering stops while the hero is scrolled out of view, and the sequence
+     does not begin until the hero is actually on screen.
+   - Composition follows the viewport aspect so the frame never sits under the
+     headline on a narrow screen.
    ========================================================================== */
 
 function initHeroScene() {
@@ -30,7 +35,7 @@ function initHeroScene() {
   var reduceMotion = window.matchMedia &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // ---- palette, taken from the live theme --------------------------------
+  // ---- palette from the live theme ---------------------------------------
   function cssColor(name, fallback) {
     var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
     if (!v) return new THREE.Color(fallback);
@@ -40,14 +45,14 @@ function initHeroScene() {
   var GOLD = cssColor('--color-gold', '#C9A84C');
   var GOLD_LIGHT = cssColor('--color-gold-light', '#E8C97E');
   var STEEL = cssColor('--color-steel', '#B7B6B6');
-  var BG = cssColor('--bg-primary', '#0A0A0A');
+  var BG = cssColor('--bg-primary', '#131313');
 
   // ---- scene -------------------------------------------------------------
   var scene = new THREE.Scene();
   scene.background = BG.clone();
-  scene.fog = new THREE.FogExp2(BG.getHex(), 0.035);
+  scene.fog = new THREE.FogExp2(BG.getHex(), 0.030);
 
-  var camera = new THREE.PerspectiveCamera(52, width / height, 0.1, 120);
+  var camera = new THREE.PerspectiveCamera(52, width / height, 0.1, 160);
   var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
   renderer.setSize(width, height);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -60,19 +65,18 @@ function initHeroScene() {
   var STOREY_H = 1.0;
   var BAY_X = 1.5;
   var BAY_Z = 1.5;
-  var COLS_X = 4;   // grid lines, so 3 bays
-  var COLS_Z = 3;   // 2 bays
+  var COLS_X = 4;
+  var COLS_Z = 3;
 
   var halfX = (COLS_X - 1) * BAY_X / 2;
   var halfZ = (COLS_Z - 1) * BAY_Z / 2;
 
-  // One group per storey so the build sequence can reveal them in order.
   var storeys = [];
 
-  // Every material records the opacity it should settle at. A material is
-  // shared by many lines, so the build sequence must scale from this stored
-  // value — reading back the live opacity would compound once per line and
-  // fade the whole frame to nothing.
+  // A material records the opacity it should settle at. Materials are shared
+  // between many lines, so the animation must scale from this stored value —
+  // reading the live opacity back would compound once per line and fade the
+  // whole frame to nothing within a second.
   function lineMat(color, opacity) {
     var m = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: opacity });
     m.userData.baseOpacity = opacity;
@@ -89,7 +93,7 @@ function initHeroScene() {
     var y0 = s * STOREY_H;
     var y1 = y0 + STOREY_H;
 
-    // Columns rise steel-coloured; they are the vertical load path.
+    // Columns — the vertical load path — in steel.
     var colMat = lineMat(STEEL, 0.50 - s * 0.028);
     for (var ix = 0; ix < COLS_X; ix++) {
       for (var iz = 0; iz < COLS_Z; iz++) {
@@ -99,7 +103,7 @@ function initHeroScene() {
       }
     }
 
-    // Beams at the top of each storey, in the accent colour.
+    // Beams at each storey head, in the accent.
     var beamMat = lineMat(s === STOREYS - 1 ? GOLD_LIGHT : GOLD, 0.60 - s * 0.032);
     for (var iz2 = 0; iz2 < COLS_Z; iz2++) {
       var zz = -halfZ + iz2 * BAY_Z;
@@ -110,7 +114,7 @@ function initHeroScene() {
       segment(new THREE.Vector3(xx, y1, -halfZ), new THREE.Vector3(xx, y1, halfZ), beamMat, g);
     }
 
-    // A single braced bay, the way a real frame resists lateral load.
+    // A braced bay every third storey, the way a real frame takes lateral load.
     if (s % 3 === 1) {
       var braceMat = lineMat(GOLD_LIGHT, 0.34);
       segment(new THREE.Vector3(-halfX, y0, -halfZ),
@@ -123,7 +127,7 @@ function initHeroScene() {
     storeys.push(g);
   }
 
-  // Foundation pad, reading as the raft the frame sits on.
+  // Foundation outline — drawn early, and the one thing that never moves.
   var padMat = lineMat(STEEL, 0.26);
   var pad = new THREE.Group();
   for (var k = -1; k <= 1; k += 2) {
@@ -134,19 +138,35 @@ function initHeroScene() {
   }
   frame.add(pad);
 
-  // Blueprint ground grid.
-  var grid = new THREE.GridHelper(40, 40, GOLD.getHex(), 0x161A22);
-  grid.material.transparent = true;
-  grid.material.opacity = 0.14;
-  frame.add(grid);
+  // Setting-out grid: the drawing's own gridlines, running past the structure
+  // the way they do on a real plan.
+  var gridMat = lineMat(STEEL, 0.16);
+  var setout = new THREE.Group();
+  for (var gx = 0; gx < COLS_X; gx++) {
+    var px = -halfX + gx * BAY_X;
+    segment(new THREE.Vector3(px, 0, -halfZ - 1.8), new THREE.Vector3(px, 0, halfZ + 1.8), gridMat, setout);
+  }
+  for (var gz = 0; gz < COLS_Z; gz++) {
+    var pz = -halfZ + gz * BAY_Z;
+    segment(new THREE.Vector3(-halfX - 1.8, 0, pz), new THREE.Vector3(halfX + 1.8, 0, pz), gridMat, setout);
+  }
+  frame.add(setout);
+
+  // Collect each group's distinct materials once, so the animation touches
+  // every material exactly once per frame.
+  function collect(group) {
+    var mats = [];
+    group.traverse(function (o) {
+      if (o.material && mats.indexOf(o.material) === -1) mats.push(o.material);
+    });
+    group.userData.materials = mats;
+  }
+  storeys.forEach(collect);
+  collect(pad);
+  collect(setout);
 
   // ---- composition -------------------------------------------------------
-  // On a wide screen the frame sits right of the headline. As the viewport
-  // narrows it slides back to centre and shrinks, so it never sits under text.
-  var lookX = 0;
-  // On a phone the frame has nowhere to go but behind the copy, so it drops
-  // below the fold of the text and dims to stay clearly secondary.
-  var opacityScale = 1;
+  var lookX = 0, restY = 4.2, restZ = 17, opacityScale = 1;
 
   function layout() {
     var aspect = width / height;
@@ -155,47 +175,132 @@ function initHeroScene() {
     var offsetX = wide ? 5.7 : (mid ? 2.6 : 0.9);
     var scale = wide ? 1 : (mid ? 0.8 : 0.72);
     var baseY = wide ? -4.0 : (mid ? -4.4 : -5.6);
-    // On a phone the frame sits behind the copy, so it stays lighter than on
-    // desktop — but the previous 0.45 made it effectively invisible.
+    // On a phone the frame sits behind the copy, so it stays lighter.
     opacityScale = wide ? 1 : (mid ? 0.8 : 0.85);
     lookX = wide ? 1.6 : offsetX * 0.5;
+    restZ = wide ? 17 : 19;
     frame.position.set(offsetX, baseY, 0);
     frame.scale.setScalar(scale);
-    camera.position.set(0, 4.2, 17);
-    camera.lookAt(lookX, 1.0, 0);
   }
   layout();
 
-  // ---- build sequence ----------------------------------------------------
-  // Each storey rises into place slightly after the one below it.
-  var BUILD_PER_STOREY = 0.13;
-  var BUILD_DURATION = 0.55;
+  // ---- timeline ----------------------------------------------------------
+  var T_PLAN = 1.5;     // the drawing plots on, seen from overhead
+  var T_LIFT = 2.3;     // camera arcs down while the storeys rise
+  var T_TOTAL = T_PLAN + T_LIFT;
 
-  // Collect each storey's distinct materials once, so the build loop touches
-  // every material exactly one time per frame.
-  storeys.forEach(function (g) {
-    var mats = [];
-    g.traverse(function (o) {
-      if (o.material && mats.indexOf(o.material) === -1) mats.push(o.material);
-    });
-    g.userData.materials = mats;
-  });
+  function easeOutCubic(p) { return 1 - Math.pow(1 - p, 3); }
+  function easeInOutCubic(p) {
+    return p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+  }
+  function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
 
-  function applyBuild(t) {
-    for (var i = 0; i < storeys.length; i++) {
-      var local = (t - i * BUILD_PER_STOREY) / BUILD_DURATION;
-      var p = Math.max(0, Math.min(1, local));
-      var eased = 1 - Math.pow(1 - p, 3);          // easeOutCubic
-      storeys[i].position.y = (1 - eased) * -1.4;
-      storeys[i].visible = p > 0;
-      var mats = storeys[i].userData.materials;
-      for (var m = 0; m < mats.length; m++) {
-        mats[m].opacity = mats[m].userData.baseOpacity * eased * opacityScale;
-      }
+  function setGroupOpacity(group, factor) {
+    var mats = group.userData.materials;
+    for (var i = 0; i < mats.length; i++) {
+      mats[i].opacity = mats[i].userData.baseOpacity * factor * opacityScale;
     }
   }
 
-  var buildTotal = STOREYS * BUILD_PER_STOREY + BUILD_DURATION;
+  // Phase 1 — the drawing plots on: setting-out grid, then the foundation,
+  // then the ground-floor column grid, all still flat on the ground plane.
+  function applyPlan(t) {
+    var p = clamp01(t / T_PLAN);
+    setGroupOpacity(setout, clamp01(p / 0.30));
+    setGroupOpacity(pad, clamp01((p - 0.20) / 0.30));
+
+    for (var i = 0; i < storeys.length; i++) {
+      var vis = i === 0 ? clamp01((p - 0.45) / 0.45) : 0;
+      storeys[i].visible = vis > 0;
+      storeys[i].position.y = 0;
+      storeys[i].scale.y = 0.0001;        // flattened onto the plane
+      setGroupOpacity(storeys[i], vis);
+    }
+  }
+
+  // Phase 2 — the storeys inflate to full height and stack upward, bottom
+  // first, while the camera arcs from overhead to the resting view.
+  function applyLift(t) {
+    var p = clamp01((t - T_PLAN) / T_LIFT);
+    setGroupOpacity(setout, 1);
+    setGroupOpacity(pad, 1);
+
+    for (var i = 0; i < storeys.length; i++) {
+      var e = easeOutCubic(clamp01((p - i * 0.072) / 0.40));
+      storeys[i].visible = e > 0;
+      storeys[i].scale.y = Math.max(0.0001, e);
+      // Slides up onto the storey below as it inflates.
+      storeys[i].position.y = (1 - e) * -(i * STOREY_H) * 0.5;
+      setGroupOpacity(storeys[i], e);
+    }
+  }
+
+  function settle() {
+    setGroupOpacity(setout, 1);
+    setGroupOpacity(pad, 1);
+    for (var i = 0; i < storeys.length; i++) {
+      storeys[i].visible = true;
+      storeys[i].scale.y = 1;
+      storeys[i].position.y = 0;
+      setGroupOpacity(storeys[i], 1);
+    }
+  }
+
+  // Camera path. Both the eye and the look-at target are interpolated, so the
+  // move reads as one continuous arc from directly over the drawing to the
+  // resting three-quarter view — not a pan that happens to end up there.
+  //
+  // The plan view sits directly above the frame rather than above the origin;
+  // otherwise the drawing is seen obliquely and off to one side, which is
+  // exactly what it must not look like.
+  var PLAN_FOV = 28, REST_FOV = 52;
+  var eye = new THREE.Vector3();
+  var aim = new THREE.Vector3();
+
+  // The view axis sits left of the frame so the drawing reads to the right of
+  // the headline rather than underneath it, exactly as the finished frame does.
+  var PLAN_SHIFT = 3.6;
+
+  function planEye(out) {
+    return out.set(frame.position.x - PLAN_SHIFT, frame.position.y + 22, 0.4);
+  }
+  function planAim(out) {
+    return out.set(frame.position.x - PLAN_SHIFT, frame.position.y, 0);
+  }
+  function restEye(out) {
+    return out.set(0, restY, restZ);
+  }
+  // The resting aim is deliberately left of the frame, which pushes the
+  // structure to the right of the headline. Verified clear of the text at
+  // 1280, 1440 and 1600.
+  function restAim(out) {
+    return out.set(lookX, 1.0, 0);
+  }
+
+  var _a = new THREE.Vector3();
+  var _b = new THREE.Vector3();
+
+  function placeCamera(t, px, py) {
+    var arc = t <= T_PLAN ? 0 : easeInOutCubic(clamp01((t - T_PLAN) / T_LIFT));
+
+    planEye(_a); restEye(_b);
+    eye.lerpVectors(_a, _b, arc);
+    planAim(_a); restAim(_b);
+    aim.lerpVectors(_a, _b, arc);
+
+    // 28mm-equivalent over the plan flattens the perspective so it reads as a
+    // drawing; it opens to the normal 52 as the camera comes down.
+    var fov = PLAN_FOV + (REST_FOV - PLAN_FOV) * arc;
+    if (Math.abs(camera.fov - fov) > 0.01) {
+      camera.fov = fov;
+      camera.updateProjectionMatrix();
+    }
+
+    // Parallax only once the camera has left the plan, so the drawing phase
+    // stays square to the viewer.
+    camera.position.set(eye.x + px * 0.9 * arc, eye.y - py * 0.5 * arc, eye.z);
+    camera.lookAt(aim);
+  }
 
   // ---- pointer parallax --------------------------------------------------
   var pointer = { x: 0, y: 0 };
@@ -211,35 +316,35 @@ function initHeroScene() {
   var clock = new THREE.Clock();
   var running = false;
   var rafId = null;
-
-  function render() {
-    renderer.render(scene, camera);
-  }
+  var elapsed = 0;
 
   function tick() {
     rafId = requestAnimationFrame(tick);
-    var t = clock.getElapsedTime();
+    elapsed += clock.getDelta();
+    var t = elapsed;
 
-    applyBuild(Math.min(t, buildTotal));
+    if (t < T_PLAN) {
+      applyPlan(t);
+      frame.rotation.y = 0;
+    } else if (t < T_TOTAL) {
+      applyLift(t);
+      frame.rotation.y = 0.35 * easeInOutCubic((t - T_PLAN) / T_LIFT);
+    } else {
+      settle();
+      frame.rotation.y = 0.35 + (t - T_TOTAL) * 0.045;
+    }
 
-    // A slow orbit — fast enough to read as three-dimensional, slow enough
-    // not to pull attention away from the headline.
-    frame.rotation.y = 0.35 + t * 0.045;
-
-    // Ease toward the pointer rather than tracking it exactly.
     pointer.x += (target.x - pointer.x) * 0.04;
     pointer.y += (target.y - pointer.y) * 0.04;
-    camera.position.x = pointer.x * 0.9;
-    camera.position.y = 4.2 - pointer.y * 0.5;
-    camera.lookAt(lookX, 1.0, 0);
+    placeCamera(t, pointer.x, pointer.y);
 
-    render();
+    renderer.render(scene, camera);
   }
 
   function start() {
     if (running || reduceMotion) return;
     running = true;
-    clock.start();
+    clock.getDelta();          // discard time spent paused
     tick();
   }
 
@@ -250,12 +355,17 @@ function initHeroScene() {
   }
 
   if (reduceMotion) {
-    // Show the finished structure, no motion at all.
-    applyBuild(buildTotal);
+    settle();
     frame.rotation.y = 0.35;
-    render();
+    placeCamera(T_TOTAL, 0, 0);
+    renderer.render(scene, camera);
   } else {
-    // Only run while the hero is actually on screen.
+    // Hold on the first frame of the drawing until the hero is actually seen,
+    // so the sequence is not already over by the time anyone looks at it.
+    applyPlan(0);
+    placeCamera(0, 0, 0);
+    renderer.render(scene, camera);
+
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(function (entries) {
         entries[0].isIntersecting ? start() : stop();
@@ -277,7 +387,11 @@ function initHeroScene() {
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
       layout();
-      if (!running) render();
+      if (!running) {
+        settle();
+        placeCamera(T_TOTAL, pointer.x, pointer.y);
+        renderer.render(scene, camera);
+      }
     }, 150);
   });
 }
