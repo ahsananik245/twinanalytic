@@ -48,7 +48,8 @@
       "linkHref": "footing-rect-design.html",
       "dismissible": true
     },
-    "blueprintTexture": true
+    "blueprintTexture": true,
+    "concreteTexture": true
   },
   "contact": {
     "email": "solutions@twinanalytic.com",

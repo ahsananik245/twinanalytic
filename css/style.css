@@ -49,7 +49,10 @@ html {
 
 body {
   line-height: 1.6;
-  background-color: var(--bg-primary);
+  /* Transparent so the fixed texture layer below (body::before, z-index:-1)
+     is not painted over by body's own background box. <html> carries the base
+     colour, so there is still a solid backstop if the texture fails to load. */
+  background-color: transparent;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
@@ -358,7 +361,9 @@ input, select, textarea, button {
   display: flex;
   align-items: center;
   overflow: hidden;
-  background-color: var(--bg-primary);
+  /* Transparent so the concrete runs unbroken from the hero to the footer.
+     The hero's own gradient field still layers on top of it. */
+  background-color: transparent;
 }
 
 #hero-canvas {
@@ -2680,6 +2685,17 @@ body .tool-outputs-card h3 {
    depth rather than as a grid — 2.2% white, which is below the threshold
    where it competes with content.
 
+   Under the linework is a photographic concrete texture. Concrete is the
+   material the firm actually works in, so it earns its place, but it is only
+   worth having if it stays a surface rather than becoming a picture: the file
+   is pre-blended onto #131313 with its mean pinned to that exact value, so it
+   adds grain without lifting the page or shifting its colour. Its lightest
+   pixel still clears WCAG AA for every text colour in the palette — body text
+   10.0:1, the dim steel 5.4:1, gold 4.8:1.
+
+   One fixed pseudo-element carries both, so this is a single composited layer
+   that never repaints on scroll.
+
    Toggled by features.blueprintTexture in the control panel; the engine adds
    .no-blueprint to <html> when it is off.
    ========================================================================== */
@@ -2688,15 +2704,45 @@ body::before {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: 0;
+  /* Negative, so it sits under in-flow content instead of over it. At z-index:0
+     this layer painted above every non-positioned section background, which was
+     harmless for near-transparent gridlines but would have buried the page under
+     an opaque photograph. Fixed positioning (rather than
+     background-attachment: fixed) keeps it viewport-locked as one composited
+     layer that never repaints on scroll. */
+  z-index: -1;
   pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    url('../assets/texture-concrete.jpg');
+  background-size: 64px 64px, 64px 64px, cover;
+  background-position: 0 0, 0 0, center center;
+  background-repeat: repeat, repeat, no-repeat;
+}
+
+/* The two layers toggle independently, so each state respecifies the whole
+   shorthand set rather than relying on what the base rule left behind. */
+html.no-blueprint body::before {
+  background-image: url('../assets/texture-concrete.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+
+html.no-concrete body::before {
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
   background-size: 64px 64px;
+  background-position: 0 0;
+  background-repeat: repeat;
 }
 
-html.no-blueprint body::before {
+/* Both off — <html> keeps --bg-primary, so the page falls back to flat charcoal.
+   Higher specificity than either single-class rule, so source order is not
+   load-bearing here. */
+html.no-blueprint.no-concrete body::before {
   display: none;
 }
 

@@ -154,10 +154,15 @@
     if (theme.baseFontSize) root.style.fontSize = theme.baseFontSize;
   }
 
-  // The faint drafting grid behind the page, matching the brand artwork.
+  // The two layers of the page background, matching the brand artwork: a faint
+  // drafting grid over a photographic concrete surface. Independent toggles —
+  // the grid is the part most likely to feel busy, so it can go without
+  // flattening the page back to a single colour.
   function applyBlueprint(c) {
-    var on = get(c, 'features.blueprintTexture');
-    document.documentElement.classList.toggle('no-blueprint', on === false);
+    var grid = get(c, 'features.blueprintTexture');
+    var concrete = get(c, 'features.concreteTexture');
+    document.documentElement.classList.toggle('no-blueprint', grid === false);
+    document.documentElement.classList.toggle('no-concrete', concrete === false);
   }
 
   function hexToRgb(hex) {

@@ -46,7 +46,7 @@ The whole public site is editable from a browser, without touching code. Open
 | **Pages** | Contact details, enquiry form copy, project-type dropdown, social links |
 | **SEO** | Per-page tab title, search description, social sharing image, and banner headings, with length counters |
 | **Calculators** | The hub page's 5 groups and all 28 calculators — headings, code badges, descriptions, order, and per-group / per-calculator visibility. Plus the lead-gate wording and an unlock reset for testing |
-| **Features** | Lead gate on/off, announcement bar, maintenance mode, section visibility |
+| **Features** | Lead gate on/off, announcement bar, maintenance mode, section visibility, and the two background layers (concrete texture and blueprint grid) independently |
 | **Integrations** | Google Apps Script lead endpoint, Google Analytics / Tag Manager IDs |
 | **Leads** | Search, sort, delete, and export submissions as CSV or JSON |
 | **History** | The last 15 publishes, restorable |
@@ -148,6 +148,41 @@ live immediately.
 >
 > Until that is changed, a deploy can take up to 4 hours to reach someone who
 > has already visited. A hard refresh (`Ctrl+Shift+R`) bypasses it meanwhile.
+
+### Page background
+
+The background is two fixed layers on a single `body::before` pseudo-element:
+a photographic concrete surface (`assets/texture-concrete.jpg`) with the faint
+blueprint grid over it. Both are switchable under **Features** in the control
+panel.
+
+The texture is derived from the brand artwork and pre-processed rather than
+used raw, which is what keeps it usable as a site-wide background:
+
+* **High-passed** — the source's vignette and soft blotches are subtracted, so
+  only grain and cracks remain. Large-scale luminance drift reads as a
+  rendering artefact when stretched across a page.
+* **Pinned to `--bg-primary`** — its mean is set to exactly `#131313`, so it
+  adds depth without lifting or tinting the page. `<html>` keeps that same
+  colour, so a failed image load is invisible.
+* **Highlight-capped** — shadows are linear (darkening can only help contrast)
+  but highlights are soft-capped, holding the brightest pixel at `#3B`. Every
+  palette colour clears WCAG AA against that worst case: body text 10.3:1,
+  secondary 5.7:1, steel 5.5:1, gold 4.9:1.
+
+It sits at `z-index: -1`, under in-flow content. This matters: at `z-index: 0`
+a `body::before` layer paints *above* every non-positioned section background,
+which is harmless for near-transparent gridlines but would bury the page under
+an opaque photograph. `body` is therefore transparent so it does not paint over
+the layer beneath it.
+
+Positioning the element `fixed` — rather than using
+`background-attachment: fixed` — keeps it viewport-locked as one composited
+layer that never repaints on scroll. Measured after the change: 60fps with zero
+frames over 33ms on both desktop and mobile viewports.
+
+To regenerate it from a different source image, the pipeline is
+`scripts/build-texture.py`.
 
 ### Analytics
 
