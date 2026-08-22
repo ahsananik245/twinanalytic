@@ -610,7 +610,13 @@
       if (page.ogImage) {
         setMeta('property', 'og:image', absoluteUrl(site.domain, page.ogImage));
       }
-      setMeta('property', 'og:url', absoluteUrl(site.domain, pageFile + '.html'));
+      // Clean URL, matching the canonical tag. cleanUrls in vercel.json makes
+      // /about.html a 308 to /about, so appending .html here would hand search
+      // engines and social scrapers a URL that redirects away from itself —
+      // and would silently undo the canonical form set in the markup, since
+      // this runs after the page loads. index is the domain root, not /index.
+      setMeta('property', 'og:url',
+        pageFile === 'index' ? absoluteUrl(site.domain, '') : absoluteUrl(site.domain, pageFile));
     }
 
     if (site.favicon) {

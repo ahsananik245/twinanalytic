@@ -421,7 +421,7 @@
   },
   "pages": {
     "index": {
-      "title": "Twin Analytic — Structural Engineering Consultant & BIM Services",
+      "title": "TwinAnalytic — Structural Engineering & BIM Consultancy",
       "description": "TwinAnalytic is a structural engineering consultancy delivering RCC building design, steel structure design, BIM modeling, and digital twin services.",
       "ogImage": "assets/brand-banner.jpg"
     },
@@ -433,8 +433,8 @@
       "bannerHeading": "About TwinAnalytic"
     },
     "services": {
-      "title": "Our Services — TwinAnalytic",
-      "description": "Explore TwinAnalytic's technical services, ranging from high-precision BIM Level 3 modeling and structural finite element analysis (FEA) to real-time digital twin integrations.",
+      "title": "Structural Engineering & BIM Services — TwinAnalytic",
+      "description": "TwinAnalytic's services: structural design and analysis, BIM Level 3 modelling, MEP coordination, cost estimating and digital twin integration.",
       "ogImage": "assets/brand-banner.jpg",
       "bannerEyebrow": "Expertise & Technologies",
       "bannerHeading": "Computational Engineering Services"
@@ -454,8 +454,8 @@
       "bannerHeading": "Contact Our Offices"
     },
     "calculators": {
-      "title": "Free BNBC 2020 & ACI 318 Structural Calculators — TwinAnalytic",
-      "description": "Twenty-eight free structural engineering calculators to BNBC 2020 and ACI 318: seismic base shear, wind load, P-delta, drift, irregularity checks, beam, column, slab, stair, shear wall and footing design, reinforcement detailing and estimating.",
+      "title": "28 Free BNBC 2020 & ACI 318 Structural Calculators",
+      "description": "Twenty-eight free structural calculators to BNBC 2020 and ACI 318 — seismic, wind, drift, member design, reinforcement detailing and estimating.",
       "ogImage": "assets/brand-banner.jpg",
       "bannerEyebrow": "Precision Analysis Suite",
       "bannerHeading": "Free Structural Engineering Calculators"
