@@ -127,10 +127,8 @@
         "description": "We combine engineering expertise with digital technologies to create safe, optimized, and reliable structures.",
         "slogan": "Building Tomorrow, Together",
         "email": "solutions@twinanalytic.com",
-        "telephone": "+49 (69) 829-4820",
         "sameAs": [
-          "https://linkedin.com/company/twinanalytic",
-          "https://x.com/twinanalytic"
+          "https://linkedin.com/company/twinanalytic"
         ],
         "knowsAbout": [
           "Structural Engineering",
@@ -161,7 +159,7 @@
   <!-- NAVIGATION BAR -->
   <nav class="navbar" id="navbar">
     <div class="container">
-      <a href="#" class="logo" data-tw-list="brandLogo">
+      <a href="index.html" class="logo" data-tw-list="brandLogo">
         <img src="assets/logo.png" alt="TwinAnalytic logo" height="38" style="height: 38px; width: auto; margin-right: 10px; vertical-align: middle;">
         Twin<span>Analytic</span>
       </a>
@@ -544,7 +542,6 @@
 
           <div class="team-social" style="display: flex; gap: 1rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem;">
             <a href="https://linkedin.com/company/twinanalytic" target="_blank" style="color: var(--text-secondary); font-size: 1.1rem; transition: var(--transition-quick);"><i class="fa-brands fa-linkedin-in"></i></a>
-            <a href="https://x.com/twinanalytic" target="_blank" style="color: var(--text-secondary); font-size: 1.1rem; transition: var(--transition-quick);"><i class="fa-brands fa-x-twitter"></i></a>
           </div>
         </div>
       </div>
@@ -593,11 +590,13 @@
                 <p data-tw="contact.email">solutions@twinanalytic.com</p>
               </div>
             </div>
-            <div class="contact-method-item">
+            <!-- Hidden while contact.phone is empty. Enter a number under
+                 Contact in the control panel and this block returns. -->
+            <div class="contact-method-item" data-tw-show="contact.phone">
               <div class="contact-method-icon" aria-hidden="true"><i class="fa-solid fa-phone-volume"></i></div>
               <div class="contact-method-text">
                 <h4 data-tw="contact.phoneLabel">Direct Operations Line</h4>
-                <p data-tw="contact.phone">+49 (69) 829-4820</p>
+                <p data-tw="contact.phone"></p>
               </div>
             </div>
           </div>
@@ -609,17 +608,17 @@
             <div class="contact-form-row">
               <div class="form-group">
                 <label for="c-name">Full Name</label>
-                <input type="text" id="c-name" placeholder="John Doe" required>
+                <input type="text" id="c-name" placeholder="Your full name" required>
               </div>
               <div class="form-group">
                 <label for="c-email">Business Email</label>
-                <input type="email" id="c-email" placeholder="j.doe@company.com" required>
+                <input type="email" id="c-email" placeholder="you@company.com" required>
               </div>
             </div>
             <div class="contact-form-row">
               <div class="form-group">
                 <label for="c-phone">Phone Number</label>
-                <input type="tel" id="c-phone" placeholder="+49 170 1234567">
+                <input type="tel" id="c-phone" placeholder="Include your country code">
               </div>
               <div class="form-group">
                 <label for="c-type">Project Type</label>
@@ -633,7 +632,7 @@
             </div>
             <div class="form-group">
               <label for="c-location">Location</label>
-              <input type="text" id="c-location" placeholder="E.g., Frankfurt, Germany" required>
+              <input type="text" id="c-location" placeholder="City, Country" required>
             </div>
             <div class="form-group">
               <label for="c-msg">Message</label>
@@ -660,9 +659,6 @@
           <p class="footer-slogan" data-tw="site.slogan">Building Tomorrow, Together</p>
           <div class="footer-socials" data-tw-list="footerSocials">
             <a href="https://linkedin.com/company/twinanalytic" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
-            <a href="https://x.com/twinanalytic" target="_blank"><i class="fa-brands fa-x-twitter"></i></a>
-            <a href="#"><!-- TODO: add real URL --><i class="fa-brands fa-instagram"></i></a>
-            <a href="#"><!-- TODO: add real URL --><i class="fa-brands fa-youtube"></i></a>
           </div>
         </div>
         <div data-tw-list="footerColumns" style="display: contents;">

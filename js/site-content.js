@@ -11,7 +11,7 @@
        data-tw="path.to.value"          -> textContent
        data-tw-html="path.to.value"     -> innerHTML (trusted, admin-authored)
        data-tw-attr="src:a.b; alt:c.d"  -> element attributes
-       data-tw-show="path.to.flag"      -> hides the element when falsy
+       data-tw-show="path.to.flag"      -> hides the element when false or ""
        data-tw-hide="path.to.flag"      -> hides the element when truthy
        data-tw-list="services"          -> replaces children with rendered list
    - Everything resolves against the merged content object. A path that does
@@ -563,10 +563,15 @@
       });
     });
 
-    // Visibility flags
+    // Visibility flags. An explicit empty string hides as well as false, so
+    // clearing a field in the panel — a phone number that no longer exists,
+    // say — removes its whole block instead of leaving a heading with nothing
+    // underneath. undefined is deliberately NOT treated as falsy: a path that
+    // does not exist must leave the markup alone, which is what makes the
+    // hardcoded HTML a reliable fallback.
     document.querySelectorAll('[data-tw-show]').forEach(function (el) {
       var value = get(c, el.getAttribute('data-tw-show'));
-      if (value === false) el.remove();
+      if (value === false || value === '') el.remove();
     });
     document.querySelectorAll('[data-tw-hide]').forEach(function (el) {
       var value = get(c, el.getAttribute('data-tw-hide'));

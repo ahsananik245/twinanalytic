@@ -53,7 +53,7 @@
   },
   "contact": {
     "email": "solutions@twinanalytic.com",
-    "phone": "+49 (69) 829-4820",
+    "phone": "",
     "emailLabel": "Email Communication",
     "phoneLabel": "Direct Operations Line",
     "address": "",
@@ -91,8 +91,8 @@
     {
       "id": "x",
       "icon": "fa-brands fa-x-twitter",
-      "url": "https://x.com/twinanalytic",
-      "enabled": true
+      "url": "",
+      "enabled": false
     },
     {
       "id": "instagram",
@@ -373,7 +373,7 @@
       "experience": "Founder of TwinAnalytic, building hands-on experience in structural design, BIM coordination, and digital twin workflows.",
       "expertise": "Structural Engineering, BIM Coordination, Digital Twins",
       "linkedin": "https://linkedin.com/company/twinanalytic",
-      "twitter": "https://x.com/twinanalytic",
+      "twitter": "",
       "enabled": true
     }
   ],
