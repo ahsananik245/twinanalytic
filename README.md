@@ -184,6 +184,36 @@ frames over 33ms on both desktop and mobile viewports.
 To regenerate it from a different source image, the pipeline is
 `scripts/build-texture.py`.
 
+### Search indexing
+
+Canonical tags, `og:url`, JSON-LD and `sitemap.xml` all use **clean URLs**
+(`/about`, not `/about.html`). This is load-bearing, not cosmetic: `cleanUrls`
+in `vercel.json` makes `/about.html` 308-redirect to `/about`, so declaring the
+`.html` form as canonical points search engines at a URL that redirects away
+from itself. Search Console reports that as *"Page with redirect — not
+indexed."* If you add a page, give it a clean self-referential canonical and a
+clean sitemap entry.
+
+`scripts/indexnow.py` pushes the sitemap's URLs to IndexNow, which covers Bing,
+Yandex, Seznam and Naver in one call. Google does not participate — for Google,
+submit the sitemap in Search Console.
+
+```bash
+python scripts/indexnow.py --dry-run   # check what would be sent
+python scripts/indexnow.py             # submit every sitemap URL
+python scripts/indexnow.py <url> ...   # submit specific pages after an edit
+```
+
+It verifies the key file is live and that every URL returns 200 before sending,
+without following redirects — submitting redirects or 404s is what gets a key
+throttled.
+
+Ownership is proved by `<key>.txt` at the site root. That file and
+`.indexnow-key` are committed on purpose: the key is not a secret. It only shows
+that whoever submits can also write to the site root, and the worst a leak
+allows is a request to re-crawl pages that are already public. To rotate it,
+generate a new hex string, write it to both files, deploy, then resubmit.
+
 ### Analytics
 
 Vercel Web Analytics and Speed Insights are wired up and on by default, under
