@@ -254,7 +254,8 @@ knowing before editing any of them.
 | --- | --- |
 | 23 calculators built on the `bnbc-*` engine | Metric, with a working metric/imperial toggle |
 | `beam-design` | Metric only, no toggle |
-| `column-design`, `slab-design` | US customary only — ft, kips, ksi, psi, in |
+| `column-design` | **Metric or imperial**, switchable — see below |
+| `slab-design` | US customary only — ft, psi, psf, in |
 | `footing-design`, `footing-rect-design` | US customary, **except** rebar diameter in mm |
 
 The split is defensible on its own terms: BNBC is a metric code, and ACI 318
@@ -267,7 +268,28 @@ so all five non-toggle pages now open with a `.unit-notice` stating the system
 in force. Metric pages use the gold accent, imperial the neutral steel, so the
 two differ at a glance rather than only on reading.
 
-**Why the imperial pages have not simply been converted.** It looks like a unit
+**`column-design` is switchable.** `js/column-units.js` converts at the two
+boundaries — metric values are written back as imperial before
+`calculateColumn()` reads them, and the named output fields are rewritten
+afterwards — so the verified engine is untouched and both systems produce the
+same answer. Metric bar sizes live in the shared `ACI_BAR_DATA` lookup with
+their diameter and area expressed in inches, so a metric bar needs no
+conversion at all: the engine reads a diameter and an area and does not care
+what the key means. Areas are the true circle area of the nominal diameter, not
+the nearest imperial bar — a 25 mm bar is 491 mm², where #8 is 510 mm².
+
+Run `python scripts/verify-column-units.py` against a local server to prove it.
+It checks equivalence (the same column entered both ways), regression (imperial
+results unchanged from before the switch), round-trip stability (toggling eight
+times must not drift the inputs), and the bar areas. Non-zero exit on failure,
+so it can gate a deploy.
+
+The PDF report is still generated in US customary units throughout. Converting
+it is a separate job; until then it prints a line saying so whenever the page is
+in metric, rather than handing a metric user an imperial report with nothing to
+indicate it.
+
+**Why the remaining imperial pages have not simply been converted.** It looks like a unit
 conversion and is not. `column-design` selects reinforcement from the US bar
 designation catalogue — #5 to #18 mains, #3 to #5 ties. Going metric means
 replacing that catalogue with 10/12/16/20/25/32 mm bars, which changes bar

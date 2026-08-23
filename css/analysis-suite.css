@@ -428,32 +428,8 @@
 }
 .ws-btn.ws-storey:hover { background: rgba(79, 134, 198, 0.2); }
 
-/* ---------- Unit toggle ---------- */
-.unit-toggle {
-  display: inline-flex;
-  border: 1px solid rgba(201, 168, 76, 0.3);
-  border-radius: 5px;
-  overflow: hidden;
-}
-.unit-toggle button {
-  background: transparent;
-  border: none;
-  color: #94a3b8;
-  font-family: var(--font-mono);
-  font-size: 0.64rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 0.3rem 0.62rem;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-.unit-toggle button + button { border-left: 1px solid rgba(201, 168, 76, 0.22); }
-.unit-toggle button:hover { color: #fff; }
-.unit-toggle button.active {
-  background: var(--color-gold);
-  color: #0a0a0a;
-  font-weight: 700;
-}
+/* Unit toggle styles moved to css/style.css so pages outside the
+   analysis suite can use the same control. */
 
 /* ---------- Toast ---------- */
 .calc-toast {

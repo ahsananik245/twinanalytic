@@ -454,7 +454,7 @@
 <!-- Panel 2: COLUMN -->
         <div class="tool-content-panel active" id="panel-column">
           <div class="tool-inputs-card glass-card">
-              <div class="unit-notice"><i class="fa-solid fa-ruler" aria-hidden="true"></i><span><strong>US customary units.</strong> Works in <code>ft</code>, <code>kips</code>, <code>ksi</code> and <code>in</code>, with ACI bar numbers (#3&ndash;#18). The BNBC load-analysis calculators are metric, so check which system you are in before carrying a number between them.</span></div>
+              <div class="unit-notice" id="column-unit-row"><i class="fa-solid fa-ruler" aria-hidden="true"></i><span><strong>Units.</strong> Switch the whole calculator between systems. Metric uses BS 4449 / BDS ISO 6935 bar sizes; imperial uses ACI bar numbers. The calculation is identical either way — only the presentation changes.<span id="column-unit-toggle" style="display:block; margin-top:0.65rem;"></span></span></div>
             <h3>Input Parameters</h3>
             <div class="input-grid">
               <div class="input-field">
@@ -548,6 +548,7 @@
               <div class="input-field">
                 <label>Main Bar Size</label>
                 <select id="column-main-bar">
+                <optgroup label="ACI / ASTM A615 (imperial)">
                   <option value="#5">#5 (0.31 in²)</option>
                   <option value="#6">#6 (0.44 in²)</option>
                   <option value="#7">#7 (0.60 in²)</option>
@@ -557,15 +558,32 @@
                   <option value="#11">#11 (1.56 in²)</option>
                   <option value="#14">#14 (2.25 in²)</option>
                   <option value="#18">#18 (4.00 in²)</option>
-                </select>
+                </optgroup>
+                <optgroup label="Metric (BS 4449 / BDS ISO 6935)">
+                  <option value="10mm">10 mm (79 mm&sup2;)</option>
+                  <option value="12mm">12 mm (113 mm&sup2;)</option>
+                  <option value="16mm">16 mm (201 mm&sup2;)</option>
+                  <option value="20mm">20 mm (314 mm&sup2;)</option>
+                  <option value="25mm">25 mm (491 mm&sup2;)</option>
+                  <option value="32mm">32 mm (804 mm&sup2;)</option>
+                  <option value="40mm">40 mm (1257 mm&sup2;)</option>
+                </optgroup>
+              </select>
               </div>
               <div class="input-field">
                 <label>Tie/Spiral Size</label>
                 <select id="column-tie-bar">
+                <optgroup label="ACI / ASTM A615 (imperial)">
                   <option value="#3" selected>#3 (3/8")</option>
                   <option value="#4">#4 (1/2")</option>
                   <option value="#5">#5 (5/8")</option>
-                </select>
+                </optgroup>
+                <optgroup label="Metric">
+                  <option value="8mm">8 mm</option>
+                  <option value="10mm">10 mm</option>
+                  <option value="12mm">12 mm</option>
+                </optgroup>
+              </select>
               </div>
             </div>
             <!-- Validation Message -->
@@ -1165,6 +1183,7 @@ Clear spacing: (18 - 2×1.5 - 2×0.375 - 1.0)/2 = 6.6" &gt; 1.0"  OK</code></pre
   <script src="js/bnbc-pdf.js"></script>
   <script src="js/main.js"></script>
   <script src="js/calculators.js"></script>
+  <script src="js/column-units.js"></script>
   <script>
     function switchMainTab(tabName) {
       const calcBtn = document.getElementById('tab-btn-calculator');

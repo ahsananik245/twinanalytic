@@ -64,10 +64,46 @@ const ACI_BAR_DATA = {
   '#18': { dia: 2.257, area: 4.00 }
 };
 
+const ACI_TIE_DATA = {
+  '#3': { dia: 0.375, area: 0.11 },
+  '#4': { dia: 0.500, area: 0.20 },
+  '#5': { dia: 0.625, area: 0.31 }
+};
+
+/* ---------------------------------------------------------------------------
+   Metric bar sizes, the ones actually sold in Bangladesh.
+
+   Deliberately expressed in inches and square inches, exactly like the ACI
+   entries above, and merged into the same lookup. The engine asks the table
+   for a diameter and an area and does not care what the key means, so a
+   metric bar needs no change to the verified calculation at all — it is one
+   more row.
+
+   Areas are the true circle area of the nominal diameter, not the nearest ACI
+   bar: a 25 mm bar is 491 mm2, where #8 is 510 mm2. Substituting the closest
+   imperial bar would quietly change the steel provided by 4%.
+   --------------------------------------------------------------------------- */
+const MM_PER_IN = 25.4;
+
+const METRIC_BAR_MM = [10, 12, 16, 20, 25, 32, 40];
+const METRIC_TIE_MM = [8, 10, 12];
+
+function mmBarEntry(mm) {
+  const diaIn = mm / MM_PER_IN;
+  return { dia: diaIn, area: Math.PI * diaIn * diaIn / 4, mm: mm };
+}
+
+METRIC_BAR_MM.forEach(function (mm) { ACI_BAR_DATA[mm + 'mm'] = mmBarEntry(mm); });
+METRIC_TIE_MM.forEach(function (mm) { ACI_TIE_DATA[mm + 'mm'] = mmBarEntry(mm); });
+
 // Falls back to #8 rather than throwing, matching what the engine already did
 // for an unrecognised size.
 function aciBar(size) {
   return ACI_BAR_DATA[size] || ACI_BAR_DATA['#8'];
+}
+
+function aciTie(size) {
+  return ACI_TIE_DATA[size] || ACI_TIE_DATA['#3'];
 }
 
 function initCalculatorsPage() {
@@ -922,23 +958,10 @@ function calculateColumn() {
   const mainBarSize = document.getElementById('column-main-bar').value;
   const tieBarSize = document.getElementById('column-tie-bar').value;
 
-  const barData = {
-    '#5': { dia: 0.625, area: 0.31 },
-    '#6': { dia: 0.750, area: 0.44 },
-    '#7': { dia: 0.875, area: 0.60 },
-    '#8': { dia: 1.000, area: 0.79 },
-    '#9': { dia: 1.128, area: 1.00 },
-    '#10': { dia: 1.270, area: 1.27 },
-    '#11': { dia: 1.410, area: 1.56 },
-    '#14': { dia: 1.693, area: 2.25 },
-    '#18': { dia: 2.257, area: 4.00 }
-  };
-
-  const tieData = {
-    '#3': { dia: 0.375, area: 0.11 },
-    '#4': { dia: 0.500, area: 0.20 },
-    '#5': { dia: 0.625, area: 0.31 }
-  };
+  // Shared lookup — see ACI_BAR_DATA at the top of this file. Includes the
+  // metric sizes, expressed in inches so nothing here changes.
+  const barData = ACI_BAR_DATA;
+  const tieData = ACI_TIE_DATA;
 
   const mainBarDia = barData[mainBarSize].dia;
   const Ab = barData[mainBarSize].area;
@@ -1377,10 +1400,7 @@ function drawColumnCanvas(w, h, p) {
   const Ast_axial_req = (Pu / ((phi_axial * alpha) || 1) - 0.85 * fc * Ag) / (fy - 0.85 * fc);
   const Ast_req = Math.max(p * Ag, Ast_axial_req);
   
-  const barData = {
-    '#5': 0.31, '#6': 0.44, '#7': 0.60, '#8': 0.79, '#9': 1.00, '#10': 1.27, '#11': 1.56, '#14': 2.25, '#18': 4.00
-  };
-  const Ab = barData[mainBarSize] || 0.79;
+  const Ab = aciBar(mainBarSize).area;
   let N_bars = Math.ceil(Ast_req / Ab);
   if (N_bars % 2 !== 0) N_bars += 1;
   const minBars = type === 'TIED' ? 4 : 6;
@@ -1464,10 +1484,16 @@ function drawColumnCanvas(w, h, p) {
 
   ctx.fillStyle = '#9AA0A6';
   ctx.font = '10px JetBrains Mono';
+  // The geometry is always computed in inches; the caption follows whichever
+  // system the page is showing. Leaving it in inches under metric labels is
+  // the exact mixed-unit trap this switch exists to remove.
+  const asMetric = typeof window.TWColumnUnits !== 'undefined' &&
+                   window.TWColumnUnits.system() === 'SI';
+  const dim = (v) => asMetric ? `${Math.round(v * 25.4)} mm` : `${v}"`;
   if (type === 'TIED') {
-    ctx.fillText(`${w}" x ${h}"`, startX + drawW/2 - 25, startY - 8);
+    ctx.fillText(`${dim(w)} x ${dim(h)}`, startX + drawW/2 - 30, startY - 8);
   } else {
-    ctx.fillText(`D = ${w}"`, canvas.width/2 - 20, startY - 8);
+    ctx.fillText(`D = ${dim(w)}`, canvas.width/2 - 24, startY - 8);
   }
 }
 
@@ -3721,23 +3747,10 @@ function downloadColumnPDF() {
   const PhiPn = parseFloat(phiPnStr);
   const dcRatio = parseFloat(dcRatioStr);
 
-  const barData = {
-    '#5': { dia: 0.625, area: 0.31 },
-    '#6': { dia: 0.750, area: 0.44 },
-    '#7': { dia: 0.875, area: 0.60 },
-    '#8': { dia: 1.000, area: 0.79 },
-    '#9': { dia: 1.128, area: 1.00 },
-    '#10': { dia: 1.270, area: 1.27 },
-    '#11': { dia: 1.410, area: 1.56 },
-    '#14': { dia: 1.693, area: 2.25 },
-    '#18': { dia: 2.257, area: 4.00 }
-  };
-
-  const tieData = {
-    '#3': { dia: 0.375, area: 0.11 },
-    '#4': { dia: 0.500, area: 0.20 },
-    '#5': { dia: 0.625, area: 0.31 }
-  };
+  // Shared lookup — see ACI_BAR_DATA at the top of this file. Includes the
+  // metric sizes, expressed in inches so nothing here changes.
+  const barData = ACI_BAR_DATA;
+  const tieData = ACI_TIE_DATA;
 
   const mainBarDia = barData[mainBarSize].dia;
   const Ab = barData[mainBarSize].area;
@@ -4028,6 +4041,17 @@ function downloadColumnPDF() {
     doc.text('STRUCTURAL DESIGN GROUP', 0.70, 0.76);
     doc.text(code.toUpperCase() + ' COMPLIANCE', 0.70, 0.94);
     doc.text('BUET CE 317 Method', 0.70, 1.12);
+
+    /* The report generator works entirely in US customary units. When the page
+       is showing metric it would otherwise hand a metric user an imperial
+       report with nothing saying so, which is worse than either system on its
+       own. Converting the whole report is a separate job; until then it says
+       what it is. */
+    if (typeof window.TWColumnUnits !== 'undefined' && window.TWColumnUnits.system() === 'SI') {
+      doc.setTextColor(150, 90, 30);
+      doc.text('REPORT IN US CUSTOMARY UNITS (in, kips, ksi)', 0.70, 1.30);
+      doc.setTextColor(0, 0, 0);
+    }
 
     doc.setTextColor(60, 60, 60);
     doc.setFont('helvetica', 'bold');

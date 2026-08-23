@@ -2951,3 +2951,37 @@ html.no-blueprint.no-concrete body::before {
 .unit-notice.is-metric i {
   color: var(--color-gold);
 }
+
+/* ==========================================================================
+   UNIT TOGGLE
+   Moved here from analysis-suite.css, which only the 23 BNBC-engine pages
+   load. The older calculators need the same control, and every page loads
+   this file.
+   ========================================================================== */
+
+/* ---------- Unit toggle ---------- */
+.unit-toggle {
+  display: inline-flex;
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.unit-toggle button {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.62rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.unit-toggle button + button { border-left: 1px solid rgba(201, 168, 76, 0.22); }
+.unit-toggle button:hover { color: #fff; }
+.unit-toggle button.active {
+  background: var(--color-gold);
+  color: #0a0a0a;
+  font-weight: 700;
+}
