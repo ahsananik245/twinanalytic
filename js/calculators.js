@@ -41,6 +41,35 @@ function gateCopy() {
   };
 }
 
+/* ---------------------------------------------------------------------------
+   ASTM A615 bar schedule, in inches and square inches.
+
+   One table, because there were four places resolving a bar size and they did
+   not agree. The design engine looked the diameter up correctly; two other
+   sites used `size === '#7' ? 0.875 : size === '#8' ? 1.0 : 1.128`, which is
+   right for #7, #8 and — by coincidence, since 1.128 is its diameter — #9, and
+   wrong for the other six. #5 came out 80% oversized and #18 50% undersized.
+   Tie diameter had the same shape of bug: everything that was not #3 was
+   treated as 0.5, so #5 ties were 20% undersized.
+   --------------------------------------------------------------------------- */
+const ACI_BAR_DATA = {
+  '#5':  { dia: 0.625, area: 0.31 },
+  '#6':  { dia: 0.750, area: 0.44 },
+  '#7':  { dia: 0.875, area: 0.60 },
+  '#8':  { dia: 1.000, area: 0.79 },
+  '#9':  { dia: 1.128, area: 1.00 },
+  '#10': { dia: 1.270, area: 1.27 },
+  '#11': { dia: 1.410, area: 1.56 },
+  '#14': { dia: 1.693, area: 2.25 },
+  '#18': { dia: 2.257, area: 4.00 }
+};
+
+// Falls back to #8 rather than throwing, matching what the engine already did
+// for an unrecognised size.
+function aciBar(size) {
+  return ACI_BAR_DATA[size] || ACI_BAR_DATA['#8'];
+}
+
 function initCalculatorsPage() {
   if (window.location.search.includes('lock=1') || window.location.search.includes('reset=1')) {
     try { localStorage.removeItem('tools_user_unlocked'); } catch (e) { /* storage blocked */ }
@@ -294,9 +323,16 @@ function calculateMetricsInternally(calcType) {
 
         const mainBarSize = document.getElementById('column-main-bar').value;
         const tieBarSize = document.getElementById('column-tie-bar').value;
-        let mainBarDia = mainBarSize === '#7' ? 0.875 : mainBarSize === '#8' ? 1.0 : 1.128;
-        let tieBarDia = tieBarSize === '#3' ? 0.375 : 0.500;
+        const mainBarDia = aciBar(mainBarSize).dia;
+        const tieBarDia = aciBar(tieBarSize).dia;
         const maxTieSpacing = Math.min(16 * mainBarDia, 48 * tieBarDia, Dim);
+
+        // Bar count, worked the same way the design engine does, rather than
+        // the flat "8 Nos" this used to report regardless of the section.
+        const Ab = aciBar(mainBarSize).area;
+        let nBars = Math.ceil(Ast / (Ab || 1));
+        if (nBars % 2 !== 0) nBars += 1;
+        if (nBars < 4) nBars = 4;
 
         const PnMax = 0.80 * (0.85 * fc * (ColumnArea - Ast) + fy * Ast);
         const PhiPn = 0.65 * PnMax;
@@ -306,7 +342,7 @@ function calculateMetricsInternally(calcType) {
         const steelWeight = ((Ast * 3.4) * colHeight) * 0.45359237;
 
         metrics.geometry = `${Dim}" x ${Dim}"`;
-        metrics.reinforcement = `8 Nos ${mainBarSize} (Ties: ${maxTieSpacing.toFixed(1)}")`;
+        metrics.reinforcement = `${nBars} Nos ${mainBarSize} (Ties: ${maxTieSpacing.toFixed(1)}")`;
         metrics.status = dcRatio <= 1.0 ? `PASS [D/C = ${dcRatio.toFixed(2)}]` : `FAIL - OVERSTRESSED [D/C = ${dcRatio.toFixed(2)}]`;
         metrics.concreteVol = `${concreteVol.toFixed(2)} m³`;
         metrics.steelWeight = `${steelWeight.toFixed(1)} kg`;
@@ -1317,9 +1353,9 @@ function drawColumnCanvas(w, h, p) {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   const mainBarSize = document.getElementById('column-main-bar') ? document.getElementById('column-main-bar').value : '#8';
-  const mainBarDia = mainBarSize === '#7' ? 0.875 : mainBarSize === '#8' ? 1.0 : 1.128;
+  const mainBarDia = aciBar(mainBarSize).dia;
   const tieBarSize = document.getElementById('column-tie-bar') ? document.getElementById('column-tie-bar').value : '#3';
-  const tieBarDia = tieBarSize === '#3' ? 0.375 : 0.5;
+  const tieBarDia = aciBar(tieBarSize).dia;
   const cover = parseFloat(document.getElementById('column-cover').value) || 1.5;
 
   const d_prime = cover + tieBarDia + mainBarDia / 2;
