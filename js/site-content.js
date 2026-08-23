@@ -758,8 +758,22 @@
   // =========================================================================
   function applyLeadGate(c) {
     var gateOn = get(c, 'features.leadGate');
-    window.TW_LEAD_GATE_ENABLED = gateOn !== false;
-    if (gateOn === false) {
+    var mode = get(c, 'features.leadGateMode');
+
+    // Three positions, master switch first:
+    //   off     — nothing is gated
+    //   pdf     — calculators run freely; details are asked for at the point of
+    //             downloading the PDF report (the default)
+    //   results — the original behaviour: results stay blurred until details
+    //             are given
+    // Anything unrecognised falls back to 'pdf' rather than to the most
+    // restrictive option, so a typo cannot silently wall off the calculators.
+    if (gateOn === false) mode = 'off';
+    else if (mode !== 'off' && mode !== 'results') mode = 'pdf';
+
+    window.TW_LEAD_GATE_MODE = mode;
+    window.TW_LEAD_GATE_ENABLED = mode !== 'off';
+    if (mode === 'off') {
       // Treat every visitor as already unlocked so calculators run freely.
       window.isUnlockedSession = true;
     }

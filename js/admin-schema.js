@@ -659,13 +659,16 @@ window.ADMIN_SCHEMA = {
         },
         {
           title: 'Lead Gate Copy', icon: 'fa-solid fa-lock', path: 'leadGate',
-          desc: 'Shown when a visitor runs a calculation before submitting their details.',
+          desc: 'Wording of the form that asks a visitor for their details.',
           fields: [
-            { key: 'heading', label: 'Overlay Heading', type: 'text' },
+            { key: 'modalTitle', label: 'Form Title', type: 'text',
+              hint: 'The pop-up that asks for name, email and country.' },
+            { key: 'modalBody', label: 'Form Message', type: 'textarea', wide: true },
+            { key: 'submitLabel', label: 'Form Button Label', type: 'text' },
+            { key: 'heading', label: 'Overlay Heading', type: 'text',
+              hint: 'Only used when "When to ask for details" is set to before showing results.' },
             { key: 'body', label: 'Overlay Message', type: 'textarea', wide: true },
-            { key: 'buttonLabel', label: 'Overlay Button Label', type: 'text' },
-            { key: 'modalTitle', label: 'Modal Title', type: 'text' },
-            { key: 'modalBody', label: 'Modal Message', type: 'textarea', wide: true }
+            { key: 'buttonLabel', label: 'Overlay Button Label', type: 'text' }
           ]
         }
       ]
@@ -679,8 +682,18 @@ window.ADMIN_SCHEMA = {
         {
           title: 'Site Switches', icon: 'fa-solid fa-sliders', path: 'features',
           fields: [
-            { key: 'leadGate', label: 'Require visitor details before calculators run', type: 'toggle', wide: true,
-              hint: 'Turn off to make every calculator completely open. You will stop collecting leads from them.' },
+            { key: 'leadGate', label: 'Collect visitor details from the calculators', type: 'toggle', wide: true,
+              hint: 'The master switch. Turn off to make every calculator completely open. You will stop collecting leads from them.' },
+            { key: 'leadGateMode', label: 'When to ask for details', type: 'select', wide: true,
+              options: [
+                { value: 'pdf', label: 'When downloading the PDF report (recommended)' },
+                { value: 'results', label: 'Before showing any calculation result' }
+              ],
+              hint: 'Asking at the download lets anyone use the calculators and share them, ' +
+                    'then captures the email at the moment someone wants the report — which is ' +
+                    'when they are most interested. Asking before results collects more addresses ' +
+                    'per visitor but stops people using the tools at all, which costs more reach ' +
+                    'than it gains while the firm is still becoming known.' },
             { key: 'blueprintTexture', label: 'Show the blueprint grid behind the site', type: 'toggle', wide: true,
               hint: 'The faint drafting linework from the brand artwork. Turn off to leave just the concrete.' },
             { key: 'concreteTexture', label: 'Show the concrete texture behind the site', type: 'toggle', wide: true,

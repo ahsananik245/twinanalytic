@@ -184,6 +184,33 @@ frames over 33ms on both desktop and mobile viewports.
 To regenerate it from a different source image, the pipeline is
 `scripts/build-texture.py`.
 
+### Lead capture
+
+`features.leadGateMode` decides when a visitor is asked for their details:
+
+| Mode | Behaviour |
+| --- | --- |
+| `pdf` *(default)* | Calculators run freely. Details are asked for when downloading the PDF report. |
+| `results` | The original behaviour — results stay blurred until details are given. |
+| `off` | Nothing is gated. Equivalent to `features.leadGate: false`, which remains the master switch. |
+
+`pdf` is the default deliberately. The calculators are the reason anyone arrives,
+and blocking the result on a site with no brand recognition costs more in reach
+than it gains in addresses. Asking at the download instead delivers the value
+first, captures the email at the point of highest intent, and puts a branded
+calculation report inside the visitor's organisation.
+
+The gate exists in **three separate implementations**, which is a trap worth
+knowing about: `js/calculators.js` for the beam/column/slab pages,
+`js/bnbc-ui.js` for the shared engine behind most of the 28 calculators, and an
+inline copy in `beam-design.html`, which does not load `calculators.js`. All
+three take the same `checkAuthAndRun(callback, label, purpose)` shape, where
+`purpose` is `'calc'` or `'pdf'`.
+
+**`purpose` defaults to `'pdf'`** — the gated value — so a call site added later
+without thinking about it errs towards asking rather than silently giving the
+report away.
+
 ### Search indexing
 
 Canonical tags, `og:url`, JSON-LD and `sitemap.xml` all use **clean URLs**

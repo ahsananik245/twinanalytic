@@ -49,7 +49,8 @@
       "dismissible": true
     },
     "blueprintTexture": true,
-    "concreteTexture": true
+    "concreteTexture": true,
+    "leadGateMode": "pdf"
   },
   "contact": {
     "email": "solutions@twinanalytic.com",
@@ -416,8 +417,9 @@
     "heading": "Calculation Locked",
     "body": "Please enter your name, email, and country to unlock all calculators and download reports.",
     "buttonLabel": "Unlock Now",
-    "modalTitle": "Unlock Engineering Tools",
-    "modalBody": "Enter your details once to unlock every calculator and PDF report on this site."
+    "modalTitle": "Download Your Calculation Report",
+    "modalBody": "Every calculator here is free to use, with no sign-up. Enter your details once to download the PDF report — for this calculator and every other one.",
+    "submitLabel": "Download the Report"
   },
   "pages": {
     "index": {

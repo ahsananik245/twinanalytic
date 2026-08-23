@@ -10,9 +10,25 @@ function getScriptUrl() {
 // Kept for the older call sites further down this file.
 var GOOGLE_SCRIPT_URL = GOOGLE_SCRIPT_URL_DEFAULT;
 
+// 'off' | 'pdf' | 'results'. Set by the content engine; 'pdf' is the default
+// if the engine has not loaded yet.
+function leadGateMode() {
+  var m = window.TW_LEAD_GATE_MODE;
+  return (m === 'off' || m === 'results') ? m : 'pdf';
+}
+
 // True unless the admin has switched the lead gate off in the control panel.
 function leadGateEnabled() {
-  return window.TW_LEAD_GATE_ENABLED !== false;
+  return leadGateMode() !== 'off';
+}
+
+// Whether running a calculation is itself gated. In 'pdf' mode it is not: the
+// calculators are the reason anyone visits, and blocking the result on a site
+// with no brand recognition costs more in reach than it gains in leads. The
+// details are asked for at the download instead, where intent is highest and
+// the visitor has already had the value.
+function gateBlocksResults() {
+  return leadGateMode() === 'results';
 }
 
 // Lead-gate wording, overridable from the control panel.
@@ -112,11 +128,11 @@ function initCalculators() {
   const btnSlab = document.getElementById('btn-calc-slab');
 
   if (btnBeam) {
-    btnBeam.addEventListener('click', () => checkAuthAndRun(calculateBeam, 'Beam Design'));
+    btnBeam.addEventListener('click', () => checkAuthAndRun(calculateBeam, 'Beam Design', 'calc'));
     calculateBeam();
   }
   if (btnCol) {
-    btnCol.addEventListener('click', () => checkAuthAndRun(calculateColumn, 'Column Design'));
+    btnCol.addEventListener('click', () => checkAuthAndRun(calculateColumn, 'Column Design', 'calc'));
     initColumnLiveUpdates();
     calculateColumn();
   }
@@ -129,7 +145,7 @@ function initCalculators() {
       calculateSlab();
       const resEl = document.getElementById('slab-results-container');
       if (resEl) resEl.scrollIntoView({ behavior: 'smooth' });
-    }, 'Slab Design'));
+    }, 'Slab Design', 'calc'));
     // Auto-fill date
     const dateEl = document.getElementById('slab-date');
     if (dateEl && !dateEl.value) {
@@ -154,8 +170,16 @@ function initCalculators() {
   }
 }
 
-// Check if user is already authorized; if not, prompt modal form
-function checkAuthAndRun(callback, calcType) {
+// Check if user is already authorized; if not, prompt modal form.
+//
+// `purpose` is 'pdf' (the default) or 'calc'. It defaults to the gated value so
+// that a call site added later without thinking about it errs towards asking,
+// rather than silently giving away the report.
+function checkAuthAndRun(callback, calcType, purpose) {
+  if (purpose === 'calc' && !gateBlocksResults()) {
+    if (callback) callback();
+    return;
+  }
   const unlocked = !leadGateEnabled() || window.isUnlockedSession || (function(){ try { return localStorage.getItem('tools_user_unlocked') === 'true'; } catch(e) { return false; } })();
   if (unlocked) {
     if (callback) callback();
@@ -177,7 +201,10 @@ function openAuthModal(callback, calcType) {
 
 // Update lock blur and lock overlay UI based on authorization state
 function updateLockUI() {
-  const unlocked = !leadGateEnabled() || window.isUnlockedSession || (function(){ try { return localStorage.getItem('tools_user_unlocked') === 'true'; } catch(e) { return false; } })();
+  // Outside 'results' mode there is nothing to blur — the numbers are free, so
+  // treat the page as unlocked and let the branch below strip any overlay that
+  // a previous mode left behind.
+  const unlocked = !gateBlocksResults() || window.isUnlockedSession || (function(){ try { return localStorage.getItem('tools_user_unlocked') === 'true'; } catch(e) { return false; } })();
   const copy = gateCopy();
   const colOutputs = document.querySelectorAll('.tool-outputs-card');
   

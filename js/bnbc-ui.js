@@ -498,7 +498,7 @@ const BNBCUI = (function () {
       if (btn) {
         btn.addEventListener('click', e => {
           e.preventDefault();
-          if (typeof checkAuthAndRun === 'function') checkAuthAndRun(run, cfg.title);
+          if (typeof checkAuthAndRun === 'function') checkAuthAndRun(run, cfg.title, 'calc');
           else run();
         });
       }

@@ -1302,7 +1302,7 @@
       // Calculate Button
       document.getElementById('btn-calculate').addEventListener('click', (e) => {
         e.preventDefault();
-        checkAuthAndRun(runAnalysis, 'Beam Design');
+        checkAuthAndRun(runAnalysis, 'Beam Design', 'calc');
       });
 
       // Reset Button
@@ -2047,8 +2047,21 @@
     let pendingCallback = null;
     let pendingType = '';
 
-    function checkAuthAndRun(callback, calcType) {
-      const unlocked = window.isUnlockedSession || (function(){ try { return localStorage.getItem('tools_user_unlocked') === 'true'; } catch(e) { return false; } })();
+    // This page carries its own copy of the gate because it does not load
+    // js/calculators.js. Keep the two in step.
+    function leadGateMode() {
+      const m = window.TW_LEAD_GATE_MODE;
+      return (m === 'off' || m === 'results') ? m : 'pdf';
+    }
+
+    // purpose is 'pdf' (default) or 'calc'. Running a calculation is only gated
+    // in 'results' mode; the report download is gated unless the gate is off.
+    function checkAuthAndRun(callback, calcType, purpose) {
+      if (purpose === 'calc' && leadGateMode() !== 'results') {
+        if (callback) callback();
+        return;
+      }
+      const unlocked = leadGateMode() === 'off' || window.isUnlockedSession || (function(){ try { return localStorage.getItem('tools_user_unlocked') === 'true'; } catch(e) { return false; } })();
       if (unlocked) {
         callback();
       } else {
@@ -2166,7 +2179,9 @@
     }
 
     function updateLockUI() {
-      const unlocked = window.isUnlockedSession || (function(){ try { return localStorage.getItem('tools_user_unlocked') === 'true'; } catch(e) { return false; } })();
+      // Only 'results' mode blurs anything. Otherwise report the page as
+      // unlocked so the branches below tear down any overlay left in place.
+      const unlocked = leadGateMode() !== 'results' || window.isUnlockedSession || (function(){ try { return localStorage.getItem('tools_user_unlocked') === 'true'; } catch(e) { return false; } })();
       const colMid = document.querySelector('.col-middle');
       const colRight = document.querySelector('.col-right');
       
@@ -3781,8 +3796,8 @@ ${detailTable}
   <div class="modal-overlay" id="auth-modal">
     <div class="modal-card glass-card">
       <div class="modal-header">
-        <h3>Unlock Free Engineering Suite</h3>
-        <p>Enter your professional credentials to run limit-state design checks and download coordinate schematics.</p>
+        <h3 data-tw="leadGate.modalTitle">Download Your Calculation Report</h3>
+        <p data-tw="leadGate.modalBody">Every calculator here is free to use, with no sign-up. Enter your details once to download the PDF report — for this calculator and every other one.</p>
       </div>
       <form class="modal-form" id="modal-auth-form">
         <div class="form-group">
@@ -3797,7 +3812,7 @@ ${detailTable}
           <label for="lead-country">Country</label>
           <input type="text" id="lead-country" placeholder="Your country" required>
         </div>
-        <button type="submit" class="btn btn-gold" style="width: 100%; margin-top: 1rem;">Unlock Calculators</button>
+        <button type="submit" class="btn btn-gold" style="width: 100%; margin-top: 1rem;" data-tw="leadGate.submitLabel">Download the Report</button>
       </form>
     </div>
   </div>
