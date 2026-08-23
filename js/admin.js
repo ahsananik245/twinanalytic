@@ -41,6 +41,14 @@
     leads: [],
     leadSort: { key: 'timestamp', dir: 'desc' },
     leadQuery: '',
+    // Leads read back from the Google Sheet via /api/leads. Kept separate from
+    // the localStorage copy rather than merged: the two have no shared id, so
+    // any dedup would be guesswork on name and timestamp, and silently dropping
+    // a real enquiry is worse than showing one twice. The panel shows one
+    // source at a time and says which.
+    sheetLeads: [],
+    leadSource: 'local',              // 'local' | 'sheet'
+    leadsRemote: { checked: false, configured: false, loading: false, error: null },
     publishing: false,
     // Populated by probeServer(). When the Vercel function is configured, the
     // GitHub token lives on the server and never enters this browser.
@@ -344,7 +352,9 @@
         state.published = published;
         var draft = jsonGet(K.DRAFT, null);
         state.draft = draft ? mergeDraft(published, draft) : clone(published);
-        return probeServer().then(finishBoot);
+        // Both probes are independent and neither can reject, so run them
+        // together rather than serialising two round trips before first paint.
+        return Promise.all([probeServer(), probeLeads()]).then(finishBoot);
       })
       .catch(function (err) {
         // Without the published file there is nothing safe to edit against —
@@ -374,6 +384,59 @@
   // Asks the Vercel function whether server-side publishing is available.
   // A 404 just means the function is not deployed — that is a normal state,
   // not an error, and the panel silently falls back to browser-token mode.
+  // Whether the server can read the sheet. Cheap, reveals nothing, and lets
+  // the panel hide the button entirely rather than offering an action that
+  // can only fail.
+  function probeLeads() {
+    return fetch('/api/leads', { method: 'GET', cache: 'no-store' })
+      .then(function (res) { return res.ok ? res.json() : null; })
+      .catch(function () { return null; })
+      .then(function (info) {
+        state.leadsRemote.checked = true;
+        state.leadsRemote.configured = Boolean(info && info.configured);
+      });
+  }
+
+  function loadLeadsFromSheet() {
+    if (state.leadsRemote.loading) return;
+
+    var key = sessionKey();
+    if (!key) {
+      toast('Lock the panel and sign in again so the server can verify you.', 'error', 7000);
+      return;
+    }
+
+    state.leadsRemote.loading = true;
+    state.leadsRemote.error = null;
+    renderCustomPanel(SCHEMA.sections.filter(function (s) { return s.id === 'leads'; })[0]);
+
+    fetch('/api/leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ passcode: key })
+    })
+      .then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (data) {
+          if (!res.ok) throw new Error(data.error || ('Server responded ' + res.status + '.'));
+          return data;
+        });
+      })
+      .then(function (data) {
+        state.sheetLeads = Array.isArray(data.leads) ? data.leads : [];
+        state.leadSource = 'sheet';
+        toast('Loaded ' + state.sheetLeads.length + ' leads from the sheet.', 'success');
+      })
+      .catch(function (err) {
+        state.leadsRemote.error = err.message || String(err);
+        toast(state.leadsRemote.error, 'error', 9000);
+      })
+      .then(function () {
+        state.leadsRemote.loading = false;
+        updateNavCounts();
+        renderCustomPanel(SCHEMA.sections.filter(function (s) { return s.id === 'leads'; })[0]);
+      });
+  }
+
   function probeServer() {
     return fetch('/api/publish', { method: 'GET', cache: 'no-store' })
       .then(function (res) { return res.ok ? res.json() : null; })
@@ -498,7 +561,7 @@
     setCount('blog', (state.draft.blog || []).length);
     setCount('testimonials', (state.draft.testimonials || []).length);
     setCount('calculators', countCalculators(state.draft));
-    setCount('leads', state.leads.length);
+    setCount('leads', activeLeads().length);
     setCount('history', jsonGet(K.BACKUPS, []).length);
   }
 
@@ -1047,7 +1110,7 @@
   function dashboardHtml() {
     var d = state.draft || {};
     var dirty = isDirty();
-    var recent = state.leads.slice(-5).reverse();
+    var recent = activeLeads().slice(-5).reverse();
 
     return '' +
       (dirty
@@ -1233,26 +1296,56 @@
   }
 
   // ------------------------------------------------------------------- leads
+  // Says which list is on screen and why the other one exists. Without this a
+  // count of zero reads as "nobody enquired", when in fact visitor submissions
+  // land in the sheet and each visitor's localStorage copy stays on their own
+  // device — this browser only ever sees what was submitted on it.
+  function leadSourceNotice() {
+    var onSheet = state.leadSource === 'sheet';
+    var remote = state.leadsRemote;
+
+    var body;
+    if (onSheet) {
+      body = '<strong>Showing your Google Sheet.</strong> ' +
+             'This is the real record of who enquired. It is a snapshot — press ' +
+             '<em>Reload from sheet</em> to refresh it.';
+    } else {
+      body = '<strong>Showing this browser only.</strong> ' +
+             'Visitor submissions go to your Google Sheet, and each visitor\'s local copy ' +
+             'stays on their own device — so these numbers count only what was submitted ' +
+             'on this computer. A count of zero here does not mean nobody enquired.';
+    }
+
+    if (!remote.configured) {
+      body += ' <br><br>To read the sheet from here, deploy ' +
+              '<code class="a-code-inline">docs/apps-script-leads.gs</code> and set ' +
+              '<code class="a-code-inline">LEADS_SCRIPT_URL</code> and ' +
+              '<code class="a-code-inline">LEADS_TOKEN</code> in Vercel.';
+    }
+
+    body += ' <br><br>Note that the site cannot detect a failed send: the form posts in ' +
+            'no-cors mode, so the browser reports success either way. Check the sheet ' +
+            'periodically rather than trusting the absence of errors.';
+
+    if (remote.error) {
+      body += '<br><br><strong>Last attempt failed:</strong> ' + esc(remote.error);
+    }
+
+    return '<div class="a-callout ' + (onSheet ? 'a-callout-info' : 'a-callout-warn') +
+           '" style="margin-bottom: 1.25rem;">' +
+             '<i class="fa-solid ' + (onSheet ? 'fa-table' : 'fa-laptop') + '" aria-hidden="true"></i>' +
+             '<div>' + body + '</div>' +
+           '</div>';
+  }
+
   function leadsHtml() {
     var leads = filteredLeads();
 
     return '' +
-      // These figures come from localStorage, which is per-browser and per-device.
-      // A visitor who fills the form writes to their own machine, not to this one,
-      // so this panel can only ever show submissions made here. Without saying so,
-      // a count of zero reads as "nobody enquired" when the real leads went to the
-      // spreadsheet. The count is genuine, it just is not the whole record.
-      '<div class="a-callout a-callout-info" style="margin-bottom: 1.25rem;">' +
-        '<strong>This list is local to this browser.</strong> ' +
-        'Visitor submissions are sent to your Google Sheet, and each visitor\'s copy stays ' +
-        'on their own device — so the numbers below count only what was submitted here, ' +
-        'on this computer. Treat the sheet as the record of who enquired, not this panel. ' +
-        'The site also cannot detect a failed send: the request is made in no-cors mode, ' +
-        'so the browser reports success either way. Check the sheet periodically.' +
-      '</div>' +
+      leadSourceNotice() +
 
       '<div class="a-stats">' +
-        stat(state.leads.length, 'Total Leads') +
+        stat(activeLeads().length, 'Total Leads') +
         stat(uniqueEmails(), 'Unique Emails') +
         stat(leadsThisWeek(), 'Last 7 Days') +
       '</div>' +
@@ -1264,9 +1357,27 @@
             '<label for="a-lead-search" class="a-sr-only">Search leads</label>' +
             '<input type="search" id="a-lead-search" class="a-input" placeholder="Search name, email, or source…" value="' + esc(state.leadQuery) + '" autocomplete="off">' +
           '</div>' +
+          (state.leadsRemote.configured
+            ? '<button type="button" class="a-btn a-btn-sm a-btn-gold" data-lead-act="sheet"' +
+              (state.leadsRemote.loading ? ' disabled' : '') + '>' +
+              (state.leadsRemote.loading
+                ? '<span class="a-spin" aria-hidden="true"></span> Loading…'
+                : '<i class="fa-solid fa-table" aria-hidden="true"></i> ' +
+                  (state.leadSource === 'sheet' ? 'Reload from sheet' : 'Load from sheet')) +
+              '</button>'
+            : '') +
+          (state.leadSource === 'sheet'
+            ? '<button type="button" class="a-btn a-btn-sm" data-lead-act="local">' +
+              '<i class="fa-solid fa-laptop" aria-hidden="true"></i> Show this browser</button>'
+            : '') +
           '<button type="button" class="a-btn a-btn-sm" data-lead-act="csv"><i class="fa-solid fa-file-csv" aria-hidden="true"></i> Export CSV</button>' +
           '<button type="button" class="a-btn a-btn-sm" data-lead-act="json"><i class="fa-solid fa-file-code" aria-hidden="true"></i> Export JSON</button>' +
-          '<button type="button" class="a-btn a-btn-sm a-btn-danger" data-lead-act="clear"><i class="fa-solid fa-trash" aria-hidden="true"></i> Clear All</button>' +
+          // Deleting is offered only against the local copy. Removing a row here
+          // would not touch the sheet, so on sheet data it would look like a
+          // delete and silently do nothing — worse than not offering it.
+          (state.leadSource === 'sheet'
+            ? ''
+            : '<button type="button" class="a-btn a-btn-sm a-btn-danger" data-lead-act="clear"><i class="fa-solid fa-trash" aria-hidden="true"></i> Clear All</button>') +
         '</div>' +
 
         '<div class="a-table-wrap">' +
@@ -1300,11 +1411,7 @@
         '</div>' +
       '</div>' +
 
-      '<div class="a-callout a-callout-info">' +
-        '<i class="fa-solid fa-circle-info" aria-hidden="true"></i>' +
-        '<div>Leads are stored in <strong>this browser only</strong>, plus your Google Apps Script sheet if one is configured under Integrations. ' +
-        'Clearing your browser data removes them here — export regularly, or rely on the sheet as the system of record.</div>' +
-      '</div>';
+      '';
   }
 
   function leadTh(key, label) {
@@ -1314,9 +1421,16 @@
       ' <i class="fa-solid ' + arrow + '" aria-hidden="true"></i></button></th>';
   }
 
+  // The list currently on show. Everything that counts, filters, exports or
+  // deletes goes through this, so the source switch cannot leave one view
+  // reading the other list.
+  function activeLeads() {
+    return state.leadSource === 'sheet' ? state.sheetLeads : state.leads;
+  }
+
   function filteredLeads() {
     var q = state.leadQuery.toLowerCase().trim();
-    var list = state.leads.map(function (l, i) {
+    var list = activeLeads().map(function (l, i) {
       var copy = Object.assign({}, l);
       copy.__i = i;
       return copy;
@@ -1346,13 +1460,13 @@
 
   function uniqueEmails() {
     var seen = {};
-    state.leads.forEach(function (l) { if (l.email) seen[l.email.toLowerCase()] = 1; });
+    activeLeads().forEach(function (l) { if (l.email) seen[l.email.toLowerCase()] = 1; });
     return Object.keys(seen).length;
   }
 
   function leadsThisWeek() {
     var cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    return state.leads.filter(function (l) {
+    return activeLeads().filter(function (l) {
       var t = Date.parse(l.timestamp);
       return !isNaN(t) && t >= cutoff;
     }).length;
@@ -1386,6 +1500,13 @@
 
       var delBtn = e.target.closest('[data-lead-del]');
       if (delBtn) {
+        // The index came from filteredLeads(), which maps over whichever list
+        // is on show. Splicing state.leads with a sheet-derived index would
+        // delete an unrelated local record, so refuse rather than guess.
+        if (state.leadSource === 'sheet') {
+          toast('Sheet rows cannot be deleted from here — edit the Google Sheet directly.', 'info', 6000);
+          return;
+        }
         var idx = Number(delBtn.getAttribute('data-lead-del'));
         confirmAction({
           title: 'Delete this lead?',
@@ -1406,8 +1527,15 @@
       if (!act) return;
       var which = act.getAttribute('data-lead-act');
 
+      if (which === 'sheet') return loadLeadsFromSheet();
+      if (which === 'local') {
+        state.leadSource = 'local';
+        updateNavCounts();
+        renderCustomPanel(SCHEMA.sections.filter(function (s) { return s.id === 'leads'; })[0]);
+        return;
+      }
       if (which === 'csv') return exportLeadsCsv();
-      if (which === 'json') return download('twinanalytic-leads.json', JSON.stringify(state.leads, null, 2), 'application/json');
+      if (which === 'json') return download('twinanalytic-leads.json', JSON.stringify(activeLeads(), null, 2), 'application/json');
       if (which === 'clear') {
         if (!state.leads.length) { toast('There are no leads to clear.', 'info'); return; }
         confirmAction({
@@ -1427,11 +1555,11 @@
   }
 
   function exportLeadsCsv() {
-    if (!state.leads.length) { toast('There are no leads to export.', 'info'); return; }
+    if (!activeLeads().length) { toast('There are no leads to export.', 'info'); return; }
     var cols = ['name', 'email', 'phone', 'country', 'location', 'calcType', 'timestamp', 'geometry', 'reinforcement', 'status', 'concreteVol', 'steelWeight'];
     var rows = [cols.join(',')];
 
-    state.leads.forEach(function (l) {
+    activeLeads().forEach(function (l) {
       rows.push(cols.map(function (c) {
         var v = l[c] === undefined || l[c] === null ? '' : String(l[c]);
         return '"' + v.replace(/"/g, '""') + '"';
@@ -1440,7 +1568,7 @@
 
     // The BOM makes Excel read UTF-8 correctly on Windows.
     download('twinanalytic-leads.csv', '﻿' + rows.join('\r\n'), 'text/csv;charset=utf-8');
-    toast('Exported ' + state.leads.length + ' leads.', 'success');
+    toast('Exported ' + activeLeads().length + ' leads.', 'success');
   }
 
   // ----------------------------------------------------------------- publish

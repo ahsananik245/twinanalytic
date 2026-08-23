@@ -205,6 +205,35 @@ capture breaks. If the deployment expires or its access changes, leads stop
 arriving silently. Check the sheet periodically rather than trusting the absence
 of errors.
 
+**Reading the sheet back into the panel.** Once set up, the Leads section grows
+a *Load from sheet* button and shows the real inbox instead of the local copy.
+It says at the top which of the two you are looking at.
+
+1. Open the spreadsheet → **Extensions → Apps Script** and paste
+   [`docs/apps-script-leads.gs`](docs/apps-script-leads.gs), replacing `TOKEN`
+   with a long random string (`openssl rand -hex 24`). Do not reuse the panel
+   passcode.
+2. **Deploy → New deployment → Web app**, *Execute as* **Me**, *Who has access*
+   **Anyone**. "Anyone" is required — the public form posts without a Google
+   session and the Vercel function reads without one. The token is what guards
+   the data, which is why `doGet` returns nothing without it.
+3. In Vercel → **Settings → Environment Variables** add `LEADS_SCRIPT_URL` (the
+   deployment URL) and `LEADS_TOKEN` (the same string), then redeploy.
+
+`api/leads.js` proxies the read. It has to: Apps Script answers with a 302 to
+`script.googleusercontent.com` and sets no CORS headers, so a browser fetch
+would fail or be forced into `no-cors` and get an opaque response. Proxying also
+keeps the token on the server — in the panel, anyone reading the page source
+could pull the whole lead list.
+
+Sheet rows are read-only in the panel. Delete and Clear act on the local copy
+only and are hidden while sheet data is showing, because removing a row there
+would not touch the sheet and would look like it had.
+
+> After editing the Apps Script you must **deploy again** — *Manage deployments
+> → edit → Version: New version*. Saving alone changes nothing at the live URL,
+> and this is the most common reason an edit appears to have no effect.
+
 Endpoint health can be checked from a terminal. A working deployment answers a
 POST with a 302 to `script.googleusercontent.com/macros/echo`:
 

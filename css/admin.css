@@ -1263,3 +1263,17 @@ body.admin-body,
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Inline code chip. .a-code is a block panel — white-space: pre with 0.9rem
+   padding and its own scrollbar — so using it mid-sentence renders each token
+   as a tall clipped box that breaks the line. */
+.a-code-inline {
+  font-family: var(--a-mono);
+  font-size: 0.82em;
+  background: var(--a-bg);
+  border: 1px solid var(--a-border);
+  border-radius: 3px;
+  padding: 0.1em 0.4em;
+  color: var(--a-text);
+  white-space: nowrap;
+}
