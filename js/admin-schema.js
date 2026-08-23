@@ -756,7 +756,7 @@ window.ADMIN_SCHEMA = {
     /* ============================== DATA =============================== */
     { id: 'leads', label: 'Leads', icon: 'fa-solid fa-inbox', group: 'Data', custom: 'leads',
       title: 'Lead Inbox',
-      desc: 'Form submissions and calculator unlocks captured in this browser.' },
+      desc: 'Submissions captured in this browser. The authoritative record is your Google Sheet — see the note below.' },
 
     { id: 'publish', label: 'Publish', icon: 'fa-solid fa-cloud-arrow-up', group: 'Data', custom: 'publish',
       title: 'Publish Changes',

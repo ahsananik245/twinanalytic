@@ -1237,6 +1237,20 @@
     var leads = filteredLeads();
 
     return '' +
+      // These figures come from localStorage, which is per-browser and per-device.
+      // A visitor who fills the form writes to their own machine, not to this one,
+      // so this panel can only ever show submissions made here. Without saying so,
+      // a count of zero reads as "nobody enquired" when the real leads went to the
+      // spreadsheet. The count is genuine, it just is not the whole record.
+      '<div class="a-callout a-callout-info" style="margin-bottom: 1.25rem;">' +
+        '<strong>This list is local to this browser.</strong> ' +
+        'Visitor submissions are sent to your Google Sheet, and each visitor\'s copy stays ' +
+        'on their own device — so the numbers below count only what was submitted here, ' +
+        'on this computer. Treat the sheet as the record of who enquired, not this panel. ' +
+        'The site also cannot detect a failed send: the request is made in no-cors mode, ' +
+        'so the browser reports success either way. Check the sheet periodically.' +
+      '</div>' +
+
       '<div class="a-stats">' +
         stat(state.leads.length, 'Total Leads') +
         stat(uniqueEmails(), 'Unique Emails') +

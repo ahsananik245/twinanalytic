@@ -184,6 +184,38 @@ frames over 33ms on both desktop and mobile viewports.
 To regenerate it from a different source image, the pipeline is
 `scripts/build-texture.py`.
 
+### Where leads actually go
+
+Two things about lead capture are easy to misread.
+
+**The Leads panel is local to one browser.** Submissions are written to
+`localStorage` under `tools_leads`, which is per-browser and per-device. A
+visitor filling the form writes to *their* machine; the panel reads *yours*. It
+can therefore only ever show what was submitted on the computer you are looking
+at. **Your Google Sheet is the record of who enquired — the panel is not.** A
+count of zero there means nothing was submitted on this machine, not that nobody
+enquired.
+
+**A failed send is invisible.** The POST to the Apps Script uses
+`mode: 'no-cors'`, so the response is opaque: `.then()` runs whether the script
+saved the row, errored, or refused the request, and `.catch()` only fires on a
+network-level failure. That is deliberate — it stops an adblocker or firewall
+from blocking the visitor's unlock — but it means the site cannot tell you when
+capture breaks. If the deployment expires or its access changes, leads stop
+arriving silently. Check the sheet periodically rather than trusting the absence
+of errors.
+
+Endpoint health can be checked from a terminal. A working deployment answers a
+POST with a 302 to `script.googleusercontent.com/macros/echo`:
+
+```bash
+curl -s -o /dev/null -w "%{http_code} %{redirect_url}\n" -X POST \
+  -H "Content-Type: text/plain" -d '{"name":"test"}' "$GOOGLE_SCRIPT_URL"
+```
+
+Do not follow the redirect with `-L`: curl re-POSTs without a body and you get a
+spurious 411 or 405 that looks like a failure when the script ran fine.
+
 ### Units across the calculator suite
 
 The 28 calculators do not all use the same unit system, and that is worth
