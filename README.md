@@ -184,6 +184,42 @@ frames over 33ms on both desktop and mobile viewports.
 To regenerate it from a different source image, the pipeline is
 `scripts/build-texture.py`.
 
+### Units across the calculator suite
+
+The 28 calculators do not all use the same unit system, and that is worth
+knowing before editing any of them.
+
+| Group | Units |
+| --- | --- |
+| 23 calculators built on the `bnbc-*` engine | Metric, with a working metric/imperial toggle |
+| `beam-design` | Metric only, no toggle |
+| `column-design`, `slab-design` | US customary only — ft, kips, ksi, psi, in |
+| `footing-design`, `footing-rect-design` | US customary, **except** rebar diameter in mm |
+
+The split is defensible on its own terms: BNBC is a metric code, and ACI 318
+publishes an imperial edition. The mixed footing pages are not a bug either —
+`js/footing-design.js` divides the entered diameter by 25.4, so the mm label is
+truthful, and mm bar sizes are ordinary practice in Bangladesh.
+
+The hazard is carrying a number from a metric calculator into an imperial one,
+so all five non-toggle pages now open with a `.unit-notice` stating the system
+in force. Metric pages use the gold accent, imperial the neutral steel, so the
+two differ at a glance rather than only on reading.
+
+**Why the imperial pages have not simply been converted.** It looks like a unit
+conversion and is not. `column-design` selects reinforcement from the US bar
+designation catalogue — #5 to #18 mains, #3 to #5 ties. Going metric means
+replacing that catalogue with 10/12/16/20/25/32 mm bars, which changes bar
+areas (#8 is 510 mm², a 25 mm bar is 491 mm²), the bar-count selection, tie
+sizing, and the hook extensions and development lengths keyed to bar diameter.
+That is an engineering change needing re-verification against a known-good
+calculation, not a wrapper around the existing engine.
+
+The safe route, if it is done, is the one `js/bnbc-project.js` already
+implements for the other 23: convert at the UI boundary via `tagUnits`,
+`repaintUnits` and `v()`, so the verified engine never sees a converted number
+— plus a metric bar catalogue and a fresh verification pass per page.
+
 ### Lead capture
 
 `features.leadGateMode` decides when a visitor is asked for their details:

@@ -2894,3 +2894,60 @@ html.no-blueprint.no-concrete body::before {
     transform: none;
   }
 }
+
+/* ==========================================================================
+   UNIT SYSTEM NOTICE
+   Twenty-three calculators are built on the BNBC engine and carry a
+   metric/imperial toggle. Five older ones do not, and they do not all use the
+   same system: the beam calculator is metric while the column, slab and
+   footing calculators are US customary. That split is defensible on its own
+   terms — BNBC is a metric code, ACI 318 publishes an imperial edition — but
+   it is a real hazard when someone carries a number from one calculator to
+   another. This states the system in force before any value is entered.
+   ========================================================================== */
+
+.unit-notice {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1.4rem;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-left: 3px solid var(--color-steel);
+  background: rgba(255, 255, 255, 0.025);
+  font-size: 0.84rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.unit-notice i {
+  color: var(--color-steel);
+  font-size: 0.95rem;
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+}
+
+/* min-width:0 so long unit lists wrap instead of forcing the card wider —
+   the same overflow trap fixed across the calculator tables. */
+.unit-notice span { min-width: 0; }
+
+.unit-notice strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.unit-notice code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  color: var(--color-gold);
+}
+
+/* Metric pages get the accent colour; imperial keeps the neutral steel, so the
+   two are distinguishable at a glance rather than only by reading. */
+.unit-notice.is-metric {
+  border-left-color: var(--color-gold);
+}
+.unit-notice.is-metric i {
+  color: var(--color-gold);
+}
