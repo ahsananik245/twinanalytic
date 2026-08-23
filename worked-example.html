@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0A0A0A">
+  <title>Worked Example — 6-Storey RC Building to BNBC 2020</title>
+  <meta name="description" content="A complete worked design pass on a 6-storey RC residential frame in Dhaka: seismic and wind loads to BNBC 2020, and beam design to ACI 318.">
+  <link rel="canonical" href="https://twinanalytic.com/worked-example">
+
+  <!-- Open Graph / social sharing -->
+  <meta property="og:title" content="Worked Example — 6-Storey RC Building to BNBC 2020" />
+  <meta property="og:description" content="A complete worked design pass on a 6-storey RC residential frame in Dhaka: seismic and wind loads to BNBC 2020, and beam design to ACI 318." />
+  <meta property="og:image" content="https://twinanalytic.com/assets/brand-banner.jpg" />
+  <meta property="og:url" content="https://twinanalytic.com/worked-example" />
+  <meta property="og:type" content="article" />
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://twinanalytic.com/assets/brand-banner.jpg">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Content engine: hydrates this page from data/content.json -->
+  <script src="js/site-content.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .page-banner {
+      padding: 10rem 0 4rem 0;
+      background: radial-gradient(circle at 10% 20%, rgba(13, 17, 23, 0.95) 0%, rgba(10, 10, 10, 0.98) 90%),
+                  repeating-linear-gradient(45deg, rgba(201, 168, 76, 0.03) 0px, rgba(201, 168, 76, 0.03) 2px, transparent 2px, transparent 10px);
+      border-bottom: 1px solid var(--border-gold);
+      text-align: center;
+    }
+    .page-banner h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(2.1rem, 5vw, 3.5rem);
+      font-weight: 300; letter-spacing: -0.02em; margin-bottom: 1rem;
+    }
+    .page-banner p {
+      color: var(--color-gold); font-family: var(--font-mono);
+      font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.2em;
+    }
+    .we-section { padding: 4rem 0 6rem 0; }
+    .we-wrap { max-width: 900px; margin: 0 auto; }
+    .we-wrap h2 {
+      font-family: var(--font-serif); font-weight: 400;
+      font-size: clamp(1.5rem, 3vw, 2rem); color: #fff;
+      margin: 3.5rem 0 0.4rem; scroll-margin-top: 6rem;
+    }
+    .we-wrap h2 .we-num {
+      font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-gold);
+      display: block; letter-spacing: 0.18em; margin-bottom: 0.5rem;
+    }
+    .we-wrap h3 {
+      font-family: var(--font-sans); font-weight: 600; font-size: 1rem;
+      color: var(--color-steel); margin: 2rem 0 0.75rem; letter-spacing: 0.01em;
+    }
+    .we-wrap p, .we-wrap li { color: var(--text-secondary); line-height: 1.75; }
+    .we-wrap p { margin-bottom: 1.1rem; }
+    .we-wrap ul { margin: 0 0 1.2rem 1.3rem; list-style: disc; }
+    .we-wrap li { margin-bottom: 0.45rem; }
+    .we-lede { font-size: 1.05rem; }
+    .we-note {
+      background: rgba(255,255,255,0.025); border-left: 3px solid var(--color-gold);
+      padding: 1.2rem 1.4rem; margin: 1.6rem 0; border-radius: 0 4px 4px 0;
+    }
+    .we-note p:last-child { margin-bottom: 0; }
+    .we-note strong { color: #fff; }
+    .we-tablewrap { overflow-x: auto; margin: 1.2rem 0 1.6rem; }
+    table.we-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 460px; }
+    table.we-table th, table.we-table td {
+      text-align: left; padding: 0.6rem 0.9rem;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    table.we-table th {
+      font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--color-gold); font-weight: 500;
+    }
+    table.we-table td { color: var(--text-secondary); }
+    table.we-table td.num { font-family: var(--font-mono); text-align: right; color: #fff; }
+    table.we-table tr.total td { border-top: 1px solid var(--border-gold); font-weight: 600; color: #fff; }
+    /* Each cell carries its own border rather than the grid faking one with a
+       1px gap over a light background — with six items in a five-column row
+       that left four empty lit cells trailing the last row. */
+    .we-result {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+      gap: 0.6rem; margin: 1.6rem 0;
+    }
+    .we-result div {
+      background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 4px; padding: 1.1rem 1.2rem;
+    }
+    .we-result span {
+      display: block; font-family: var(--font-mono); font-size: 0.68rem;
+      text-transform: uppercase; letter-spacing: 0.12em; color: var(--color-steel-dim, #7E8288);
+      margin-bottom: 0.35rem;
+    }
+    .we-result strong { font-family: var(--font-mono); font-size: 1.15rem; color: var(--color-gold); font-weight: 500; }
+    .we-repro { margin: 1.1rem 0 0; font-size: 0.86rem; }
+    .we-repro a { color: var(--color-gold); }
+    .we-toc {
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07);
+      padding: 1.4rem 1.6rem; border-radius: 4px; margin: 2rem 0 1rem;
+    }
+    .we-toc ol { margin: 0 0 0 1.1rem; }
+    .we-toc li { margin-bottom: 0.35rem; }
+    .we-toc a { color: var(--text-secondary); text-decoration: none; }
+    .we-toc a:hover { color: var(--color-gold); }
+    .we-cta {
+      margin-top: 3.5rem; padding: 2rem; border: 1px solid var(--border-gold);
+      border-radius: 4px; background: rgba(201,168,76,0.03);
+    }
+    .we-cta h3 { margin-top: 0; color: #fff; font-size: 1.2rem; font-family: var(--font-serif); font-weight: 400; }
+    @media (max-width: 640px) { .we-section { padding: 2.5rem 0 4rem; } }
+  </style>
+  <!-- Structured data: identifies the organisation and this page to search engines -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        "headline": "Worked Example — 6-Storey RC Building to BNBC 2020",
+        "url": "https://twinanalytic.com/worked-example",
+        "description": "A complete worked design pass on a 6-storey RC residential frame in Dhaka: seismic and wind loads to BNBC 2020, and beam design to ACI 318.",
+        "inLanguage": "en",
+        "isPartOf": { "@id": "https://twinanalytic.com/#website" },
+        "publisher": { "@id": "https://twinanalytic.com/#organization" },
+        "about": [
+          "BNBC 2020", "ACI 318", "Seismic base shear", "Wind load",
+          "Reinforced concrete beam design"
+        ]
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://twinanalytic.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Worked Example", "item": "https://twinanalytic.com/worked-example" }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+  <a href="#main-content" class="skip-link">Skip to Main Content</a>
+  <!-- NAVIGATION BAR -->
+  <nav class="navbar scrolled" id="navbar">
+    <div class="container">
+      <a href="index.html" class="logo" data-tw-list="brandLogo">
+        <img src="assets/logo.png" alt="TwinAnalytic logo" height="38" style="height: 38px; width: auto; margin-right: 10px; vertical-align: middle;">
+        Twin<span>Analytic</span>
+      </a>
+      <ul class="nav-links" id="nav-links" data-tw-list="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="bim-viewer.html">BIM Viewer</a></li>
+        <li><a href="calculators.html">Calculators</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+
+
+  <!-- BANNER -->
+  <header id="main-content" tabindex="-1" class="page-banner">
+    <div class="container">
+      <p>Worked Example</p>
+      <h1>6-Storey RC Residential Frame, Dhaka</h1>
+    </div>
+  </header>
+
+  <section class="we-section">
+    <div class="container">
+      <div class="we-wrap">
+
+        <p class="we-lede">This is <strong style="color:#fff">not a client project</strong>. It is a
+        design pass on a hypothetical building, published so you can see how we work before
+        deciding whether to engage us.</p>
+
+        <p>Every figure on this page was produced by the free calculators on this site. Every
+        input is listed, so you can enter the same numbers and get the same answers. Where a
+        result depends on something we would normally take from an analysis model, we say so
+        and stop rather than inventing it.</p>
+
+        <div class="we-toc">
+          <ol>
+            <li><a href="#building">The building</a></li>
+            <li><a href="#loads">Loads</a></li>
+            <li><a href="#seismic">Seismic base shear — BNBC 2020</a></li>
+            <li><a href="#wind">Wind load — BNBC 2020 MWFRS</a></li>
+            <li><a href="#governs">Which case governs</a></li>
+            <li><a href="#beam">Beam design — ACI 318</a></li>
+            <li><a href="#stops">Where this example stops</a></li>
+          </ol>
+        </div>
+
+        <h2 id="building"><span class="we-num">01</span>The building</h2>
+        <p>A regular six-storey reinforced concrete residential building on a flat site in
+        Dhaka. The frame is deliberately ordinary: no transfer structure, no setbacks, no
+        podium. An irregular building is a more interesting problem, but a regular one makes
+        the method visible.</p>
+
+        <div class="we-tablewrap">
+        <table class="we-table">
+          <tbody>
+            <tr><td>Storeys</td><td class="num">6</td></tr>
+            <tr><td>Storey height</td><td class="num">3.0 m</td></tr>
+            <tr><td>Total height, H</td><td class="num">18.0 m</td></tr>
+            <tr><td>Plan dimensions</td><td class="num">24.0 &times; 18.0 m</td></tr>
+            <tr><td>Lateral system</td><td class="num">Special RC moment frame (R = 8)</td></tr>
+            <tr><td>Concrete, f&#8242;c</td><td class="num">25 MPa</td></tr>
+            <tr><td>Reinforcement, fy</td><td class="num">415 MPa</td></tr>
+            <tr><td>Location</td><td class="num">Dhaka</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <div class="we-note">
+          <p><strong>Why a special moment frame.</strong> A special frame (R = 8) is permitted in
+          every seismic design category, so choosing it avoids a category-dependent argument
+          about whether an intermediate frame would be allowed. It also means the detailing
+          rules used later are the strict ones.</p>
+        </div>
+
+        <h2 id="loads"><span class="we-num">02</span>Loads</h2>
+        <h3>Dead load</h3>
+        <div class="we-tablewrap">
+        <table class="we-table">
+          <thead><tr><th>Component</th><th style="text-align:right">kN/m&sup2;</th></tr></thead>
+          <tbody>
+            <tr><td>150 mm slab (25 kN/m&sup3;)</td><td class="num">3.75</td></tr>
+            <tr><td>Floor finish and screed</td><td class="num">1.50</td></tr>
+            <tr><td>Partition allowance</td><td class="num">1.50</td></tr>
+            <tr><td>Services and ceiling</td><td class="num">0.25</td></tr>
+            <tr><td>Beams and columns, smeared over floor area</td><td class="num">1.50</td></tr>
+            <tr class="total"><td>Total dead load</td><td class="num">8.50</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>Live load and seismic weight</h3>
+        <p>Residential live load is taken as 2.0 kN/m&sup2;. The seismic weight is the dead load
+        plus 25&nbsp;% of the live load:</p>
+        <div class="we-tablewrap">
+        <table class="we-table">
+          <tbody>
+            <tr><td>Live load</td><td class="num">2.00 kN/m&sup2;</td></tr>
+            <tr><td>Seismic weight per floor, 8.50 + 0.25 &times; 2.00</td><td class="num">9.00 kN/m&sup2;</td></tr>
+            <tr class="total"><td>Total seismic weight, W = 24 &times; 18 &times; 9.00 &times; 6</td><td class="num">23 328 kN</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2 id="seismic"><span class="we-num">03</span>Seismic base shear — BNBC 2020</h2>
+        <p>Equivalent static method, using the
+        <a href="seismic-analysis.html" style="color:var(--color-gold)">seismic base shear
+        calculator</a>. Soil type SD (medium dense sand / firm clay) is a reasonable default
+        for much of Dhaka, but on a real project it comes from the geotechnical report, not
+        from a default.</p>
+
+        <h3>Inputs</h3>
+        <div class="we-tablewrap">
+        <table class="we-table">
+          <tbody>
+            <tr><td>Town</td><td class="num">Dhaka</td></tr>
+            <tr><td>Seismic zone coefficient, Z</td><td class="num">0.20</td></tr>
+            <tr><td>Occupancy category</td><td class="num">I, II &nbsp;&rarr;&nbsp; I = 1.00</td></tr>
+            <tr><td>Site class</td><td class="num">SD</td></tr>
+            <tr><td>Response reduction factor, R</td><td class="num">8</td></tr>
+            <tr><td>Damping</td><td class="num">5 %</td></tr>
+            <tr><td>Height, H</td><td class="num">18.0 m</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>Results</h3>
+        <div class="we-result">
+          <div><span>Period T</span><strong>0.628 s</strong></div>
+          <div><span>Soil factor S</span><strong>1.35</strong></div>
+          <div><span>Normalised Cs</span><strong>3.375</strong></div>
+          <div><span>Design Sa</span><strong>0.05625</strong></div>
+          <div><span>Seismic weight W</span><strong>23 328 kN</strong></div>
+          <div><span>Base shear V</span><strong>1 312.2 kN</strong></div>
+        </div>
+
+        <p>The period comes from the code formula for a concrete moment frame,
+        T = 0.0466 &times; 18<sup>0.9</sup> = 0.628 s, which places the building on the flat
+        plateau of the spectrum. The design acceleration is
+        Sa = &#8532; &times; Z &times; I &times; Cs / R = &#8532; &times; 0.20 &times; 1.00 &times; 3.375 / 8 = 0.05625,
+        giving V = 0.05625 &times; 23 328 = 1 312.2 kN.</p>
+
+        <h3>Vertical distribution</h3>
+        <div class="we-tablewrap">
+        <table class="we-table">
+          <thead><tr><th>Level</th><th style="text-align:right">Height (m)</th><th style="text-align:right">Force Fx (kN)</th></tr></thead>
+          <tbody>
+            <tr><td>Roof</td><td class="num">18.0</td><td class="num">385</td></tr>
+            <tr><td>Level 5</td><td class="num">15.0</td><td class="num">317</td></tr>
+            <tr><td>Level 4</td><td class="num">12.0</td><td class="num">250</td></tr>
+            <tr><td>Level 3</td><td class="num">9.0</td><td class="num">184</td></tr>
+            <tr><td>Level 2</td><td class="num">6.0</td><td class="num">120</td></tr>
+            <tr><td>Level 1</td><td class="num">3.0</td><td class="num">57.2</td></tr>
+            <tr class="total"><td>Total</td><td class="num">&mdash;</td><td class="num">1 312.2</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p class="we-repro">Reproduce this: open the
+        <a href="seismic-analysis.html">seismic calculator</a> and enter the seven inputs above,
+        then 6 storeys at 3 m, plan 24 &times; 18 m, 9 kN/m&sup2;.</p>
+
+        <h2 id="wind"><span class="we-num">04</span>Wind load — BNBC 2020 MWFRS</h2>
+        <p>Main wind force resisting system, wind normal to the 24 m face, using the
+        <a href="wind-load.html" style="color:var(--color-gold)">wind load calculator</a>.
+        Exposure A represents a built-up urban surrounding.</p>
+
+        <div class="we-result">
+          <div><span>Basic wind speed V</span><strong>65.7 m/s</strong></div>
+          <div><span>Exposure</span><strong>A</strong></div>
+          <div><span>Natural frequency n&#8321;</span><strong>1.59 Hz</strong></div>
+          <div><span>Classification</span><strong>Rigid</strong></div>
+          <div><span>Gust factor G</span><strong>0.847</strong></div>
+          <div><span>q&#8341; at 18 m</span><strong>1.912 kN/m&sup2;</strong></div>
+        </div>
+
+        <p>Because n&#8321; &ge; 1 Hz the building is rigid, so the gust effect factor is the
+        simple form rather than the flexible-structure expression. Pressure coefficients are
+        Cp = 0.80 windward and &minus;0.433 leeward, the latter interpolated for L/B = 1.333.</p>
+
+        <h3>Windward pressure profile</h3>
+        <div class="we-tablewrap">
+        <table class="we-table">
+          <thead><tr><th>z (m)</th><th style="text-align:right">Kz</th><th style="text-align:right">qz (kN/m&sup2;)</th><th style="text-align:right">Trib. h (m)</th><th style="text-align:right">Force (kN)</th></tr></thead>
+          <tbody>
+            <tr><td>3.0</td><td class="num">0.5746</td><td class="num">1.2924</td><td class="num">4.50</td><td class="num">94.6</td></tr>
+            <tr><td>6.0</td><td class="num">0.6211</td><td class="num">1.3970</td><td class="num">3.00</td><td class="num">68.2</td></tr>
+            <tr><td>9.0</td><td class="num">0.6974</td><td class="num">1.5686</td><td class="num">3.00</td><td class="num">76.6</td></tr>
+            <tr><td>12.0</td><td class="num">0.7572</td><td class="num">1.7030</td><td class="num">3.00</td><td class="num">83.1</td></tr>
+            <tr><td>15.0</td><td class="num">0.8070</td><td class="num">1.8151</td><td class="num">3.00</td><td class="num">88.6</td></tr>
+            <tr><td>18.0</td><td class="num">0.8502</td><td class="num">1.9121</td><td class="num">1.50</td><td class="num">46.7</td></tr>
+            <tr class="total"><td>Windward total</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">457.7</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p>Windward force per level is qz &times; G &times; 0.80 &times; 24 m &times; tributary height.
+        The leeward face carries a constant suction,
+        1.912 &times; 0.847 &times; 0.433 &times; 24 &times; 18 = 303.0 kN. Internal pressure acts equally
+        on both faces and cancels in the along-wind total, so it is excluded here.</p>
+
+        <div class="we-result">
+          <div><span>Windward</span><strong>457.7 kN</strong></div>
+          <div><span>Leeward</span><strong>303.0 kN</strong></div>
+          <div><span>Total wind base shear</span><strong>760.7 kN</strong></div>
+        </div>
+
+        <h2 id="governs"><span class="we-num">05</span>Which case governs</h2>
+        <div class="we-result">
+          <div><span>Seismic</span><strong>1 312.2 kN</strong></div>
+          <div><span>Wind</span><strong>760.7 kN</strong></div>
+          <div><span>Ratio</span><strong>1.73</strong></div>
+        </div>
+        <p>Seismic governs, by a factor of about 1.7. That is the usual outcome for a mid-rise
+        concrete building in Dhaka: the mass is high, the building is short enough that wind
+        pressure has not yet built up, and Zone 2 demand is significant. It would not stay true
+        for a taller or much lighter structure, which is why both are checked rather than
+        assumed.</p>
+
+        <h2 id="beam"><span class="we-num">06</span>Beam design — ACI 318</h2>
+        <p>A typical interior floor beam on a 6.0 m span with 4.5 m tributary width, designed
+        with the <a href="beam-design.html" style="color:var(--color-gold)">beam design
+        calculator</a>. Both ends continuous, special moment frame detailing.</p>
+
+        <h3>Loads on the beam</h3>
+        <div class="we-tablewrap">
+        <table class="we-table">
+          <tbody>
+            <tr><td>Superimposed dead, 7.00 kN/m&sup2; &times; 4.5 m</td><td class="num">31.50 kN/m</td></tr>
+            <tr><td>Beam self-weight, added by the tool at 24 kN/m&sup3;</td><td class="num">4.32 kN/m</td></tr>
+            <tr><td>Live, 2.0 kN/m&sup2; &times; 4.5 m</td><td class="num">9.00 kN/m</td></tr>
+            <tr class="total"><td>Factored, wu = 1.2(31.50 + 4.32) + 1.6(9.00)</td><td class="num">57.38 kN/m</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <div class="we-note">
+          <p><strong>A trap worth naming.</strong> The calculator adds the beam's own weight
+          from the section dimensions. Entering a dead load that already includes the beam
+          counts it twice — here that would have inflated Mu from 187.8 to 205.5 kN&middot;m,
+          about 9&nbsp;%. The 1.50 kN/m&sup2; smeared frame allowance used for seismic weight is a
+          global figure and is deliberately not reused for the local beam load.</p>
+        </div>
+
+        <h3>Results</h3>
+        <div class="we-result">
+          <div><span>Design moment Mu</span><strong>187.8 kN&middot;m</strong></div>
+          <div><span>Capacity &phi;Mn</span><strong>234.3 kN&middot;m</strong></div>
+          <div><span>Flexural DCR</span><strong>0.80</strong></div>
+          <div><span>As required</span><strong>990 mm&sup2;</strong></div>
+          <div><span>As provided, 4&#8709;20</span><strong>1 257 mm&sup2;</strong></div>
+          <div><span>Tensile strain &epsilon;t</span><strong>0.0138</strong></div>
+        </div>
+
+        <p>With the interior-span coefficient wuL&sup2;/11, Mu = 57.38 &times; 6.0&sup2; / 11 = 187.8
+        kN&middot;m, which matches the tool exactly. A 300 &times; 600 section with four 20 mm bars
+        gives &phi;Mn = 234.3 kN&middot;m. The strain of 0.0138 is comfortably past 0.005, so the
+        section is tension controlled and &phi; = 0.90 — the ductile failure mode you want.
+        Five bars were also checked and work, but four are enough; the extra bar buys nothing
+        except cost and congestion.</p>
+
+        <h3>Shear</h3>
+        <div class="we-result">
+          <div><span>Vu at d</span><strong>141.2 kN</strong></div>
+          <div><span>Capacity &phi;Vn</span><strong>314.5 kN</strong></div>
+          <div><span>Shear DCR</span><strong>0.45</strong></div>
+          <div><span>Stirrups</span><strong>&#8709;10 @ 125 mm</strong></div>
+        </div>
+        <p>Shear is not close to critical. The &#8709;10 stirrups at 125 mm centres are set by the
+        special moment frame hoop spacing rules rather than by the shear demand — in a seismic
+        frame the detailing usually governs the ends of the beam, not the force.</p>
+
+        <h2 id="stops"><span class="we-num">07</span>Where this example stops</h2>
+        <p>A real project carries on from here, and the next steps need a three-dimensional
+        analysis model:</p>
+        <ul>
+          <li><strong>Storey drift and P-delta</strong> — need displacements from the model.</li>
+          <li><strong>Column design</strong> — needs the axial-moment pairs each load combination
+          produces, not a single assumed load.</li>
+          <li><strong>Torsional and stiffness irregularity</strong> — need storey stiffnesses and
+          per-corner drifts.</li>
+          <li><strong>Foundations</strong> — need column reactions and a geotechnical report.</li>
+        </ul>
+        <p>The calculators for all of those are on this site, and we could have filled them with
+        plausible-looking numbers. We have not, because invented displacements would make this
+        page look more complete while making it worth less. The point of a worked example is
+        that every figure can be checked.</p>
+
+        <div class="we-cta">
+          <h3>Check it yourself, or talk to us</h3>
+          <p>Every calculator used here is free and needs no sign-up:
+          <a href="seismic-analysis.html" style="color:var(--color-gold)">seismic base shear</a>,
+          <a href="wind-load.html" style="color:var(--color-gold)">wind load</a>,
+          <a href="beam-design.html" style="color:var(--color-gold)">beam design</a>. Enter the
+          inputs listed above and you should land on the same answers. If you get something
+          different, we would genuinely like to know.</p>
+          <p style="margin-bottom:0">
+            <a href="calculators.html" class="btn btn-gold btn-sm">Open the calculator suite</a>
+            &nbsp;
+            <a href="contact.html" class="btn btn-ghost btn-sm">Discuss a project</a>
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+<footer class="footer">
+    <div class="footer-top-gradient"></div>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col brand">
+          <h3 data-tw-list="brandFooter">Twin<span>Analytic</span></h3>
+          <p style="color: var(--color-gold); font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; margin-top: -0.5rem;" data-tw="site.tagline">Construction &amp; Engineering</p>
+          <p data-tw="site.footerBlurb">We combine engineering expertise with digital technologies to create safe, optimized, and reliable structures.</p>
+          <p class="footer-slogan" data-tw="site.slogan">Building Tomorrow, Together</p>
+          <div class="footer-socials" data-tw-list="footerSocials">
+            <a href="https://linkedin.com/company/twinanalytic" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
+          </div>
+        </div>
+        <div data-tw-list="footerColumns" style="display: contents;">
+        <div class="footer-col">
+          <h3>Services</h3>
+          <ul class="footer-links">
+            <li><a href="services.html#structural">Structural Engineering</a></li>
+            <li><a href="services.html#bim">BIM &amp; Digital Engineering</a></li>
+            <li><a href="services.html#support">Construction Support</a></li>
+            <li><a href="services.html#consultancy">Engineering Consultancy</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Load Analysis</h3>
+          <ul class="footer-links">
+            <li><a href="seismic-analysis.html">Seismic Base Shear</a></li>
+            <li><a href="wind-load.html">Wind Load (MWFRS)</a></li>
+            <li><a href="drift-check.html">Drift &amp; Sway Check</a></li>
+            <li><a href="p-delta-check.html">P-Delta Stability</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Member Design</h3>
+          <ul class="footer-links">
+            <li><a href="beam-design.html">RC Beam Design</a></li>
+            <li><a href="column-design.html">RC Column Design</a></li>
+            <li><a href="slab-design.html">RC Slab Design</a></li>
+            <li><a href="stair-design.html">RC Stair Design</a></li>
+            <li><a href="calculators.html">All 26 Calculators</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Navigation</h3>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="projects.html">Projects</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p data-tw="site.copyright">&copy; 2026 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
+        <div class="footer-bottom-links" data-tw-list="footerBottomLinks">
+          <a href="privacy.html">Privacy Protocol</a>
+          <a href="sitemap.html">Sitemap</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

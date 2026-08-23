@@ -483,6 +483,11 @@
           {
             "label": "Base Shear Verification",
             "href": "base-shear-check.html"
+          },
+          {
+            "label": "Worked Example",
+            "href": "worked-example.html",
+            "enabled": true
           }
         ]
       },
