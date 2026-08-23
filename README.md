@@ -48,7 +48,7 @@ The whole public site is editable from a browser, without touching code. Open
 | **Calculators** | The hub page's 5 groups and all 28 calculators — headings, code badges, descriptions, order, and per-group / per-calculator visibility. Plus the lead-gate wording and an unlock reset for testing |
 | **Features** | Lead gate on/off, announcement bar, maintenance mode, section visibility, and the two background layers (concrete texture and blueprint grid) independently |
 | **Integrations** | Google Apps Script lead endpoint, Google Analytics / Tag Manager IDs |
-| **Leads** | Search, sort, delete, and export submissions as CSV or JSON |
+| **Leads** | The real inbox read from your Google Sheet, plus the local copy. Search, sort, export as CSV or JSON |
 | **History** | The last 15 publishes, restorable |
 
 ### How content reaches the live site
@@ -136,18 +136,15 @@ revalidating costs a 304 with no body. `/admin.html` and `/api/` are
 `no-store`. `data/content.json` already revalidates, so published content goes
 live immediately.
 
-> **⚠️ One manual step is still outstanding.**
+> The domain is proxied through **Cloudflare**, which overrides the origin's
+> `Cache-Control` unless told not to. Its default Browser Cache TTL of 4 hours
+> was replacing the rules above, so a deploy took up to 4 hours to reach anyone
+> who had already visited.
 >
-> The domain is proxied through **Cloudflare** (`Server: cloudflare`,
-> `cf-cache-status` present), and Cloudflare **overrides the origin's
-> `Cache-Control`**. Its default Browser Cache TTL is 4 hours — exactly the
-> `max-age=14400` still being served — so the rules above never reach visitors.
->
-> To fix, in the Cloudflare dashboard for this domain:
-> **Caching → Configuration → Browser Cache TTL → _Respect Existing Headers_**
->
-> Until that is changed, a deploy can take up to 4 hours to reach someone who
-> has already visited. A hard refresh (`Ctrl+Shift+R`) bypasses it meanwhile.
+> **Resolved** — Browser Cache TTL is set to *Respect Existing Headers*, and
+> the live response now carries `max-age=0, must-revalidate` with
+> `cf-cache-status: REVALIDATED`. If deploys ever start going stale again,
+> check that setting first: **Caching → Configuration → Browser Cache TTL**.
 
 ### Page background
 
