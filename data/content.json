@@ -381,11 +381,11 @@
   "projects": [],
   "projectsPage": {
     "emptyHeading": "Case Studies in Preparation",
-    "emptyMessage": "We do not publish client work without written consent, and our first consented case studies are still being prepared. In the meantime the clearest picture of how we work is our published analysis suite: twenty-eight BNBC 2020 and ACI 318 calculators, free and open to inspect.",
-    "emptyCtaLabel": "Open the Calculator Suite",
-    "emptyCtaHref": "calculators.html",
-    "emptySecondaryLabel": "Request a Capability Statement",
-    "emptySecondaryHref": "contact.html",
+    "emptyMessage": "We do not publish client work without written consent, and our first consented case studies are still being prepared. In the meantime the clearest picture of how we work is a full worked example — a 6-storey RC frame designed from loads through to reinforcement, with every input listed so you can reproduce the numbers yourself.",
+    "emptyCtaLabel": "Read the Worked Example",
+    "emptyCtaHref": "worked-example.html",
+    "emptySecondaryLabel": "Open the Calculator Suite",
+    "emptySecondaryHref": "calculators.html",
     "emptyNote": "A capability statement covering software, codes, deliverables and references is available on request.",
     "showFilters": true
   },
