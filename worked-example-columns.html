@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0A0A0A">
+  <title>Worked Example, Part 2 — RC Column Design to ACI 318</title>
+  <meta name="description" content="Column load take-down by tributary area and design to ACI 318 for a 6-storey RC frame in Dhaka, continuing the worked example.">
+  <link rel="canonical" href="https://twinanalytic.com/worked-example-columns">
+
+  <!-- Open Graph / social sharing -->
+  <meta property="og:title" content="Worked Example, Part 2 — RC Column Design to ACI 318" />
+  <meta property="og:description" content="Column load take-down by tributary area and design to ACI 318 for a 6-storey RC frame in Dhaka, continuing the worked example." />
+  <meta property="og:image" content="https://twinanalytic.com/assets/brand-banner.jpg" />
+  <meta property="og:url" content="https://twinanalytic.com/worked-example-columns" />
+  <meta property="og:type" content="article" />
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://twinanalytic.com/assets/brand-banner.jpg">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Content engine: hydrates this page from data/content.json -->
+  <script src="js/site-content.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .page-banner {
+      padding: 10rem 0 4rem 0;
+      background: radial-gradient(circle at 10% 20%, rgba(13, 17, 23, 0.95) 0%, rgba(10, 10, 10, 0.98) 90%),
+                  repeating-linear-gradient(45deg, rgba(201, 168, 76, 0.03) 0px, rgba(201, 168, 76, 0.03) 2px, transparent 2px, transparent 10px);
+      border-bottom: 1px solid var(--border-gold);
+      text-align: center;
+    }
+    .page-banner h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(2.1rem, 5vw, 3.5rem);
+      font-weight: 300; letter-spacing: -0.02em; margin-bottom: 1rem;
+    }
+    .page-banner p {
+      color: var(--color-gold); font-family: var(--font-mono);
+      font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.2em;
+    }
+    .we-section { padding: 4rem 0 6rem 0; }
+    .we-wrap { max-width: 900px; margin: 0 auto; }
+    .we-wrap h2 {
+      font-family: var(--font-serif); font-weight: 400;
+      font-size: clamp(1.5rem, 3vw, 2rem); color: #fff;
+      margin: 3.5rem 0 0.4rem; scroll-margin-top: 6rem;
+    }
+    .we-wrap h2 .we-num {
+      font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-gold);
+      display: block; letter-spacing: 0.18em; margin-bottom: 0.5rem;
+    }
+    .we-wrap h3 {
+      font-family: var(--font-sans); font-weight: 600; font-size: 1rem;
+      color: var(--color-steel); margin: 2rem 0 0.75rem; letter-spacing: 0.01em;
+    }
+    .we-wrap p, .we-wrap li { color: var(--text-secondary); line-height: 1.75; }
+    .we-wrap p { margin-bottom: 1.1rem; }
+    .we-wrap ul { margin: 0 0 1.2rem 1.3rem; list-style: disc; }
+    .we-wrap li { margin-bottom: 0.45rem; }
+    .we-lede { font-size: 1.05rem; }
+    .we-note {
+      background: rgba(255,255,255,0.025); border-left: 3px solid var(--color-gold);
+      padding: 1.2rem 1.4rem; margin: 1.6rem 0; border-radius: 0 4px 4px 0;
+    }
+    .we-note p:last-child { margin-bottom: 0; }
+    .we-note strong { color: #fff; }
+    .we-tablewrap { overflow-x: auto; margin: 1.2rem 0 1.6rem; }
+    table.we-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 460px; }
+    table.we-table th, table.we-table td {
+      text-align: left; padding: 0.6rem 0.9rem;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    table.we-table th {
+      font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--color-gold); font-weight: 500;
+    }
+    table.we-table td { color: var(--text-secondary); }
+    table.we-table td.num { font-family: var(--font-mono); text-align: right; color: #fff; }
+    table.we-table tr.total td { border-top: 1px solid var(--border-gold); font-weight: 600; color: #fff; }
+    /* Each cell carries its own border rather than the grid faking one with a
+       1px gap over a light background — with six items in a five-column row
+       that left four empty lit cells trailing the last row. */
+    .we-result {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+      gap: 0.6rem; margin: 1.6rem 0;
+    }
+    .we-result div {
+      background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 4px; padding: 1.1rem 1.2rem;
+    }
+    .we-result span {
+      display: block; font-family: var(--font-mono); font-size: 0.68rem;
+      text-transform: uppercase; letter-spacing: 0.12em; color: var(--color-steel-dim, #7E8288);
+      margin-bottom: 0.35rem;
+    }
+    .we-result strong { font-family: var(--font-mono); font-size: 1.15rem; color: var(--color-gold); font-weight: 500; }
+    .we-repro { margin: 1.1rem 0 0; font-size: 0.86rem; }
+    .we-repro a { color: var(--color-gold); }
+    .we-toc {
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07);
+      padding: 1.4rem 1.6rem; border-radius: 4px; margin: 2rem 0 1rem;
+    }
+    .we-toc ol { margin: 0 0 0 1.1rem; }
+    .we-toc li { margin-bottom: 0.35rem; }
+    .we-toc a { color: var(--text-secondary); text-decoration: none; }
+    .we-toc a:hover { color: var(--color-gold); }
+    .we-cta {
+      margin-top: 3.5rem; padding: 2rem; border: 1px solid var(--border-gold);
+      border-radius: 4px; background: rgba(201,168,76,0.03);
+    }
+    .we-cta h3 { margin-top: 0; color: #fff; font-size: 1.2rem; font-family: var(--font-serif); font-weight: 400; }
+    @media (max-width: 640px) { .we-section { padding: 2.5rem 0 4rem; } }
+  </style>
+  <!-- Structured data: identifies the organisation and this page to search engines -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        "headline": "Worked Example, Part 2 — RC Column Design to ACI 318",
+        "url": "https://twinanalytic.com/worked-example-columns",
+        "description": "Column load take-down by tributary area and design to ACI 318 for a 6-storey RC frame in Dhaka, continuing the worked example.",
+        "inLanguage": "en",
+        "isPartOf": { "@id": "https://twinanalytic.com/#website" },
+        "publisher": { "@id": "https://twinanalytic.com/#organization" },
+        "about": [
+          "BNBC 2020", "ACI 318", "Seismic base shear", "Wind load",
+          "Reinforced concrete beam design"
+        ]
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://twinanalytic.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Worked Example", "item": "https://twinanalytic.com/worked-example" },
+          { "@type": "ListItem", "position": 3, "name": "Part 2 — Columns", "item": "https://twinanalytic.com/worked-example-columns" }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+  <a href="#main-content" class="skip-link">Skip to Main Content</a>
+  <!-- NAVIGATION BAR -->
+  <nav class="navbar scrolled" id="navbar">
+    <div class="container">
+      <a href="index.html" class="logo" data-tw-list="brandLogo">
+        <img src="assets/logo.png" alt="TwinAnalytic logo" height="38" style="height: 38px; width: auto; margin-right: 10px; vertical-align: middle;">
+        Twin<span>Analytic</span>
+      </a>
+      <ul class="nav-links" id="nav-links" data-tw-list="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="bim-viewer.html">BIM Viewer</a></li>
+        <li><a href="calculators.html">Calculators</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+
+
+  
+  <!-- BANNER -->
+  <header id="main-content" tabindex="-1" class="page-banner">
+    <div class="container">
+      <p>Worked Example — Part 2</p>
+      <h1>Columns, by Tributary Area</h1>
+    </div>
+  </header>
+
+  <section class="we-section">
+    <div class="container">
+      <div class="we-wrap">
+
+        <p class="we-lede">This continues the
+        <a href="worked-example.html" style="color:var(--color-gold)">first worked example</a> —
+        the same 6-storey reinforced concrete frame in Dhaka — into the columns.</p>
+
+        <p>Part 1 stopped before column design, on the grounds that it needs the axial and
+        moment pairs a three-dimensional model produces. That is true for the final design.
+        It is not true for <strong style="color:#fff">preliminary sizing</strong>, which is done
+        by tributary area long before a model exists, and which is what this page shows. The
+        limits of the method are set out at the end rather than glossed over.</p>
+
+        <div class="we-toc">
+          <ol>
+            <li><a href="#method">The method, and what it cannot do</a></li>
+            <li><a href="#takedown">Load take-down</a></li>
+            <li><a href="#design">Designing the interior column</a></li>
+            <li><a href="#slender">A slenderness trap worth knowing</a></li>
+            <li><a href="#section">Choosing the section</a></li>
+            <li><a href="#ties">Seismic ties — the ACI minimum is not enough</a></li>
+            <li><a href="#stops">Where this stops</a></li>
+          </ol>
+        </div>
+
+        <h2 id="method"><span class="we-num">01</span>The method, and what it cannot do</h2>
+        <p>Tributary area assumes each column carries the floor immediately around it, halfway
+        to the next column in each direction. For a regular frame with roughly equal bays that
+        is close enough to size members and price the frame.</p>
+        <p>What it does not capture: continuity, which shifts load towards interior columns;
+        the moments a frame attracts under lateral load; and any irregularity. A model gives
+        all three. On a regular building the tributary estimate is usually a little
+        conservative for interior columns and a little unconservative for edge ones, which is
+        why it is a starting point and not an answer.</p>
+
+        <h2 id="takedown"><span class="we-num">02</span>Load take-down</h2>
+        <p>From Part 1: dead load 8.50 kN/m&sup2;, live load 2.00 kN/m&sup2;. The grid is four
+        bays of 6.0 m by four bays of 4.5 m, giving a 24 &times; 18 m plan and 25 columns.</p>
+
+        <div class="we-tablewrap">
+        <table class="we-table">
+          <thead><tr><th>Column</th><th style="text-align:right">Tributary (m&sup2;)</th><th style="text-align:right">Dead (kN)</th><th style="text-align:right">Live (kN)</th><th style="text-align:right">Pu (kN)</th></tr></thead>
+          <tbody>
+            <tr><td>Interior</td><td class="num">27.00</td><td class="num">1377.0</td><td class="num">324.0</td><td class="num">2170.8</td></tr>
+            <tr><td>Edge</td><td class="num">13.50</td><td class="num">688.5</td><td class="num">162.0</td><td class="num">1085.4</td></tr>
+            <tr><td>Corner</td><td class="num">6.75</td><td class="num">344.2</td><td class="num">81.0</td><td class="num">542.7</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p>An interior column takes 6.0 &times; 4.5 = 27.0 m&sup2; per floor over six floors, so
+        the dead load is 8.50 &times; 27.0 &times; 6 = 1377 kN and the live load
+        2.00 &times; 27.0 &times; 6 = 324 kN. Factored,
+        Pu = 1.2(1377) + 1.6(324) = <strong style="color:#fff">2170.8 kN</strong>.</p>
+
+        <div class="we-note">
+          <p><strong>Live load reduction has not been applied.</strong> BNBC permits a reduction
+          for members carrying large tributary areas over several floors, and taking it would
+          cut the interior column load noticeably. It is left out here because the reduction
+          factor depends on occupancy and on the influence area, and applying it without
+          stating those makes the example harder to check rather than easier. On a real project
+          it would be taken.</p>
+        </div>
+
+        <h2 id="design"><span class="we-num">03</span>Designing the interior column</h2>
+        <p>Using the <a href="column-design.html" style="color:var(--color-gold)">column design
+        calculator</a> in metric, with C25 concrete, 415 MPa reinforcement, 40 mm cover,
+        25 mm bars and 10 mm ties.</p>
+
+        <div class="we-result">
+          <div><span>Pu</span><strong>2170.7 kN</strong></div>
+          <div><span>Section</span><strong>381 mm sq</strong></div>
+          <div><span>Ast required</span><strong>2948 mm&sup2;</strong></div>
+          <div><span>&phi;Pn</span><strong>2207.2 kN</strong></div>
+          <div><span>D/C ratio</span><strong>0.98</strong></div>
+          <div><span>Steel ratio</span><strong>2 %</strong></div>
+        </div>
+
+        <p>A D/C of 0.98 means the section is being worked to within 2&nbsp;% of its capacity.
+        That is efficient and, for a preliminary size on a load estimate that carries its own
+        uncertainty, too tight. It also turns out not to be the binding problem.</p>
+
+        <h2 id="slender"><span class="we-num">04</span>A slenderness trap worth knowing</h2>
+        <p>Entered with the storey height of 3.0 m, every column in the building comes back
+        <em>slender</em>:</p>
+
+        <div class="we-tablewrap">
+        <table class="we-table">
+          <thead><tr><th>Column</th><th style="text-align:right">Section</th><th style="text-align:right">kl/r</th><th style="text-align:right">Limit</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td>Interior</td><td class="num">381 mm</td><td class="num">26.25</td><td class="num">22.00</td><td>Slender</td></tr>
+            <tr><td>Edge</td><td class="num">279 mm</td><td class="num">35.79</td><td class="num">22.00</td><td>Slender</td></tr>
+            <tr><td>Corner</td><td class="num">203 mm</td><td class="num">49.21</td><td class="num">22.00</td><td>Slender</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p>That is the wrong answer, and the reason is the input rather than the structure.
+        ACI 318 defines the unsupported length <em>lu</em> as the <strong style="color:#fff">clear
+        distance between floor members</strong>, not the storey height. With 600 mm beams framing
+        into the column, lu is 3.0 &minus; 0.6 = 2.4 m, not 3.0 m.</p>
+
+        <div class="we-tablewrap">
+        <table class="we-table">
+          <thead><tr><th>Steel ratio</th><th style="text-align:right">Section</th><th style="text-align:right">Ast</th><th style="text-align:right">&phi;Pn</th><th style="text-align:right">D/C</th><th style="text-align:right">kl/r</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td>1 %</td><td class="num">432 mm</td><td class="num">1961 mm&sup2;</td><td class="num">2462.1 kN</td><td class="num">0.88</td><td class="num">18.53</td><td>OK</td></tr>
+            <tr><td>2 %</td><td class="num">381 mm</td><td class="num">2948 mm&sup2;</td><td class="num">2207.2 kN</td><td class="num">0.98</td><td class="num">21.00</td><td>OK</td></tr>
+            <tr><td>3 %</td><td class="num">356 mm</td><td class="num">3929 mm&sup2;</td><td class="num">2201.4 kN</td><td class="num">0.99</td><td class="num">22.50</td><td>Slender</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p>With lu corrected the same columns are fine. Using the storey height is conservative
+        rather than dangerous — it reports slenderness that is not there — but it sends you
+        into a moment magnification calculation you did not need, and if you respond by growing
+        every column you have made the building heavier and more expensive for nothing.</p>
+
+        <h2 id="section"><span class="we-num">05</span>Choosing the section</h2>
+        <p>The calculator sizes to the smallest section that carries the load at the steel ratio
+        you ask for, so a higher ratio buys a smaller column. It does not follow that a higher
+        ratio is better:</p>
+        <ul>
+          <li>At 3&nbsp;% the section is 356 mm and slender again — the concrete has been traded
+          away for steel until stability becomes the constraint.</li>
+          <li>At 2&nbsp;% it is 381 mm with a D/C of 0.98, with nothing left for the load
+          estimate being wrong.</li>
+          <li>At 1&nbsp;% it is 432 mm, D/C 0.88, kl/r 18.5 — comfortable on both counts, and
+          the least reinforcement to fix and congest.</li>
+        </ul>
+        <p>The 1&nbsp;% column is the one to take forward, rounded up to a buildable
+        <strong style="color:#fff">450 mm square</strong>. Rounding up is free: it lowers both
+        the D/C and the slenderness. On a real building the size would then be held constant
+        over two or three floors and stepped, rather than changing every storey, because
+        formwork reuse is worth more than the concrete saved.</p>
+
+        <div class="we-note">
+          <p><strong>Upper floors carry less.</strong> The same interior column at level 3
+          carries four floors rather than six — Pu = 1447 kN, needing 330 mm — and at level 5
+          just two, Pu = 724 kN, needing 229 mm. That is the argument for stepping the section
+          up the building, and the reason the ground floor column governs the size you detail
+          first.</p>
+        </div>
+
+        <h2 id="ties"><span class="we-num">06</span>Seismic ties — the ACI minimum is not enough</h2>
+        <p>The column calculator returns a tie spacing from the ordinary ACI rules: the least of
+        16 bar diameters, 48 tie diameters and the column dimension. For a 432 mm column with
+        25 mm bars and 10 mm ties that is 400 mm.</p>
+
+        <p>Part 1 chose a <strong style="color:#fff">special moment frame</strong>, and in a
+        special frame that spacing is nowhere near sufficient near the ends of the column, where
+        the plastic hinge forms. Running the same column through the
+        <a href="column-tie-rebar.html" style="color:var(--color-gold)">column tie and hoop
+        spacing calculator</a>:</p>
+
+        <div class="we-result">
+          <div><span>Confined zone</span><strong>108 mm c/c</strong></div>
+          <div><span>Middle zone</span><strong>216 mm c/c</strong></div>
+          <div><span>Confinement length Lo</span><strong>457 mm</strong></div>
+          <div><span>hx</span><strong>216 mm</strong></div>
+          <div><span>Governing rule</span><strong>18.7.5.3(a)</strong></div>
+          <div><span>Ties</span><strong>10 mm, 4 legs</strong></div>
+        </div>
+
+        <p>Spacing in the confined zone is governed by ACI 318 18.7.5.3(a), a quarter of the
+        least column dimension, giving 432/4 = 108 mm. That is
+        <strong style="color:#fff">roughly a quarter of the 400 mm</strong> the ordinary rules
+        allow, over a length Lo of 457 mm at each end. Detailing a seismic frame to the
+        non-seismic spacing is one of the more consequential mistakes available in reinforced
+        concrete, and it is easy to make, because the first calculator answers the question you
+        asked rather than the one you should have asked.</p>
+
+        <h2 id="stops"><span class="we-num">07</span>Where this stops</h2>
+        <p>Everything above is axial. The columns have been sized for load alone, and a real
+        column in a moment frame carries moment as well — from frame action under gravity, and
+        much more under the seismic case Part 1 showed governs. Those moments need the model,
+        and with them the design moves onto the P-M interaction diagram rather than a pure
+        axial check.</p>
+        <p>Still outstanding, and still needing a model: biaxial bending, moment magnification
+        where slenderness genuinely applies, storey drift, the strong-column weak-beam check
+        that a special moment frame requires, and the foundations. The calculators for most of
+        those are on this site. They have not been filled in here, because doing so would mean
+        inventing the moments, and a worked example whose numbers cannot be checked is
+        decoration.</p>
+
+        <div class="we-cta">
+          <h3>Check it yourself</h3>
+          <p>Both calculators used here are free, switchable between metric and imperial, and
+          need no sign-up:
+          <a href="column-design.html" style="color:var(--color-gold)">column design</a> and
+          <a href="column-tie-rebar.html" style="color:var(--color-gold)">tie and hoop
+          spacing</a>. The inputs are listed above. If you get a different answer, we would
+          like to know.</p>
+          <p style="margin-bottom:0">
+            <a href="worked-example.html" class="btn btn-ghost btn-sm">Read Part 1</a>
+            &nbsp;
+            <a href="contact.html" class="btn btn-gold btn-sm">Discuss a project</a>
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+<footer class="footer">
+    <div class="footer-top-gradient"></div>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col brand">
+          <h3 data-tw-list="brandFooter">Twin<span>Analytic</span></h3>
+          <p style="color: var(--color-gold); font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; margin-top: -0.5rem;" data-tw="site.tagline">Construction &amp; Engineering</p>
+          <p data-tw="site.footerBlurb">We combine engineering expertise with digital technologies to create safe, optimized, and reliable structures.</p>
+          <p class="footer-slogan" data-tw="site.slogan">Building Tomorrow, Together</p>
+          <div class="footer-socials" data-tw-list="footerSocials">
+            <a href="https://linkedin.com/company/twinanalytic" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
+          </div>
+        </div>
+        <div data-tw-list="footerColumns" style="display: contents;">
+        <div class="footer-col">
+          <h3>Services</h3>
+          <ul class="footer-links">
+            <li><a href="services.html#structural">Structural Engineering</a></li>
+            <li><a href="services.html#bim">BIM &amp; Digital Engineering</a></li>
+            <li><a href="services.html#support">Construction Support</a></li>
+            <li><a href="services.html#consultancy">Engineering Consultancy</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Load Analysis</h3>
+          <ul class="footer-links">
+            <li><a href="seismic-analysis.html">Seismic Base Shear</a></li>
+            <li><a href="wind-load.html">Wind Load (MWFRS)</a></li>
+            <li><a href="drift-check.html">Drift &amp; Sway Check</a></li>
+            <li><a href="p-delta-check.html">P-Delta Stability</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Member Design</h3>
+          <ul class="footer-links">
+            <li><a href="beam-design.html">RC Beam Design</a></li>
+            <li><a href="column-design.html">RC Column Design</a></li>
+            <li><a href="slab-design.html">RC Slab Design</a></li>
+            <li><a href="stair-design.html">RC Stair Design</a></li>
+            <li><a href="calculators.html">All 26 Calculators</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Navigation</h3>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="projects.html">Projects</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p data-tw="site.copyright">&copy; 2026 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
+        <div class="footer-bottom-links" data-tw-list="footerBottomLinks">
+          <a href="privacy.html">Privacy Protocol</a>
+          <a href="sitemap.html">Sitemap</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

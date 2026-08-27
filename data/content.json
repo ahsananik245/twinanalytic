@@ -488,6 +488,11 @@
             "label": "Worked Example",
             "href": "worked-example.html",
             "enabled": true
+          },
+          {
+            "label": "Worked Example — Columns",
+            "href": "worked-example-columns.html",
+            "enabled": true
           }
         ]
       },
