@@ -1,0 +1,37 @@
+{
+  "provider": "kokoro",
+  "speed": 1,
+  "lines": [
+    {
+      "id": "01",
+      "text": "Every building starts as a set of numbers that have to be right."
+    },
+    {
+      "id": "02",
+      "text": "TwinAnalytic is a structural engineering and BIM consultancy, working to BNBC 2020 and ACI 318."
+    },
+    {
+      "id": "03",
+      "text": "Twenty-eight structural calculators. Free, and open without signing up."
+    },
+    {
+      "id": "04",
+      "text": "Seismic, wind, member design and detailing, each one showing every step, against the clause it comes from."
+    },
+    {
+      "id": "05",
+      "text": "And two complete worked examples, where every number can be reproduced."
+    },
+    {
+      "id": "06",
+      "text": "TwinAnalytic dot com."
+    }
+  ],
+  "bgm": {
+    "mode": "retrieve",
+    "query": "focused, restrained, technical — a low pulse rather than a build",
+    "blob": "Twenty-eight free BNBC 2020 and ACI 318 calculators, and engineering you can check",
+    "arc": "Hook → Who → Proof (tools) → Proof (output) → Proof (worked examples) → Address"
+  },
+  "voice": "am_michael"
+}

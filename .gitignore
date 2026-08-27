@@ -26,3 +26,16 @@ Thumbs.db
 #   npx skills add <repo>
 .agents/
 .claude/skills/
+
+# Video project working files. The plan and the compositions are committed —
+# they are small and the video rebuilds from them — but the captured pages,
+# generated audio, downloaded fonts, snapshots and the rendered MP4 are ~50 MB
+# of regenerable artefacts and do not belong in git history.
+videos/*/capture/
+videos/*/assets/
+videos/*/renders/
+videos/*/snapshots/
+videos/*/audio_meta.json
+videos/*/audio_engine_meta.json
+videos/*/.hyperframes/
+videos/*/node_modules/

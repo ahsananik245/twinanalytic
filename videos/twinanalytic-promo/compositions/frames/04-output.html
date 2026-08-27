@@ -1,0 +1,93 @@
+<template>
+  <div id="root" data-composition-id="04-output" data-start="0" data-duration="7.668" data-width="1920" data-height="1080">
+    <style>
+      @font-face { font-family: "Sora"; src: url("assets/fonts/sora-300.woff2") format("woff2"); font-weight: 300; font-display: block; }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/jetbrains-400.woff2") format("woff2"); font-weight: 400; font-display: block; }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/jetbrains-500.woff2") format("woff2"); font-weight: 500; font-display: block; }
+
+      #root { position: absolute; inset: 0; overflow: hidden; font-family: "Sora", sans-serif; }
+
+      .o4-ground { position: absolute; inset: 0; background: #131313; }
+
+      /* The screenshot is the hero and is shown as itself — no browser chrome,
+         no device mockup. A fake frame around a real screen would add a layer
+         of pretend to the one shot whose whole job is being real. */
+      .o4-surfwrap { position: absolute; left: 470px; top: 74px; width: 1380px; height: 826px; overflow: hidden; }
+      .o4-surf {
+        position: absolute; inset: 0;
+        background: url("assets/shot-seismic-result.png") 62% 30% / 150% no-repeat;
+      }
+      .o4-vig {
+        position: absolute; inset: 0;
+        background: linear-gradient(90deg, rgba(19,19,19,0.95) 0%, rgba(19,19,19,0.28) 22%, rgba(19,19,19,0) 55%);
+      }
+
+      .o4-rail { position: absolute; left: 130px; top: 300px; width: 320px; }
+      .o4-item {
+        font-family: "JetBrains Mono", monospace; font-size: 21px; font-weight: 400;
+        letter-spacing: 3.5px; text-transform: uppercase; color: #9AA0A6;
+        margin: 0 0 30px; white-space: nowrap;
+      }
+      .o4-item span { color: #C9A84C; margin-right: 14px; }
+
+      /* Sits under the Design Base Shear row in the screenshot. */
+      .o4-chip {
+        position: absolute; left: 130px; top: 540px; opacity: 0;
+        font-family: "JetBrains Mono", monospace; font-size: 18px; font-weight: 500;
+        letter-spacing: 3px; text-transform: uppercase; color: #C9A84C;
+        border: 1px solid #463C25; padding: 7px 14px;
+      }
+    </style>
+
+    <div class="clip o4-ground" data-start="0" data-duration="7.668" data-track-index="0"></div>
+
+    <div class="clip o4-surfwrap" data-start="0" data-duration="7.668" data-track-index="1">
+      <div class="o4-surf" id="o4-surf"></div>
+      <div class="o4-vig"></div>
+    </div>
+
+    <div class="clip o4-rail" data-start="0" data-duration="7.668" data-track-index="2">
+      <p class="o4-item" id="o4-i1"><span>01</span>Seismic</p>
+      <p class="o4-item" id="o4-i2"><span>02</span>Wind</p>
+      <p class="o4-item" id="o4-i3"><span>03</span>Member design</p>
+      <p class="o4-item" id="o4-i4"><span>04</span>Detailing</p>
+    </div>
+
+    <div class="clip o4-underline" data-start="0" data-duration="7.668" data-track-index="3" id="o4-underline"></div>
+    <div class="clip o4-chip" data-start="0" data-duration="7.668" data-track-index="4" id="o4-chip">BNBC 6.2.34</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script>
+      (function () {
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+        window.__timelines["04-output"] = tl;
+
+        /* This is the video's deliberate held beat — the longest frame with the
+           least motion. The whole point is that the working is visible, so the
+           viewer is given time to actually read it. One continuous push, four
+           cued labels, then a full stop. */
+
+        /* Scene 1 (0.0–1.8s) — the surface is up immediately and a single slow
+           push toward the results column runs for most of the frame. */
+        tl.fromTo("#o4-surf", { scale: 1.0, opacity: 0.86 },
+          { scale: 1.085, opacity: 1, duration: 5.4, ease: "power1.out" }, 0);
+
+        /* Scene 2 (1.8–4.0s) — the four disciplines tick in one at a time on
+           their spoken cues, never as a block. */
+        ["#o4-i1", "#o4-i2", "#o4-i3", "#o4-i4"].forEach(function (sel, i) {
+          tl.fromTo(sel, { opacity: 0, x: -20 },
+            { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 1.78 + i * 0.52);
+        });
+
+        /* Scene 3–4 (4.0–7.168s) — the clause the spectral acceleration comes
+           from, set under the discipline rail. Deliberately not an arrow at a
+           specific row: the push-in moves the screenshot under any fixed
+           marker, and a clause reference pointing at the wrong quantity would
+           be worse than no pointer at all. */
+        tl.fromTo("#o4-chip", { opacity: 0, y: 10 },
+          { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, 5.62);
+      })();
+    </script>
+  </div>
+</template>

@@ -1,0 +1,96 @@
+<template>
+  <div id="root" data-composition-id="05-examples" data-start="0" data-duration="4.895" data-width="1920" data-height="1080">
+    <style>
+      @font-face { font-family: "Playfair Display"; src: url("assets/fonts/playfair-400.woff2") format("woff2"); font-weight: 400; font-display: block; }
+      @font-face { font-family: "Sora"; src: url("assets/fonts/sora-300.woff2") format("woff2"); font-weight: 300; font-display: block; }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/jetbrains-400.woff2") format("woff2"); font-weight: 400; font-display: block; }
+
+      #root { position: absolute; inset: 0; overflow: hidden; font-family: "Sora", sans-serif; }
+
+      .x5-ground { position: absolute; inset: 0; background: #131313; }
+
+      /* The reveal is a clip-path wipe rather than a fade: the page of derived
+         numbers is uncovered, which suits "you can check this" better than a
+         dissolve does. */
+      .x5-shotwrap {
+        position: absolute; inset: 0; overflow: hidden;
+        clip-path: polygon(-30% 0%, -30% 0%, -55% 100%, -55% 100%);
+      }
+      .x5-shot {
+        position: absolute; inset: 0;
+        background: url("assets/shot-worked-example.png") 50% 22% / cover no-repeat;
+        opacity: 0.42;
+      }
+      .x5-wash {
+        position: absolute; inset: 0;
+        background: linear-gradient(90deg, rgba(19,19,19,0.93) 0%, rgba(19,19,19,0.74) 44%, rgba(19,19,19,0.30) 100%);
+      }
+      /* The sweeping edge that does the wiping. */
+      .x5-edge {
+        position: absolute; top: -12%; left: -34%; width: 3px; height: 124%;
+        background: #C9A84C; transform: rotate(9deg); opacity: 0;
+      }
+
+      .x5-copy { position: absolute; left: 132px; top: 384px; width: 900px; }
+      .x5-kicker {
+        font-family: "JetBrains Mono", monospace; font-size: 15px; font-weight: 400;
+        letter-spacing: 3px; text-transform: uppercase; color: #C9A84C; margin: 0 0 24px;
+      }
+      .x5-head {
+        font-family: "Playfair Display", serif; font-weight: 400; font-size: 78px;
+        line-height: 1.08; color: #F5F5F5; margin: 0; letter-spacing: -0.01em;
+      }
+      .x5-qual {
+        font-family: "Sora", sans-serif; font-weight: 300; font-size: 27px;
+        color: #9AA0A6; margin: 30px 0 0;
+      }
+    </style>
+
+    <div class="clip x5-ground" data-start="0" data-duration="4.895" data-track-index="0"></div>
+
+    <div class="clip x5-shotwrap" data-start="0" data-duration="4.895" data-track-index="1" id="x5-shotwrap">
+      <div class="x5-shot"></div>
+      <div class="x5-wash"></div>
+    </div>
+
+    <div class="clip x5-edge" data-start="0" data-duration="4.895" data-track-index="2" id="x5-edge"></div>
+
+    <div class="clip x5-copy" data-start="0" data-duration="4.895" data-track-index="3">
+      <p class="x5-kicker" id="x5-kicker">Worked examples</p>
+      <p class="x5-head" id="x5-head">Two complete designs</p>
+      <p class="x5-qual" id="x5-qual">Every number reproducible</p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script>
+      (function () {
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+        window.__timelines["05-examples"] = tl;
+
+        /* Scene 1 (0.0–1.4s) — a gold edge sweeps across and wipes the worked
+           example page open behind it. One move, as the blueprint asks. */
+        tl.fromTo("#x5-edge", { opacity: 0, x: 0 },
+          { opacity: 1, duration: 0.18, ease: "power1.out" }, 0.02);
+        tl.to("#x5-edge", { x: 2260, duration: 1.15, ease: "power2.inOut" }, 0.06);
+        tl.to("#x5-edge", { opacity: 0, duration: 0.24, ease: "power1.in" }, 1.02);
+        tl.fromTo("#x5-shotwrap",
+          { clipPath: "polygon(-30% 0%, -30% 0%, -55% 100%, -55% 100%)" },
+          { clipPath: "polygon(-30% 0%, 130% 0%, 130% 100%, -55% 100%)",
+            duration: 1.18, ease: "power2.inOut" }, 0.06);
+
+        /* Scene 2 (1.4–3.0s) — the headline arrives over the uncovered tables,
+           which keep reading behind it. */
+        tl.fromTo("#x5-kicker", { opacity: 0, y: 12 },
+          { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 1.38);
+        tl.fromTo("#x5-head", { opacity: 0, y: 24 },
+          { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, 1.52);
+
+        /* Scene 3 (3.0–4.395s) — the qualifier crossfades up beneath. No camera
+           move under this at all; the stillness is the point of the beat. */
+        tl.fromTo("#x5-qual", { opacity: 0, y: 18 },
+          { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 3.02);
+      })();
+    </script>
+  </div>
+</template>

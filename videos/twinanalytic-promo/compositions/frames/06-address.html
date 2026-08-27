@@ -1,0 +1,89 @@
+<template>
+  <div id="root" data-composition-id="06-address" data-start="0" data-duration="3.6" data-width="1920" data-height="1080">
+    <style>
+      @font-face { font-family: "Playfair Display"; src: url("assets/fonts/playfair-400.woff2") format("woff2"); font-weight: 400; font-display: block; }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/jetbrains-400.woff2") format("woff2"); font-weight: 400; font-display: block; }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/jetbrains-500.woff2") format("woff2"); font-weight: 500; font-display: block; }
+
+      #root { position: absolute; inset: 0; overflow: hidden; font-family: "JetBrains Mono", monospace; }
+
+      .a6-ground { position: absolute; inset: 0; background: #131313; }
+
+      /* The mark arrives on a drawn line rather than assembling from particles
+         — it should appear the way a drawing does, not the way a title
+         sequence does. */
+      .a6-rule {
+        position: absolute; left: 50%; top: 286px; height: 1px; width: 520px;
+        margin-left: -260px; background: #463C25; transform-origin: center;
+      }
+      .a6-stack { position: absolute; left: 0; right: 0; top: 336px; text-align: center; }
+      .a6-mark { width: 104px; height: 91px; display: block; margin: 0 auto 24px; }
+      .a6-name {
+        font-family: "Playfair Display", serif; font-weight: 400; font-size: 62px;
+        line-height: 1.1; color: #F5F5F5; margin: 0; letter-spacing: -0.005em;
+      }
+      .a6-domain {
+        position: absolute; left: 0; right: 0; top: 600px; text-align: center;
+        font-family: "JetBrains Mono", monospace; font-weight: 500; font-size: 38px;
+        letter-spacing: 6px; color: #C9A84C;
+      }
+      .a6-codes {
+        position: absolute; left: 0; right: 0; top: 700px; text-align: center;
+        font-family: "JetBrains Mono", monospace; font-weight: 400; font-size: 17px;
+        letter-spacing: 5px; text-transform: uppercase; color: #9AA0A6;
+      }
+    </style>
+
+    <div class="clip a6-ground" data-start="0" data-duration="3.6" data-track-index="0"></div>
+    <div class="clip a6-rule" data-start="0" data-duration="3.6" data-track-index="1" id="a6-rule"></div>
+
+    <div class="clip a6-stack" data-start="0" data-duration="3.6" data-track-index="2">
+      <img class="a6-mark" id="a6-mark" src="assets/twinanalytic-logo.png" alt="">
+      <p class="a6-name" id="a6-name">TwinAnalytic</p>
+    </div>
+
+    <div class="clip a6-domain" data-start="0" data-duration="3.6" data-track-index="3" id="a6-domain">twinanalytic.com</div>
+    <div class="clip a6-codes" data-start="0" data-duration="3.6" data-track-index="4" id="a6-codes">BNBC 2020 &nbsp;·&nbsp; ACI 318</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script>
+      (function () {
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+        window.__timelines["06-address"] = tl;
+
+        /* Scene 1 (0.0–1.2s) — a single hairline draws through the centre and
+           the lockup fades up on it. Centred with a static margin and grown
+           with scaleX — animating width or marginLeft would snap to whole
+           device pixels and stutter under the seek-by-frame renderer. */
+        tl.fromTo("#a6-rule", { scaleX: 0 },
+          { scaleX: 1, duration: 0.85, ease: "power2.inOut" }, 0);
+        tl.fromTo("#a6-mark", { opacity: 0, y: 16, scale: 0.94 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "power3.out" }, 0.2);
+        tl.fromTo("#a6-name", { opacity: 0, y: 18 },
+          { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 0.38);
+
+        /* Scene 2 (1.2–2.2s) — the address sets beneath, letter by letter, so
+           it reads as being typed rather than dropped in. */
+        var domain = document.getElementById("a6-domain");
+        var text = domain.textContent;
+        domain.textContent = "";
+        var chars = text.split("").map(function (ch) {
+          var s = document.createElement("span");
+          s.textContent = ch;
+          s.style.opacity = "0";
+          domain.appendChild(s);
+          return s;
+        });
+        tl.to(chars, { opacity: 1, duration: 0.02, stagger: 0.035, ease: "none" }, 1.18);
+
+        /* Scene 3 (2.2–3.6s) — the codes settle underneath and the whole
+           lockup holds dead still to the last frame. This is the final frame,
+           so a settle is allowed; the address stays up long enough to read
+           and type. */
+        tl.fromTo("#a6-codes", { opacity: 0, y: 12 },
+          { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 2.22);
+      })();
+    </script>
+  </div>
+</template>

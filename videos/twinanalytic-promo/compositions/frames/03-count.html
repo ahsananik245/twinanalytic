@@ -1,0 +1,98 @@
+<template>
+  <div id="root" data-composition-id="03-count" data-start="0" data-duration="5.471" data-width="1920" data-height="1080">
+    <style>
+      @font-face { font-family: "Playfair Display"; src: url("assets/fonts/playfair-400.woff2") format("woff2"); font-weight: 400; font-display: block; }
+      @font-face { font-family: "Sora"; src: url("assets/fonts/sora-300.woff2") format("woff2"); font-weight: 300; font-display: block; }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/jetbrains-400.woff2") format("woff2"); font-weight: 400; font-display: block; }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/jetbrains-500.woff2") format("woff2"); font-weight: 500; font-display: block; }
+
+      #root { position: absolute; inset: 0; overflow: hidden; font-family: "Sora", sans-serif; }
+
+      .c3-ground { position: absolute; inset: 0; background: #131313; }
+      .c3-shotwrap { position: absolute; inset: 0; overflow: hidden; opacity: 0; }
+      .c3-shot {
+        position: absolute; inset: -3%;
+        background: url("assets/shot-calculators-grid.png") center/cover no-repeat;
+      }
+      .c3-wash { position: absolute; inset: 0; background: rgba(19,19,19,0.87); }
+
+      .c3-stack { position: absolute; left: 0; right: 0; top: 250px; text-align: center; }
+      .c3-num {
+        font-family: "JetBrains Mono", monospace; font-weight: 500; font-size: 268px;
+        line-height: 1; color: #C9A84C; margin: 0; letter-spacing: -6px;
+      }
+      .c3-what {
+        font-family: "Playfair Display", serif; font-weight: 400; font-size: 60px;
+        color: #F5F5F5; margin: 22px 0 0; letter-spacing: -0.005em;
+      }
+      .c3-tags {
+        position: absolute; left: 0; right: 0; top: 720px;
+        display: flex; justify-content: center; align-items: center; gap: 34px;
+      }
+      .c3-tag {
+        font-family: "JetBrains Mono", monospace; font-size: 22px; font-weight: 400;
+        letter-spacing: 4px; text-transform: uppercase; color: #C9A84C;
+      }
+      .c3-sep { width: 1px; height: 26px; background: #463C25; }
+    </style>
+
+    <div class="clip c3-ground" data-start="0" data-duration="5.471" data-track-index="0"></div>
+
+    <div class="clip c3-shotwrap" data-start="0" data-duration="5.471" data-track-index="1" id="c3-shotwrap">
+      <div class="c3-shot"></div>
+      <div class="c3-wash"></div>
+    </div>
+
+    <div class="clip c3-stack" data-start="0" data-duration="5.471" data-track-index="2">
+      <p class="c3-num" id="c3-num">0</p>
+      <p class="c3-what" id="c3-what">structural calculators</p>
+    </div>
+
+    <div class="clip c3-tags" data-start="0" data-duration="5.471" data-track-index="3">
+      <span class="c3-tag" id="c3-tag1">Free</span>
+      <span class="c3-sep" id="c3-sep"></span>
+      <span class="c3-tag" id="c3-tag2">No sign-up</span>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script>
+      (function () {
+        window.__timelines = window.__timelines || {};
+        var tl = gsap.timeline({ paused: true });
+        window.__timelines["03-count"] = tl;
+
+        /* Scene 1 (0.0–1.6s) — the count-up is this shot's signature move and
+           the one number the whole video turns on. Bare charcoal behind it;
+           nothing else exists yet. Stepped with snap so it reads as a counter
+           rather than a blurred tween. */
+        var counter = { v: 0 };
+        tl.fromTo("#c3-num", { opacity: 0, scale: 0.9 },
+          { opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" }, 0.05);
+        tl.to(counter, {
+          v: 28, duration: 1.35, ease: "power2.out",
+          snap: { v: 1 },
+          onUpdate: function () {
+            document.getElementById("c3-num").textContent = String(Math.round(counter.v));
+          }
+        }, 0.12);
+
+        /* Scene 2 (1.6–3.2s) — as the voice says "structural calculators" the
+           words resolve and the real suite page fades in behind, so the count
+           is visibly backed by a page rather than asserted. */
+        tl.fromTo("#c3-what", { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.75, ease: "power3.out" }, 1.62);
+        tl.fromTo("#c3-shotwrap", { opacity: 0 },
+          { opacity: 1, duration: 1.2, ease: "power1.inOut" }, 1.75);
+
+        /* Scene 3 (3.2–4.971s) — the two claims tick in, then the frame holds
+           still. Both are literally true, so they are set plainly. */
+        tl.fromTo("#c3-tag1", { opacity: 0, y: 12 },
+          { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 3.25);
+        tl.fromTo("#c3-sep", { opacity: 0, scaleY: 0 },
+          { opacity: 1, scaleY: 1, duration: 0.4, ease: "power2.out" }, 3.45);
+        tl.fromTo("#c3-tag2", { opacity: 0, y: 12 },
+          { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 3.6);
+      })();
+    </script>
+  </div>
+</template>
