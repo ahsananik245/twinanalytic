@@ -56,7 +56,10 @@ const BNBCProject = (function () {
       udl_kNm: { f: 1, u: 'kN/m' },
       udl_lbft: { f: 0.0145939, u: 'kN/m' },
       density_kNm3: { f: 1, u: 'kN/m³' },
-      density_pcf: { f: 0.000157087, u: 'kN/m³' }
+      density_pcf: { f: 0.000157087, u: 'kN/m³' },
+      /* Reinforcement area per unit length, how Av/s is quoted. */
+      areaper_mm2m: { f: 1, u: 'mm²/m' },
+      areaper_in2ft: { f: 2116.6667, u: 'mm²/m' }
     },
     IMP: {
       name: 'US Customary',
@@ -74,6 +77,8 @@ const BNBCProject = (function () {
       pressure_kPa: { f: 0.020885434, u: 'ksf' },
       pressure_ksf: { f: 1, u: 'ksf' },
       pressure_psf: { f: 1, u: 'psf' },
+      areaper_mm2m: { f: 0.00047244, u: 'in²/ft' },
+      areaper_in2ft: { f: 1, u: 'in²/ft' },
       area_mm2: { f: 0.001550003, u: 'in²' },
       area_in2: { f: 1, u: 'in²' },
       udl_kNm: { f: 68.5218, u: 'lb/ft' },
@@ -126,16 +131,21 @@ const BNBCProject = (function () {
     'kN/m²': 'pressure_kPa', 'kN/m2': 'pressure_kPa',
     'mm²': 'area_mm2', 'mm2': 'area_mm2', 'in²': 'area_in2', 'in2': 'area_in2',
     'kN/m': 'udl_kNm', 'lb/ft': 'udl_lbft',
-    'kN/m³': 'density_kNm3', 'pcf': 'density_pcf'
+    'kN/m³': 'density_kNm3', 'pcf': 'density_pcf',
+    /* Bar spacings carry a c/c suffix. Without these the row keeps its
+       imperial number on a metric page, next to rows that did convert. */
+    'in²/ft': 'areaper_in2ft', 'in2/ft': 'areaper_in2ft', 'mm²/m': 'areaper_mm2m',
+    'in c/c': 'length_in', 'mm c/c': 'length_mm',
+    'ft c/c': 'length_ft', 'm c/c': 'length_m'
   };
 
   /* Which system a native unit belongs to, so we know whether to convert */
   const NATIVE_SYS = {
     length_m: 'SI', length_mm: 'SI', force_kN: 'SI', moment_kNm: 'SI',
-    stress_MPa: 'SI', pressure_kPa: 'SI', area_mm2: 'SI', udl_kNm: 'SI', density_kNm3: 'SI',
+    stress_MPa: 'SI', pressure_kPa: 'SI', area_mm2: 'SI', udl_kNm: 'SI', density_kNm3: 'SI', areaper_mm2m: 'SI',
     length_in: 'IMP', length_ft: 'IMP', force_k: 'IMP', moment_ftk: 'IMP',
     stress_psi: 'IMP', stress_ksi: 'IMP', pressure_ksf: 'IMP', pressure_psf: 'IMP',
-    area_in2: 'IMP', udl_lbft: 'IMP', density_pcf: 'IMP'
+    area_in2: 'IMP', udl_lbft: 'IMP', density_pcf: 'IMP', areaper_in2ft: 'IMP'
   };
 
   function kindOf(unitStr) {

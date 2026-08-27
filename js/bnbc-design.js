@@ -657,11 +657,21 @@ const BNBCDesign = (function () {
 
     return {
       status: 'INFO',
-      headline: 'Confined zone ' + dbTie + ' mm — ' + legs + ' legs @ ' + fx(sConfined, 2) +
-        ' in c/c over Lo = ' + fx(Lo, 1) + ' in,  middle @ ' + fx(sMiddle, 2) + ' in c/c',
+      /* The headline is a sentence, so the row-level unit conversion in
+         bnbc-ui.js cannot reach it — the numbers have to be converted here or
+         the summary stays in inches while the table below it shows millimetres. */
+      headline: (function () {
+        var si = typeof BNBCProject !== 'undefined' && BNBCProject.unitSystem() === 'SI';
+        var L = function (inches, dp) {
+          return si ? fx(inches * 25.4, 0) + ' mm' : fx(inches, dp) + ' in';
+        };
+        return 'Confined zone ' + dbTie + ' mm — ' + legs + ' legs @ ' + L(sConfined, 2) +
+               ' c/c over Lo = ' + L(Lo, 1) + ',  middle @ ' + L(sMiddle, 2) + ' c/c';
+      })(),
       results: [
         { label: 'Frame Type', value: isSMF ? 'Special Moment Frame' : 'Intermediate / Other' },
-        { label: 'Column C1 × C2', value: fx(c1, 1) + ' × ' + fx(c2, 1), unit: 'in' },
+        { label: 'Column C1 (maximum)', value: fx(c1, 1), unit: 'in' },
+        { label: 'Column C2 (minimum)', value: fx(c2, 1), unit: 'in' },
         { label: 'Clear Span', value: fx(clear, 2), unit: 'ft' },
         { label: 'Tie Bar', value: dbTie + ' mm, ' + legs + ' legs' },
         { label: 'Area of one Tie Set Av', value: fx(Av, 5), unit: 'in²' },
