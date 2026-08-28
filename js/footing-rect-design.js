@@ -1,3 +1,6 @@
+// ACI 318 22.6.5.3 — alpha_s by column position.
+const ALPHA_S = { interior: 40, edge: 30, corner: 20 };
+
 function calculateRectFooting() {
   const unlocked = localStorage.getItem('tools_user_unlocked') === 'true';
   if (!unlocked) {
@@ -45,7 +48,19 @@ function runRectFootingLogic() {
   // 1. PUNCHING SHEAR
   const bo = 2*(c1+d) + 2*(c2+d); // inches
   const Vu1 = qu * (A_furnished - ((c1+d)/12)*((c2+d)/12)); // Kips
-  const Vc1 = 4 * Math.sqrt(fc) * bo * d / 1000;
+  // ACI 318 22.6.5.2 — two-way shear strength is the LEAST of three
+  // expressions, not 4*sqrt(f'c) alone. The 4 term governs only for stocky,
+  // roughly square columns; (2 + 4/betaC) takes over once the column is
+  // elongated (betaC > 2) and (2 + alphaS*d/bo) once the critical perimeter is
+  // long relative to the effective depth. Using 4 unconditionally overstates
+  // the capacity in both of those cases — unconservative, and exactly the
+  // defect CALCULATION-NOTES.md records against the source workbook.
+  const betaC  = Math.max(c1, c2) / Math.min(c1, c2);
+  const alphaS = ALPHA_S[(document.getElementById('footing-colpos') || {}).value] || 40;
+  const vcCoeffs = [4, 2 + 4 / betaC, 2 + (alphaS * d) / bo];
+  const vcCoeff  = Math.min(...vcCoeffs);
+  const govern   = ['4√f′c', '(2+4/βc)√f′c', '(2+αs·d/bo)√f′c'][vcCoeffs.indexOf(vcCoeff)];
+  const Vc1 = vcCoeff * Math.sqrt(fc) * bo * d / 1000;
   const pVc1 = 0.75 * Vc1;
 
   // 2. BEAM SHEAR (L-Dir)
@@ -94,6 +109,8 @@ function runRectFootingLogic() {
 
   document.getElementById('footing-out-vu1').textContent = Vu1.toFixed(1);
   document.getElementById('footing-out-pvc1').textContent = pVc1.toFixed(1);
+  const govEl = document.getElementById('footing-out-govern');
+  if (govEl) govEl.textContent = govern;   // which of the three ACI terms controls
 
   document.getElementById('footing-out-vu2l').textContent = Vu2L.toFixed(1);
   document.getElementById('footing-out-pvc2l').textContent = pVc2L.toFixed(1);

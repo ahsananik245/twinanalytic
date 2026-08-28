@@ -921,6 +921,11 @@
             <div class="input-grid">
               <div class="input-field"><label>Width C1 (X-dir, inch)</label><input type="number" id="footing-c1" value="12" min="6" max="60" step="1"></div>
               <div class="input-field"><label>Depth C2 (Y-dir, inch)</label><input type="number" id="footing-c2" value="12" min="6" max="60" step="1"></div>
+              <div class="input-field"><label>Column Position</label><select id="footing-colpos">
+                <option value="interior" selected>Interior (&alpha;s = 40)</option>
+                <option value="edge">Edge (&alpha;s = 30)</option>
+                <option value="corner">Corner (&alpha;s = 20)</option>
+              </select></div>
             </div>
             <div class="form-group-title">Loading Details</div>
             <div class="input-grid">
@@ -952,105 +957,73 @@
 
         </section>
 
-        <!-- Middle Column: SVG + Result Cards -->
+        <!-- Middle Column: results written by js/footing-rect-design.js -->
         <section class="col-middle">
-          
-          <!-- Banner -->
-          <div class="status-banner safe" id="status-banner">
-            🟢 SAFE — &phi;Mn = 0.0 kN&middot;m &ge; Mu = 0.0 kN&middot;m
-          </div>
-
-          <!-- Result Cards Grid (2x4) -->
+          <div class="status-banner" id="footing-rect-status-badge" style="display:none;"></div>
           <div class="results-grid">
-            
-            <div class="result-card" id="card-mu" data-tooltip="Factored design moment: Mu = wu * L^2 / 8">
-              <div class="result-label">Mu (Factored)</div>
-              <div class="result-value" id="val-mu">0.0<span class="result-unit">kNm</span></div>
+            <div class="result-card" data-tooltip="A_req = (DL + LL + surcharge) / net allowable bearing">
+              <div class="result-label">Area Required (ft&sup2;)</div>
+              <div class="result-value" id="footing-out-area">—</div>
             </div>
-
-            <div class="result-card" id="card-phimn" data-tooltip="Design moment capacity: phi * Mn">
-              <div class="result-label">&phi;Mn (Capacity)</div>
-              <div class="result-value" id="val-phimn">0.0<span class="result-unit">kNm</span></div>
+            <div class="result-card" data-tooltip="Plan dimensions, rounded up">
+              <div class="result-label">Footing L × B</div>
+              <div class="result-value" id="footing-out-lb">—</div>
             </div>
-
-            <div class="result-card" id="card-dcr" data-tooltip="Demand Capacity Ratio (DCR): Mu / (phi * Mn)">
-              <div class="result-label">DCR Ratio</div>
-              <div class="result-value" id="val-dcr">0.00</div>
-              <div class="dcr-container">
-                <div class="dcr-bar-bg">
-                  <div class="dcr-bar-fill" id="dcr-fill"></div>
-                </div>
-              </div>
+            <div class="result-card" data-tooltip="Two-way shear demand on the critical perimeter at d/2">
+              <div class="result-label">Punching Vu (k)</div>
+              <div class="result-value" id="footing-out-vu1">—</div>
             </div>
-
-            <div class="result-card" id="card-et" data-tooltip="Net tensile steel strain: et = 0.003 * (d_t - c) / c">
-              <div class="result-label">Tensile Strain (&epsilon;t)</div>
-              <div class="result-value" id="val-et">0.0000</div>
+            <div class="result-card" data-tooltip="ACI 318 22.6.5.2 — least of 4√f’c, (2+4/βc)√f’c and (2+αs·d/bo)√f’c">
+              <div class="result-label">Punching &phi;Vc (k)</div>
+              <div class="result-value" id="footing-out-pvc1">—</div>
             </div>
-
-            <div class="result-card" id="card-phi" data-tooltip="Strength reduction factor based on strain value">
-              <div class="result-label">Reduction Factor (&phi;)</div>
-              <div class="result-value" id="val-phi">0.900</div>
+            <div class="result-card" data-tooltip="Which of the three ACI 318 22.6.5.2 terms controls">
+              <div class="result-label">Punching Governed By</div>
+              <div class="result-value" id="footing-out-govern" style="font-size:1rem;">—</div>
             </div>
-
-            <div class="result-card" id="card-ac" data-tooltip="Stress block depth (a) and neutral axis depth (c)">
-              <div class="result-label">Block Depth a / c</div>
-              <div class="result-value" id="val-ac">0.0 / 0.0<span class="result-unit">mm</span></div>
+            <div class="result-card" data-tooltip="Beam shear across the long direction">
+              <div class="result-label">One-way Vu, Long (k)</div>
+              <div class="result-value" id="footing-out-vu2l">—</div>
             </div>
-
-            <div class="result-card" id="card-as-req" data-tooltip="Required tension steel area for ultimate loading">
-              <div class="result-label">As Required</div>
-              <div class="result-value" id="val-as-req">0<span class="result-unit">mm²</span></div>
+            <div class="result-card" data-tooltip="φ·2√f’c·b·d">
+              <div class="result-label">One-way &phi;Vc, Long (k)</div>
+              <div class="result-value" id="footing-out-pvc2l">—</div>
             </div>
-
-            <div class="result-card" id="card-as-prov" data-tooltip="Provided tension steel reinforcement area">
-              <div class="result-label">As Provided</div>
-              <div class="result-value" id="val-as-prov">0<span class="result-unit">mm²</span></div>
+            <div class="result-card" data-tooltip="Beam shear across the short direction">
+              <div class="result-label">One-way Vu, Short (k)</div>
+              <div class="result-value" id="footing-out-vu2b">—</div>
             </div>
-
-          </div>
-
-          <!-- Strain Zone Indicator -->
-          <div class="strain-indicator-wrapper">
-            <div class="strain-bar-labels">
-              <span>Compression</span>
-              <span>Transition</span>
-              <span>Tension Controlled</span>
+            <div class="result-card" data-tooltip="φ·2√f’c·b·d">
+              <div class="result-label">One-way &phi;Vc, Short (k)</div>
+              <div class="result-value" id="footing-out-pvc2b">—</div>
             </div>
-            <div class="strain-bar-graphic">
-              <div class="strain-marker" id="strain-marker"></div>
+            <div class="result-card" data-tooltip="Flexural steel, long direction">
+              <div class="result-label">As, Long Dir (in&sup2;)</div>
+              <div class="result-value" id="footing-out-as-l">—</div>
             </div>
-            <div class="strain-limits">
-              <span>&epsilon;t &le; 0.002</span>
-              <span>0.002 &lt; &epsilon;t &lt; 0.005</span>
-              <span>&epsilon;t &ge; 0.005</span>
+            <div class="result-card" data-tooltip="Flexural steel, short direction">
+              <div class="result-label">As, Short Dir (in&sup2;)</div>
+              <div class="result-value" id="footing-out-as-b">—</div>
             </div>
           </div>
 
-          <!-- Live SVG Diagram Box -->
-          <div class="beam-svg-box">
-            <svg id="beam-svg" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <pattern id="diagonalHatch" width="10" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
-                  <line x1="0" y1="0" x2="0" y2="10" stroke="#4f86c6" stroke-width="2" />
-                </pattern>
-              </defs>
-              <g id="svg-g-container">
-                <!-- SVG elements dynamically drawn by JS -->
-              </g>
-            </svg>
+          <div class="results-grid" style="margin-top:1rem;">
+            <div class="result-card">
+              <div class="result-label">Rebar — Long Dir</div>
+              <div class="result-value" id="footing-out-rebar-l">—</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Rebar — Short Dir</div>
+              <div class="result-value" id="footing-out-rebar-b">—</div>
+            </div>
           </div>
 
-          <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-            <button class="btn btn-gold" id="btn-download-report-direct" style="flex: 1.2; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.88rem;">
-              <i class="fa-solid fa-file-pdf"></i> Download Full Report (PDF)
-            </button>
-            <button class="btn btn-outline" id="btn-print-report" style="flex: 0.8; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.88rem; border-color: rgba(255,255,255,0.2); background-color: rgba(255,255,255,0.02); color: #fff;">
-              <i class="fa-solid fa-eye"></i> Preview Report
-            </button>
+          <div class="result-card" style="margin-top:1rem; padding:1rem;">
+            <div class="result-label" style="margin-bottom:0.75rem;">Plan</div>
+            <div id="footing-rect-diagram"></div>
           </div>
-
         </section>
+
 
         <!-- Right Column: Step-by-Step Breakdown -->
         <section class="col-right">
