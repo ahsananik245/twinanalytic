@@ -2969,6 +2969,15 @@ ${detailTable}
         format: 'a4'
       });
 
+      /* Route every text call through the shared transliterator in
+         js/bnbc-pdf.js. This report is written with the same symbols as the
+         on-screen working — ✓, ≥, ≤, ×10⁶ — but jsPDF's Helvetica is
+         Latin-1, so each of those was being truncated to its low byte and
+         printing as garbage ("ADEQUATE '", "!’" for ≥). Worse, the unmapped
+         glyph threw off the width table, which is why those lines came out
+         letter-spaced. Every other report in the suite already does this. */
+      if (window.BNBCPdf) window.BNBCPdf.harden(doc);
+
       const btn = document.getElementById(triggerBtnId);
       let originalText = "";
       if (btn) {
@@ -2978,7 +2987,18 @@ ${detailTable}
       }
 
       // Helper functions
+
+      /* The real monogram, from js/brand-mark.js — the same artwork the site
+         header and the favicon use. `size` is the width to occupy; the mark
+         is wider than tall, so fitting by width preserves the horizontal
+         budget the callers below already assume. `isDarkBg` is ignored: the
+         artwork was drawn to sit on either. */
       function drawTwinAnalyticLogo(doc, x, y, size, isDarkBg) {
+        if (window.TWBrandMark && window.TWBrandMark.draw(doc, x, y, size)) return;
+        drawTwinAnalyticLogoFallback(doc, x, y, size, isDarkBg);
+      }
+
+      function drawTwinAnalyticLogoFallback(doc, x, y, size, isDarkBg) {
         const slateR = isDarkBg ? 240 : 47;
         const slateG = isDarkBg ? 244 : 55;
         const slateB = isDarkBg ? 248 : 71;
@@ -3775,6 +3795,7 @@ ${detailTable}
     }
   </script>
 
+  <script src="js/brand-mark.js"></script>
   <script src="js/bnbc-pdf.js"></script>
   <script src="js/main.js"></script>
 

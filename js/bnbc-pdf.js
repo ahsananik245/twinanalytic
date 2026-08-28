@@ -75,9 +75,30 @@ const BNBCPdf = (function () {
 
   /* Characters Helvetica does handle, kept as they are:
      × ÷ ² ³ ° ± ½ and everything in Latin-1 */
+  /* Some report strings are shared with the on-screen markup and still carry
+     HTML entities. A PDF has no markup layer to resolve them, so "DCR &lt;= 1.0"
+     printed literally. Resolve the handful that appear in engineering copy
+     before transliteration, so &le; becomes ≤ and is then mapped to <=. */
+  const ENTITIES = [
+    ['&lt;', '<'], ['&gt;', '>'], ['&le;', '≤'], ['&ge;', '≥'],
+    ['&plusmn;', '±'], ['&times;', '×'], ['&divide;', '÷'],
+    ['&middot;', '·'], ['&deg;', '°'], ['&minus;', '−'],
+    ['&radic;', '√'], ['&sup2;', '²'], ['&sup3;', '³'],
+    ['&phi;', 'φ'], ['&rho;', 'ρ'], ['&beta;', 'β'], ['&alpha;', 'α'],
+    ['&gamma;', 'γ'], ['&delta;', 'δ'], ['&Delta;', 'Δ'], ['&lambda;', 'λ'],
+    ['&mu;', 'μ'], ['&epsilon;', 'ε'], ['&theta;', 'θ'], ['&sigma;', 'σ'],
+    ['&nbsp;', ' '], ['&quot;', '"'], ['&#39;', "'"], ['&apos;', "'"],
+    ['&amp;', '&']          // last, so it cannot re-create another entity
+  ];
+
   function safe(text) {
     if (text === null || text === undefined) return '';
     let s = String(text);
+    if (s.indexOf('&') >= 0) {
+      for (let i = 0; i < ENTITIES.length; i++) {
+        if (s.indexOf(ENTITIES[i][0]) >= 0) s = s.split(ENTITIES[i][0]).join(ENTITIES[i][1]);
+      }
+    }
     for (let i = 0; i < COMPOUND.length; i++) {
       if (s.indexOf(COMPOUND[i][0]) >= 0) s = s.split(COMPOUND[i][0]).join(COMPOUND[i][1]);
     }
@@ -105,9 +126,20 @@ const BNBCPdf = (function () {
   }
 
   /* -------------------------------------------------------------------
-     The TwinAnalytic mark, drawn as vectors so no raster asset is needed.
+     The TwinAnalytic mark.
+
+     This used to be an arrangement of jsPDF rectangles and lines that
+     approximated a logo. It approximated the wrong one — clients were
+     receiving calculation reports stamped with a mark that appears nowhere
+     on the website, in the favicon, or on the letterhead. The real artwork
+     now arrives via js/brand-mark.js, cut from the same master file that
+     produces every other brand asset.
+
+     The vector version is kept only as a fallback for the case where that
+     script did not load. A report with an approximate logo beats a report
+     that failed to download.
      ------------------------------------------------------------------- */
-  function mark(doc, x, y, size) {
+  function vectorMark(doc, x, y, size) {
     doc.setDrawColor(GOLD[0], GOLD[1], GOLD[2]);
     doc.setLineWidth(size * 0.04);
     doc.line(x + size * 0.05, y + size * 0.95, x + size * 0.95, y + size * 0.95);
@@ -121,6 +153,15 @@ const BNBCPdf = (function () {
     doc.line(x + size * 0.25, y + size * 0.75, x + size * 0.75, y + size * 0.47);
     doc.setFillColor(GOLD[0], GOLD[1], GOLD[2]);
     doc.rect(x + size * 0.45, y + size * 0.47, size * 0.1, size * 0.1, 'F');
+  }
+
+  /* `size` is the width to occupy. The artwork is wider than it is tall, so
+     fitting by width keeps every existing call site's horizontal budget —
+     the header, for one, starts its wordmark 3mm after the mark ends. */
+  function mark(doc, x, y, size) {
+    const art = (typeof window !== 'undefined') && window.TWBrandMark;
+    if (art && art.draw(doc, x, y, size)) return;
+    vectorMark(doc, x, y, size);
   }
 
   /* -------------------------------------------------------------------
@@ -149,7 +190,9 @@ const BNBCPdf = (function () {
     doc.setFillColor(INK[0], INK[1], INK[2]);
     doc.rect(0, 0, g.w, g.hh, 'F');
 
-    mark(doc, g.m, 5 * g.k, 13 * g.k);
+    /* 14mm wide leaves a 2mm gap before the wordmark at +16mm, and the y
+       centres the mark on the two lines of type rather than on the band. */
+    mark(doc, g.m, 5.9 * g.k, 14 * g.k);
 
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold'); doc.setFontSize(15);

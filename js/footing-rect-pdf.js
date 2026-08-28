@@ -10,9 +10,20 @@ function downloadRectFootingPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ format: 'letter', unit: 'in' });
 
-  // simple logo
-  doc.setFillColor(201, 168, 76);
-  doc.rect(0.5, 0.5, 0.4, 0.4, 'F');
+  // Run every text call through the shared transliterator. jsPDF's Helvetica
+  // is Latin-1, so the phi in "phi.Vc" was being truncated to its low byte
+  // and printing as "Æ" — and the bad glyph threw off the width table after
+  // it, which is what pushed the right-hand column off the page.
+  if (window.BNBCPdf) window.BNBCPdf.harden(doc);
+
+  // The real monogram, from js/brand-mark.js. This was a plain gold square
+  // standing in for a logo — the only report in the suite that never had one.
+  if (window.TWBrandMark) {
+    window.TWBrandMark.draw(doc, 0.5, 0.48, 0.48);
+  } else {
+    doc.setFillColor(201, 168, 76);
+    doc.rect(0.5, 0.5, 0.4, 0.4, 'F');
+  }
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);

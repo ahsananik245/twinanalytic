@@ -39,3 +39,7 @@ videos/*/audio_meta.json
 videos/*/audio_engine_meta.json
 videos/*/.hyperframes/
 videos/*/node_modules/
+
+# Python bytecode from scripts/
+__pycache__/
+*.pyc

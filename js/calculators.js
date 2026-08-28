@@ -2093,8 +2093,22 @@ function syncLeadDataBeforeDownload(Mol, Mos, hFinal, quVal) {
   }
 }
 
-// Reusable helper function to draw the TwinAnalytic vector logo in PDF reports
+/* Draw the TwinAnalytic mark into a PDF report.
+
+   `size` is the width to occupy, in the document's own units. The real
+   artwork comes from js/brand-mark.js — the same monogram the site header
+   and the favicon use — and needs no light/dark variant, because it was
+   drawn to sit on either. `isDarkBg` is therefore ignored now, and kept
+   only so the existing call sites still read correctly.
+
+   The vector approximation below runs only if brand-mark.js is missing. */
 function drawTwinAnalyticLogo(doc, x, y, size, isDarkBg) {
+  const art = (typeof window !== 'undefined') && window.TWBrandMark;
+  if (art && art.draw(doc, x, y, size)) return;
+  drawTwinAnalyticLogoFallback(doc, x, y, size, isDarkBg);
+}
+
+function drawTwinAnalyticLogoFallback(doc, x, y, size, isDarkBg) {
   const slateR = isDarkBg ? 240 : 47;
   const slateG = isDarkBg ? 244 : 55;
   const slateB = isDarkBg ? 248 : 71;
@@ -4027,8 +4041,8 @@ function downloadColumnPDF() {
     doc.line(2.3, 0.25, 2.3, 1.45);
     doc.line(5.6, 0.25, 5.6, 1.45);
 
-    // Logo
-    drawTwinAnalyticLogo(doc, 0.35, 0.38, 0.3, false);
+    // Logo. Held to 0.33 wide so it clears the wordmark at x=0.70.
+    drawTwinAnalyticLogo(doc, 0.35, 0.365, 0.33, false);
 
     doc.setTextColor(201, 168, 76);
     doc.setFont('helvetica', 'bold');
@@ -4109,8 +4123,10 @@ function downloadColumnPDF() {
   doc.setFillColor(30, 30, 30);
   doc.rect(0.3, 0.3, 7.9, 1.8, 'F');
 
-  // Logo
-  drawTwinAnalyticLogo(doc, 1.0, 0.5, 0.8, true);
+  // Logo. Sized to the 1.8in band and vertically centred on the wordmark
+  // beside it — the real mark is wider than tall, where the old placeholder
+  // was square, so the old y left it riding high.
+  drawTwinAnalyticLogo(doc, 0.9, 0.52, 1.0, true);
 
   doc.setTextColor(201, 168, 76);
   doc.setFont('helvetica', 'bold');
