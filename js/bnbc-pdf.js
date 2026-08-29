@@ -165,6 +165,7 @@ const BNBCPdf = (function () {
       doc[m] = function () {
         if (!doc.__bnbcTotalled) {
           doc.__bnbcTotalled = true;
+          if (!doc.__bnbcNoWatermark) { try { watermark(doc); } catch (e) { } }
           try { doc.putTotalPages(TOTAL_TOKEN); } catch (e) { /* older jsPDF */ }
           try { applyDocInfo(doc); } catch (e) { }
         }
@@ -174,6 +175,53 @@ const BNBCPdf = (function () {
 
     doc.__bnbcHardened = true;
     return doc;
+  }
+
+  /* The centred watermark: the full lockup, monogram over wordmark, stamped
+     faintly across the middle of every page.
+
+     Drawn at save time rather than as each page is built, because the
+     reports assemble their pages in several different ways — some stamp
+     headers as they go, some sweep every page at the end, and the covers
+     paint a full-page background that would bury anything drawn under it.
+     Stamping at the end is the only point where every page of every report
+     exists and can be treated the same way.
+
+     That means it sits over the content rather than beneath it, so the
+     opacity has to be low enough that it never competes with a number on
+     the page. 6% is faint on white and effectively invisible where it
+     crosses the dark header band. The graphics state is saved and restored
+     around it so the opacity cannot leak into anything drawn afterwards. */
+  function watermark(doc, o) {
+    const art = (typeof window !== 'undefined') && window.TWBrandMark;
+    if (!art || !art.lockup) return false;
+    o = o || {};
+    const g = geom(doc);
+    const w = (o.width || 0.55) * g.w;
+    const h = w / (art.lockupAspect || 1.81818);
+    const x = (g.w - w) / 2;
+    const y = (g.h - h) / 2;
+    const opacity = o.opacity == null ? 0.06 : o.opacity;
+
+    let current = 1;
+    try { current = doc.getCurrentPageInfo().pageNumber; } catch (e) { }
+    const total = doc.getNumberOfPages();
+    for (let i = 1; i <= total; i++) {
+      try {
+        doc.setPage(i);
+        doc.saveGraphicsState();
+        doc.setGState(new doc.GState({ opacity: opacity }));
+        doc.addImage(art.lockup, 'PNG', x, y, w, h);
+        doc.restoreGraphicsState();
+      } catch (e) {
+        /* A missing watermark must never be what stops a report downloading. */
+        try { doc.restoreGraphicsState(); } catch (e2) { }
+        if (typeof console !== 'undefined') console.warn('watermark failed:', e);
+        break;
+      }
+    }
+    try { doc.setPage(current); } catch (e) { }
+    return true;
   }
 
   /* Every report was leaving the PDF untitled — no Title, Author or Subject,
@@ -485,7 +533,7 @@ const BNBCPdf = (function () {
   }
 
   return {
-    safe, harden, docInfo, mark, wordmark, bandFill, verdict, signatures, header, footer, page, section, row, geom,
+    safe, harden, docInfo, mark, wordmark, bandFill, watermark, verdict, signatures, header, footer, page, section, row, geom,
     brandAllPages, M, PW, PH, HEADER_H, GOLD, GOLD_INK, STEEL, STEEL_INK, INK
   };
 })();

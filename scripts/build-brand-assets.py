@@ -231,6 +231,18 @@ def main():
 
     tex_b64, tex_size = build_header_texture()
 
+    # The watermark: the full lockup, monogram over the wordmark, stamped
+    # faintly across the middle of every page. It is drawn at about 6%
+    # opacity, where colour depth is imperceptible — 64 colours at 460px
+    # costs ~11 KB and looks identical to 256 at 560px.
+    wm = fit(lockup, round(460 / (lockup.width / lockup.height)))
+    wm = wm.resize((460, wm.height), Image.LANCZOS)
+    wm = wm.quantize(colors=64, method=Image.FASTOCTREE)
+    wbuf = io.BytesIO()
+    wm.save(wbuf, format='PNG', optimize=True)
+    wm_b64 = base64.b64encode(wbuf.getvalue()).decode('ascii')
+    wm_aspect = round(wm.width / wm.height, 5)
+
     def wrap(s, indent=4):
         parts = [s[i:i + 100] for i in range(0, len(s), 100)]
         return "'" + ("' +\n" + ' ' * indent + "'").join(parts) + "'"
@@ -251,6 +263,8 @@ def main():
             places it (0.8in, on the report cover).
    Texture: {tex_size[0]}x{tex_size[1]} slate, for the dark header bands that used to be
             a flat fill.
+   Lockup:  {wm.width}x{wm.height}, stamped faintly across the middle of every page
+            as a watermark.
    ===================================================================== */
 
 (function (root) {{
@@ -262,7 +276,11 @@ def main():
   var TEXTURE = 'data:image/jpeg;base64,' +
     {wrap(tex_b64)};
 
-  var ASPECT = {aspect};   // width / height of the mark
+  var LOCKUP = 'data:image/png;base64,' +
+    {wrap(wm_b64)};
+
+  var ASPECT = {aspect};          // width / height of the mark
+  var LOCKUP_ASPECT = {wm_aspect};   // width / height of the lockup
 
   /* Draw the mark into a box `size` wide at (x, y), in whatever unit the
      document was created with. Fitted by width, never by height, so a
@@ -300,7 +318,8 @@ def main():
   }}
 
   root.TWBrandMark = {{
-    png: PNG, texture: TEXTURE, aspect: ASPECT,
+    png: PNG, texture: TEXTURE, lockup: LOCKUP,
+    aspect: ASPECT, lockupAspect: LOCKUP_ASPECT,
     draw: draw, band: band,
     height: function (size) {{ return size / ASPECT; }}
   }};
@@ -309,8 +328,8 @@ def main():
     out = ROOT / 'js' / 'brand-mark.js'
     out.write_text(js, encoding='utf-8', newline='\n')
     print(f'  {"js/brand-mark.js":28s} {f"{pdf_mark.width}x{pdf_mark.height}":12s} '
-          f'{os.path.getsize(out):>8,d} bytes  (mark aspect {aspect}, '
-          f'texture {tex_size[0]}x{tex_size[1]})')
+          f'{os.path.getsize(out):>8,d} bytes  (mark {aspect}, '
+          f'texture {tex_size[0]}x{tex_size[1]}, lockup {wm.width}x{wm.height})')
 
 
 if __name__ == '__main__':
