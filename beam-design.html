@@ -3059,6 +3059,10 @@ ${detailTable}
         doc.text('Calculated via TwinAnalytic — www.twinanalytic.com', 13, 284);
         doc.setFont('helvetica', 'normal');
         doc.text(`Page ${pageNum} of {tp}`, 175, 284);   // {tp} resolved by putTotalPages on save
+        if (window.BNBCPdf && window.BNBCPdf.reportRef) {
+          doc.setTextColor(155, 155, 155);
+          doc.text('Ref ' + window.BNBCPdf.reportRef(doc), 20, 284);
+        }
       }
 
       let cy = 35;
@@ -3528,8 +3532,13 @@ ${detailTable}
       if (window.BNBCPdf && window.BNBCPdf.signatures) {
         doc.addPage();
         drawPageBorderAndHeader(doc, doc.getNumberOfPages());
+        let cty = 42;
+        if (window.BNBCPdf.limitations) {
+          window.BNBCPdf.bookmark(doc, 'Assumptions and Limitations', doc.getNumberOfPages());
+          cty = window.BNBCPdf.limitations(doc, cty) + 6;
+        }
         window.BNBCPdf.bookmark(doc, 'Certification', doc.getNumberOfPages());
-        window.BNBCPdf.signatures(doc, 45, {
+        window.BNBCPdf.signatures(doc, cty, {
           heading: 'Certification',
           designer: designer && designer !== '—' ? designer : ''
         });

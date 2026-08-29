@@ -510,10 +510,19 @@ const BNBCUI = (function () {
     /* Certification block. Kept whole — if it will not fit in the space
        left, it starts a fresh page rather than splitting a signature row
        across the break. */
+    /* Assumptions and limitations, then certification. Taken together so
+       the two land on the same page where there is room — they read as one
+       closing statement — and both move to a fresh page when there is not. */
     if (typeof BNBCPdf !== 'undefined' && BNBCPdf.signatures) {
-      const blockH = BNBCPdf.signatures.height(doc, 3);
+      const limH = BNBCPdf.limitations ? BNBCPdf.limitations.height(doc) : 0;
+      const sigH = BNBCPdf.signatures.height(doc, 3);
       y += 6;
-      need(blockH);
+      need(limH + sigH + 6);
+      if (BNBCPdf.limitations) {
+        BNBCPdf.bookmark(doc, 'Assumptions and Limitations');
+        y = BNBCPdf.limitations(doc, y) + 4;
+      }
+      need(sigH);
       BNBCPdf.bookmark(doc, 'Certification');
       BNBCPdf.signatures(doc, y, { heading: 'Certification' });
     }

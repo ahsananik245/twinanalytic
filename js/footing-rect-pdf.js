@@ -104,12 +104,18 @@ function downloadRectFootingPDF() {
      starts a fresh page rather than overprinting. */
   if (window.BNBCPdf && window.BNBCPdf.signatures) {
     let sy = 9.5;
-    const blockH = window.BNBCPdf.signatures.height(doc, 3);
+    const limH = window.BNBCPdf.limitations ? window.BNBCPdf.limitations.height(doc) : 0;
+    const blockH = window.BNBCPdf.signatures.height(doc, 3) + limH;
     if (sy + blockH > 10.3) {
       doc.addPage();
       window.BNBCPdf.page(doc, 'Isolated Rectangular Footing Design', 2);
       sy = 1.6;
     }
+    if (window.BNBCPdf.limitations) {
+      window.BNBCPdf.bookmark(doc, 'Assumptions and Limitations');
+      sy = window.BNBCPdf.limitations(doc, sy) + 0.12;
+    }
+    window.BNBCPdf.bookmark(doc, 'Certification');
     window.BNBCPdf.signatures(doc, sy, {
       heading: 'Certification',
       designer: v('footing-designer') || ''

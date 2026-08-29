@@ -3719,8 +3719,14 @@ function downloadSlabPDF() {
   // SIGNATURE; now the same block every other report in the suite carries.
   if (window.BNBCPdf && window.BNBCPdf.signatures) {
     sy += 0.30;
+    const limH = window.BNBCPdf.limitations ? window.BNBCPdf.limitations.height(doc) : 0;
     const blockH = window.BNBCPdf.signatures.height(doc, 3);
-    if (sy + blockH > 10.2) { doc.addPage(); sy = 0.9; }
+    if (sy + limH + blockH > 10.2) { doc.addPage(); sy = 0.9; }
+    if (window.BNBCPdf.limitations) {
+      window.BNBCPdf.bookmark(doc, 'Assumptions and Limitations');
+      sy = window.BNBCPdf.limitations(doc, sy) + 0.12;
+    }
+    window.BNBCPdf.bookmark(doc, 'Certification');
     window.BNBCPdf.signatures(doc, sy, { heading: 'Certification', designer: designer || '' });
   }
 
@@ -6176,9 +6182,15 @@ function downloadColumnPDF() {
   /* Certification. Starts a fresh page rather than splitting a signature
      row across the break. */
   if (window.BNBCPdf && window.BNBCPdf.signatures) {
+    const limH = window.BNBCPdf.limitations ? window.BNBCPdf.limitations.height(doc) : 0;
     const blockH = window.BNBCPdf.signatures.height(doc, 3);
     cy += 0.30;
-    if (cy + blockH > 10.2) { doc.addPage(); drawPageBorderAndHeader(doc, doc.getNumberOfPages()); cy = 1.9; }
+    if (cy + limH + blockH > 10.2) { doc.addPage(); drawPageBorderAndHeader(doc, doc.getNumberOfPages()); cy = 1.9; }
+    if (window.BNBCPdf.limitations) {
+      window.BNBCPdf.bookmark(doc, 'Assumptions and Limitations');
+      cy = window.BNBCPdf.limitations(doc, cy) + 0.12;
+    }
+    window.BNBCPdf.bookmark(doc, 'Certification');
     window.BNBCPdf.signatures(doc, cy, {
       heading: 'Certification',
       designer: designerInitials && designerInitials !== '—' ? designerInitials : '',

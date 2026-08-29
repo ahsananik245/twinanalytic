@@ -142,7 +142,9 @@ function downloadFootingPDF() {
   /* Certification, kept whole. */
   if (P && P.signatures) {
     y += 16;
-    need(P.signatures.height(doc, 3));
+    need((P.limitations ? P.limitations.height(doc) : 0) + P.signatures.height(doc, 3));
+    if (P.limitations) { P.bookmark(doc, 'Assumptions and Limitations'); y = P.limitations(doc, y) + 4; }
+    P.bookmark(doc, 'Certification');
     P.signatures(doc, y, {
       heading: 'Certification',
       designer: designer && designer !== '—' ? designer : ''

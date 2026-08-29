@@ -178,6 +178,30 @@ const BNBCPdf = (function () {
     return doc;
   }
 
+  /* A reference for the document.
+
+     Printed so a client and an engineer can name the same PDF in an email
+     without ambiguity — "the one from Tuesday" is not a reference. It is
+     deliberately NOT advertised as a verification code: there is no server
+     to check it against, and printing a twinanalytic.com/verify/... URL that
+     404s would be worse than printing nothing. If that endpoint is ever
+     built, the ID is already on every page waiting for it.
+
+     Date plus six random characters. Not a checksum of the contents —
+     regenerating the same calculation gives a new reference, which is the
+     honest behaviour when the ID identifies an export rather than a design. */
+  function reportRef(doc) {
+    if (doc.__bnbcRef) return doc.__bnbcRef;
+    const d = new Date();
+    const p = n => String(n).padStart(2, '0');
+    const stamp = String(d.getFullYear()).slice(2) + p(d.getMonth() + 1) + p(d.getDate());
+    let tail = '';
+    const AZ = '0123456789ABCDEFGHJKLMNPQRSTUVWXYZ';   // no I or O, misread in print
+    for (let i = 0; i < 6; i++) tail += AZ[Math.floor(Math.random() * AZ.length)];
+    doc.__bnbcRef = 'TA-' + stamp + '-' + tail;
+    return doc.__bnbcRef;
+  }
+
   /* PDF bookmarks.
 
      The beam report runs to seventeen pages with no way to navigate it but
@@ -271,7 +295,8 @@ const BNBCPdf = (function () {
       title: i.title || 'TwinAnalytic Calculation Report',
       subject: i.subject || 'Structural design calculation to BNBC 2020 / ACI 318',
       author: i.author || 'TwinAnalytic',
-      keywords: i.keywords || 'structural engineering, BNBC 2020, ACI 318, calculation report, TwinAnalytic',
+      keywords: (i.keywords || 'structural engineering, BNBC 2020, ACI 318, calculation report, TwinAnalytic')
+        + ', ' + reportRef(doc),
       creator: 'TwinAnalytic — twinanalytic.com'
     });
   }
@@ -405,6 +430,9 @@ const BNBCPdf = (function () {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7); doc.setTextColor(130, 130, 130);
     doc.text('Page ' + page + ' of ' + (total || TOTAL_TOKEN), g.w / 2, g.h - 8 * g.k, { align: 'center' });
+    doc.setTextColor(155, 155, 155);
+    doc.text('Ref ' + reportRef(doc), g.w - g.m, g.h - 8 * g.k, { align: 'right' });
+    doc.setTextColor(130, 130, 130);
     doc.text('© ' + new Date().getFullYear() +
       ' TwinAnalytic  ·  twinanalytic.com  ·  Verify against project specific requirements before construction.',
       g.w / 2, g.h - 4 * g.k, { align: 'center' });
@@ -486,6 +514,59 @@ const BNBCPdf = (function () {
     } catch (e) { }
     return y + h;
   }
+
+  /* Assumptions and limitations.
+
+     What this calculation does not cover, stated on the document instead of
+     left for a client to assume. Deliberately narrow and factual: it claims
+     nothing about the design beyond the one check that was run, and it does
+     not attempt to be a legal disclaimer — that is a matter for the practice
+     to word, and `items` overrides this list entirely when it does.
+
+     REVIEW THIS TEXT. It is a reasonable default written to be defensible,
+     not advice, and it should be checked by whoever carries the liability. */
+  const LIMITS = [
+    'This report covers only the specific check named on the cover. It is not a '
+    + 'complete structural design and does not certify any other member, load case or limit state.',
+    'All inputs are taken as entered by the user. Geometry, loads, material strengths and '
+    + 'support conditions have not been independently verified.',
+    'Serviceability, durability and exposure, fire resistance, construction sequence, temporary '
+    + 'works and connection detailing are outside its scope unless explicitly reported above.',
+    'Reinforcement shown is a required area and an indicative arrangement. Bar curtailment, '
+    + 'laps, anchorage and clash resolution remain the designer’s responsibility.',
+    'Where a foundation is involved, the bearing capacity used is the value supplied and does '
+    + 'not substitute for a geotechnical investigation.',
+    'Responsibility for the design, and for the suitability of this calculation to the project, '
+    + 'rests with the engineer of record.'
+  ];
+
+  function limitations(doc, y, o) {
+    o = o || {};
+    const g = geom(doc);
+    const items = o.items || LIMITS;
+    const x = g.m, w = g.w - 2 * g.m;
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+    doc.setTextColor(20, 20, 20);
+    doc.text(o.heading || 'Assumptions and Limitations', x, y);
+    y += 4.5 * g.k;
+
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.2);
+    doc.setTextColor(85, 85, 85);
+    items.forEach(function (t) {
+      const lines = doc.splitTextToSize(String(t), w - 3 * g.k);
+      doc.text('-', x, y);
+      doc.text(lines, x + 3 * g.k, y);
+      y += lines.length * 3.2 * g.k + 1.4 * g.k;
+    });
+    return y;
+  }
+
+  /* Rough height, for a caller deciding whether to page-break first. */
+  limitations.height = function (doc, items) {
+    const g = geom(doc);
+    return (4.5 + (items || LIMITS).length * 8.2) * g.k;
+  };
 
   /* The certification block.
 
@@ -575,7 +656,7 @@ const BNBCPdf = (function () {
   }
 
   return {
-    safe, harden, docInfo, bookmark, mark, wordmark, bandFill, watermark, verdict, signatures, header, footer, page, section, row, geom,
+    safe, harden, docInfo, bookmark, reportRef, mark, wordmark, bandFill, watermark, verdict, limitations, signatures, header, footer, page, section, row, geom,
     brandAllPages, M, PW, PH, HEADER_H, GOLD, GOLD_INK, STEEL, STEEL_INK, INK
   };
 })();
