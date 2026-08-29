@@ -142,7 +142,11 @@ function downloadFootingPDF() {
   /* Certification, kept whole. */
   if (P && P.signatures) {
     y += 16;
-    need((P.limitations ? P.limitations.height(doc) : 0) + P.signatures.height(doc, 3));
+    need((P.clauseIndex ? P.clauseIndex.height(doc) : 0)
+       + (P.limitations ? P.limitations.height(doc) : 0) + P.signatures.height(doc, 3));
+    if (P.clauseIndex && P.clauseIndex.height(doc)) {
+      P.bookmark(doc, 'Code Clauses Referenced'); y = P.clauseIndex(doc, y) + 3;
+    }
     if (P.limitations) { P.bookmark(doc, 'Assumptions and Limitations'); y = P.limitations(doc, y) + 4; }
     P.bookmark(doc, 'Certification');
     P.signatures(doc, y, {

@@ -3719,9 +3719,14 @@ function downloadSlabPDF() {
   // SIGNATURE; now the same block every other report in the suite carries.
   if (window.BNBCPdf && window.BNBCPdf.signatures) {
     sy += 0.30;
+    const clsH = window.BNBCPdf.clauseIndex ? window.BNBCPdf.clauseIndex.height(doc) : 0;
     const limH = window.BNBCPdf.limitations ? window.BNBCPdf.limitations.height(doc) : 0;
     const blockH = window.BNBCPdf.signatures.height(doc, 3);
-    if (sy + limH + blockH > 10.2) { doc.addPage(); sy = 0.9; }
+    if (sy + clsH + limH + blockH > 10.2) { doc.addPage(); sy = 0.9; }
+    if (window.BNBCPdf.clauseIndex && clsH) {
+      window.BNBCPdf.bookmark(doc, 'Code Clauses Referenced');
+      sy = window.BNBCPdf.clauseIndex(doc, sy) + 0.10;
+    }
     if (window.BNBCPdf.limitations) {
       window.BNBCPdf.bookmark(doc, 'Assumptions and Limitations');
       sy = window.BNBCPdf.limitations(doc, sy) + 0.12;
@@ -6182,10 +6187,15 @@ function downloadColumnPDF() {
   /* Certification. Starts a fresh page rather than splitting a signature
      row across the break. */
   if (window.BNBCPdf && window.BNBCPdf.signatures) {
+    const clsH = window.BNBCPdf.clauseIndex ? window.BNBCPdf.clauseIndex.height(doc) : 0;
     const limH = window.BNBCPdf.limitations ? window.BNBCPdf.limitations.height(doc) : 0;
     const blockH = window.BNBCPdf.signatures.height(doc, 3);
     cy += 0.30;
-    if (cy + limH + blockH > 10.2) { doc.addPage(); drawPageBorderAndHeader(doc, doc.getNumberOfPages()); cy = 1.9; }
+    if (cy + clsH + limH + blockH > 10.2) { doc.addPage(); drawPageBorderAndHeader(doc, doc.getNumberOfPages()); cy = 1.9; }
+    if (window.BNBCPdf.clauseIndex && clsH) {
+      window.BNBCPdf.bookmark(doc, 'Code Clauses Referenced');
+      cy = window.BNBCPdf.clauseIndex(doc, cy) + 0.10;
+    }
     if (window.BNBCPdf.limitations) {
       window.BNBCPdf.bookmark(doc, 'Assumptions and Limitations');
       cy = window.BNBCPdf.limitations(doc, cy) + 0.12;

@@ -3533,6 +3533,10 @@ ${detailTable}
         doc.addPage();
         drawPageBorderAndHeader(doc, doc.getNumberOfPages());
         let cty = 42;
+        if (window.BNBCPdf.clauseIndex && window.BNBCPdf.clauseIndex.height(doc)) {
+          window.BNBCPdf.bookmark(doc, 'Code Clauses Referenced', doc.getNumberOfPages());
+          cty = window.BNBCPdf.clauseIndex(doc, cty) + 4;
+        }
         if (window.BNBCPdf.limitations) {
           window.BNBCPdf.bookmark(doc, 'Assumptions and Limitations', doc.getNumberOfPages());
           cty = window.BNBCPdf.limitations(doc, cty) + 6;

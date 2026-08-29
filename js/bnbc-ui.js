@@ -514,10 +514,15 @@ const BNBCUI = (function () {
        the two land on the same page where there is room — they read as one
        closing statement — and both move to a fresh page when there is not. */
     if (typeof BNBCPdf !== 'undefined' && BNBCPdf.signatures) {
+      const clsH = BNBCPdf.clauseIndex ? BNBCPdf.clauseIndex.height(doc) : 0;
       const limH = BNBCPdf.limitations ? BNBCPdf.limitations.height(doc) : 0;
       const sigH = BNBCPdf.signatures.height(doc, 3);
       y += 6;
-      need(limH + sigH + 6);
+      need(clsH + limH + sigH + 6);
+      if (BNBCPdf.clauseIndex && clsH) {
+        BNBCPdf.bookmark(doc, 'Code Clauses Referenced');
+        y = BNBCPdf.clauseIndex(doc, y) + 3;
+      }
       if (BNBCPdf.limitations) {
         BNBCPdf.bookmark(doc, 'Assumptions and Limitations');
         y = BNBCPdf.limitations(doc, y) + 4;

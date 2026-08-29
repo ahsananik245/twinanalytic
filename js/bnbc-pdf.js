@@ -151,8 +151,14 @@ const BNBCPdf = (function () {
     if (doc.__bnbcHardened) return doc;
     const origText = doc.text.bind(doc);
     doc.text = function (txt, x, y, opts) {
-      if (Array.isArray(txt)) return origText(txt.map(safe), x, y, opts);
-      return origText(safe(txt), x, y, opts);
+      if (Array.isArray(txt)) {
+        const out = txt.map(safe);
+        out.forEach(function (l) { collectClauses(doc, l); });
+        return origText(out, x, y, opts);
+      }
+      const one = safe(txt);
+      collectClauses(doc, one);
+      return origText(one, x, y, opts);
     };
     const origSplit = doc.splitTextToSize.bind(doc);
     doc.splitTextToSize = function (txt, w, o) { return origSplit(safe(txt), w, o); };
@@ -515,6 +521,82 @@ const BNBCPdf = (function () {
     return y + h;
   }
 
+  /* Code clause index.
+
+     The reports cite clauses inline all the way through but never gather
+     them, so there is no way to see at a glance which provisions a
+     calculation actually leaned on. Rather than maintain a list per report —
+     which would drift from the working the moment either changed — citations
+     are harvested from the text as it is drawn, in harden()'s wrapper.
+
+     The pattern is deliberately strict, developed against the text of all 28
+     reports. Two rules do the work: [ \t] rather than \s, so a match cannot
+     run across a line break and pick up an unrelated heading on the next
+     line; and the clause number must contain a dot, which is what separates
+     a real reference from the "2020" of "BNBC 2020" and the "15" of
+     "SECTION 15". Against the whole suite that keeps 80 genuine citations
+     and rejects the header boilerplate — "ACI 318-19 COMPLIANCE",
+     "ACI 318-19 / BNBC 2020" — along with prose like "ACI 318 requires...". */
+  const CLAUSE_RE = new RegExp(
+    '\\b(ACI[ \\t]*318(?:-\\d{2})?|BNBC(?:[ \\t]*2020)?)[ \\t]*' +
+    '(?:(§|Sec\\.?|Section|Table|Eq\\.?|Clause)[ \\t]*)?' +
+    '(R?\\d+(?:\\.\\d+)+(?:[ \\t]*\\([a-z]\\))?)', 'gi');
+
+  function collectClauses(doc, text) {
+    if (!text) return;
+    /* Cheap reject first — this runs on every string the report draws. */
+    if (text.indexOf('ACI') < 0 && text.indexOf('BNBC') < 0) return;
+    CLAUSE_RE.lastIndex = 0;
+    let m;
+    while ((m = CLAUSE_RE.exec(text)) !== null) {
+      const cite = (m[1].replace(/\s+/g, ' ') + ' '
+        + (m[2] ? m[2].trim() + ' ' : '')
+        + m[3].replace(/\s+/g, '')).replace(/\s+/g, ' ').trim();
+      doc.__bnbcClauses = doc.__bnbcClauses || {};
+      doc.__bnbcClauses[cite] = true;
+    }
+  }
+
+  function clauseList(doc) {
+    const seen = doc.__bnbcClauses || {};
+    return Object.keys(seen).sort(function (a, b) {
+      return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+    });
+  }
+
+  /* Two columns: these run to eighty entries across the suite and a single
+     column would push the closing pages over on the longer reports. */
+  function clauseIndex(doc, y, o) {
+    o = o || {};
+    const g = geom(doc);
+    const list = o.items || clauseList(doc);
+    if (!list.length) return y;
+    const x = g.m, w = g.w - 2 * g.m, col = w / 2;
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+    doc.setTextColor(20, 20, 20);
+    doc.text(o.heading || 'Code Clauses Referenced', x, y);
+    y += 4.2 * g.k;
+
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
+    doc.setTextColor(85, 85, 85);
+    const rows = Math.ceil(list.length / 2);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < 2; c++) {
+        const item = list[c * rows + r];
+        if (item) doc.text(item, x + c * col, y + r * 3.1 * g.k);
+      }
+    }
+    return y + rows * 3.1 * g.k + 2 * g.k;
+  }
+
+  clauseIndex.height = function (doc, n) {
+    const g = geom(doc);
+    const count = n === undefined ? clauseList(doc).length : n;
+    if (!count) return 0;
+    return (4.2 + Math.ceil(count / 2) * 3.1 + 2) * g.k;
+  };
+
   /* Assumptions and limitations.
 
      What this calculation does not cover, stated on the document instead of
@@ -656,7 +738,7 @@ const BNBCPdf = (function () {
   }
 
   return {
-    safe, harden, docInfo, bookmark, reportRef, mark, wordmark, bandFill, watermark, verdict, limitations, signatures, header, footer, page, section, row, geom,
+    safe, harden, docInfo, bookmark, reportRef, mark, wordmark, bandFill, watermark, verdict, clauseIndex, limitations, signatures, header, footer, page, section, row, geom,
     brandAllPages, M, PW, PH, HEADER_H, GOLD, GOLD_INK, STEEL, STEEL_INK, INK
   };
 })();
