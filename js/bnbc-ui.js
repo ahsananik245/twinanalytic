@@ -510,6 +510,32 @@ const BNBCUI = (function () {
     /* Certification block. Kept whole — if it will not fit in the space
        left, it starts a fresh page rather than splitting a signature row
        across the break. */
+    /* Figures. The calculator already drew these on screen; until now the
+       report a client received had the numbers and none of the picture. */
+    const figs = (LAST && LAST.figures) || [];
+    if (figs.length && typeof BNBCPdf !== 'undefined') {
+      const availW = PW - 2 * M;
+      y += 6;
+      figs.forEach(function (fg, i) {
+        const w = Math.min(availW, 150);
+        const h = w * fg.h / fg.w;
+        need(h + (fg.title ? 6 : 0) + 12);
+        if (!i) {
+          BNBCPdf.bookmark(doc, 'Figures');
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(20, 20, 20);
+          doc.text('Figures', M, y); y += 6;
+        }
+        if (fg.title) {
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+          doc.setTextColor(60, 60, 60);
+          doc.text(fg.title, M + (availW - w) / 2, y); y += 4;
+        }
+        try { doc.addImage(fg.dataUrl, 'JPEG', M + (availW - w) / 2, y, w, h); } catch (e) { }
+        y += h + 6;
+      });
+      y += 2;
+    }
+
     /* Assumptions and limitations, then certification. Taken together so
        the two land on the same page where there is room — they read as one
        closing statement — and both move to a fresh page when there is not. */
@@ -581,8 +607,21 @@ const BNBCUI = (function () {
       if (pdf) {
         pdf.addEventListener('click', e => {
           e.preventDefault();
-          if (typeof checkAuthAndRun === 'function') checkAuthAndRun(exportPDF, cfg.title + ' Report');
-          else exportPDF();
+          /* The figures are inline SVG and rasterising them goes through an
+             Image load, which is async, while the report builder is not. So
+             capture first and hand the builder a cache. A capture that fails
+             or times out resolves to nothing and the report goes out without
+             the figure rather than not going out at all. */
+          const build = function () {
+            const host = document.getElementById('calc-figure');
+            if (LAST && typeof BNBCFigureCapture !== 'undefined' && host) {
+              BNBCFigureCapture.captureInto(host, LAST).then(exportPDF, exportPDF);
+            } else {
+              exportPDF();
+            }
+          };
+          if (typeof checkAuthAndRun === 'function') checkAuthAndRun(build, cfg.title + ' Report');
+          else build();
         });
       }
 
