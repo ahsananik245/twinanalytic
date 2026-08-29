@@ -409,7 +409,7 @@ const BNBCUI = (function () {
     /* Steps */
     (res.steps || []).forEach(s => {
       need(16);
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(8.8); doc.setTextColor(201, 140, 20);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8.8); doc.setTextColor(138, 107, 46);
       doc.text('STEP ' + s.n + ' — ' + s.title, M, y); y += 4.6;
       doc.setFont('courier', 'normal'); doc.setFontSize(7.2); doc.setTextColor(70, 70, 70);
       [s.formula, s.sub].forEach(block => {

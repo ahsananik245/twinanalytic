@@ -1541,7 +1541,7 @@ function initSlabLiveUpdates() {
   const btnReset = document.getElementById('btn-reset-slab');
   if (btnReset) {
     btnReset.addEventListener('click', () => {
-      document.getElementById('slab-proj-name').value = "TwinAnalytic Tower";
+      document.getElementById('slab-proj-name').value = '';   // never seed a project identity the user did not type
       document.getElementById('slab-designer').value = "AH";
       document.getElementById('slab-date').value = new Date().toISOString().split('T')[0];
       document.getElementById('slab-location').value = "New York, NY";
@@ -2118,10 +2118,19 @@ function drawTwinAnalyticWordmark(doc, x, y, opts) {
   opts = opts || {};
   doc.setFont('helvetica', 'bold');
   if (opts.size) doc.setFontSize(opts.size);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   const s = (opts.upper ? 'TWINANALYTIC' : 'TwinAnalytic') + (opts.suffix || '');
   doc.text(s, x, y, opts.align ? { align: opts.align } : undefined);
   return doc.getTextWidth(s);
+}
+
+/* Gold for text on paper. The brand gold #C9A84C measures 2.29:1 on white —
+   below AA at any size — so headings take the darker ink defined in
+   js/bnbc-pdf.js. Gold RULES and borders keep the bright colour; this is
+   only for type. */
+function goldInk(doc) {
+  const g = (window.BNBCPdf && window.BNBCPdf.GOLD_INK) || [138, 107, 46];
+  doc.setTextColor(g[0], g[1], g[2]);
 }
 
 /* A dark header band with the slate texture behind it. */
@@ -2166,8 +2175,8 @@ function drawTwinAnalyticLogoFallback(doc, x, y, size, isDarkBg) {
 }
 
 function downloadSlabPDF() {
-  const projName = document.getElementById('slab-proj-name').value || "TwinAnalytic Tower";
-  const designer = document.getElementById('slab-designer').value || "TwinAnalytic Engineer";
+  const projName = document.getElementById('slab-proj-name').value || '—';
+  const designer = document.getElementById('slab-designer').value || '—';
   const dateVal = document.getElementById('slab-date').value || new Date().toISOString().split('T')[0];
   const location = document.getElementById('slab-location').value || "New York, NY";
   const floor = document.getElementById('slab-floor').value || "Floor 2";
@@ -2408,7 +2417,8 @@ function downloadSlabPDF() {
     doc.setFontSize(7.5);
     doc.setTextColor(150, 150, 150);
     doc.text('TwinAnalytic Engineering Group — Calculations Sheet S-102', 0.5, 10.5);
-    doc.text(`Page ${pageNo} of 8`, 7.2, 10.5);
+    // The page number is stamped by BNBCPdf.footer once the sheet count is
+    // known. A second one here printed beside it, and said "of 8" regardless.
   };
 
   // ==========================================
@@ -2417,7 +2427,7 @@ function downloadSlabPDF() {
   doc.setDrawColor(201, 168, 76);
   doc.rect(0.25, 0.25, 8.0, 10.5);
 
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.setFont('times', 'bold');
   doc.setFontSize(28);
   doc.text('TWO-WAY SLAB DESIGN REPORT', 4.25, 2.3, { align: 'center' });
@@ -2535,7 +2545,7 @@ function downloadSlabPDF() {
   doc.addPage();
   drawBorder(2);
 
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.setFont('times', 'bold');
   doc.setFontSize(16);
   doc.text('1. DESIGN PARAMETERS SUMMARY', 0.5, 0.7);
@@ -2583,7 +2593,7 @@ function downloadSlabPDF() {
   doc.addPage();
   drawBorder(3);
 
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.setFont('times', 'bold');
   doc.setFontSize(16);
   doc.text('2. CODE SLAB THICKNESS SIZING & COMPLIANCE', 0.5, 0.7);
@@ -2648,7 +2658,7 @@ function downloadSlabPDF() {
 
   // --- STIFFNESS & DDM APPLICABILITY CHECKS ---
   let ddmY = curY + 2.8;
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.setFont('times', 'bold');
   doc.setFontSize(13);
   doc.text('3. BEAM STIFFNESS & DDM APPLICABILITY CHECKS', 0.5, ddmY);
@@ -2728,7 +2738,7 @@ function downloadSlabPDF() {
   doc.addPage();
   drawBorder(4);
 
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.setFont('times', 'bold');
   doc.setFontSize(16);
   doc.text('3. LOADS & DIRECT DESIGN MOMENTS', 0.5, 0.7);
@@ -2780,7 +2790,7 @@ function downloadSlabPDF() {
 
   // --- INTERMEDIATE MOMENT SPLITS SUB-TABLE ---
   let tableY = 6.3;
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.setFont('times', 'bold');
   doc.setFontSize(13);
   doc.text('3.1 INTERMEDIATE MOMENT SPLITS', 0.5, tableY);
@@ -2855,7 +2865,7 @@ function downloadSlabPDF() {
         const slabM = (1 - c_b) * row.col;
         doc.text(beamM.toFixed(1) + ' k-ft', 5.3, tableY);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(201, 168, 76);
+        goldInk(doc);
         doc.text(slabM.toFixed(1) + ' k-ft', 6.4, tableY);
         doc.setTextColor(60, 60, 60);
         doc.setFont('helvetica', 'normal');
@@ -2870,7 +2880,7 @@ function downloadSlabPDF() {
   // --- BEAM ALLOTMENT EXPLANATION ---
   tableY += 0.35;
   if (type === 'with-beams') {
-    doc.setTextColor(201, 168, 76);
+    goldInk(doc);
     doc.setFont('times', 'bold');
     doc.setFontSize(11);
     doc.text('3.2 ACI 318-19 Section 8.10.5.7.1 Beam Allotment (85% Rule)', 0.5, tableY);
@@ -2887,7 +2897,7 @@ function downloadSlabPDF() {
     tableY += 0.18;
     doc.text(R_s_text, 0.5, tableY);
   } else {
-    doc.setTextColor(201, 168, 76);
+    goldInk(doc);
     doc.setFont('times', 'bold');
     doc.setFontSize(11);
     doc.text('3.2 ACI 318-19 Section 8.10.5.7.1 Beam Allotment', 0.5, tableY);
@@ -2906,7 +2916,7 @@ function downloadSlabPDF() {
   doc.addPage();
   drawBorder(5);
 
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.setFont('times', 'bold');
   doc.setFontSize(16);
   doc.text('4. FLEXURAL REINFORCEMENT DESIGN', 0.5, 0.7);
@@ -2915,7 +2925,7 @@ function downloadSlabPDF() {
   // --- STEP 4.1: COLUMN STRIP & MIDDLE STRIP WIDTH DEFINITION ---
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9.5);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('Step 4.1: Column Strip & Middle Strip Width Definition (ACI 318 Section 8.4.1.5)', 0.5, 1.05);
 
   doc.setFont('helvetica', 'normal');
@@ -2955,7 +2965,7 @@ function downloadSlabPDF() {
   // --- STEP 4.2: SAMPLE CALCULATION ---
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9.5);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('Step 4.2: Sample Calculation — Column Strip Top (Long Direction)', 0.5, 2.95);
 
   const sampleMu_kft = lColNeg_slab;
@@ -3001,7 +3011,7 @@ function downloadSlabPDF() {
   // --- STEP 4.3: REINFORCEMENT SUMMARY TABLE ---
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9.5);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('Step 4.3: Reinforcement Summary Table', 0.5, 5.05);
 
   let ry = 5.22;
@@ -3043,7 +3053,7 @@ function downloadSlabPDF() {
     doc.text(design.req.toFixed(2), 4.0, ry);
     doc.text(design.min.toFixed(2), 4.7, ry);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(201, 168, 76);
+    goldInk(doc);
     doc.text(design.gov.toFixed(2), 5.4, ry);
     doc.text(`${design.size} @ ${design.spacing.toFixed(1)}" c/c`, 6.2, ry);
     doc.setTextColor(60, 60, 60);
@@ -3067,7 +3077,7 @@ function downloadSlabPDF() {
   doc.addPage();
   drawBorder(6);
 
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.setFont('times', 'bold');
   doc.setFontSize(16);
   doc.text('5. SHEAR STRENGTH VERIFICATIONS', 0.5, 0.7);
@@ -3254,7 +3264,7 @@ function downloadSlabPDF() {
   doc.addPage();
   drawBorder(7);
 
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.setFont('times', 'bold');
   doc.setFontSize(16);
   doc.text('6. REINFORCEMENT DETAILING DIAGRAMS', 0.5, 0.65);
@@ -3292,7 +3302,7 @@ function downloadSlabPDF() {
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9.5);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('DIAGRAM 1: PANEL ZONE LAYOUT (TOP VIEW)', 0.6, 1.05);
   doc.setFont('helvetica', 'italic');
   doc.setFontSize(7);
@@ -3373,7 +3383,7 @@ function downloadSlabPDF() {
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9.5);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('DIAGRAM 2: SECTION A-A — LONG DIRECTION', 0.6, 3.8);
   doc.setFont('helvetica', 'italic');
   doc.setFontSize(7);
@@ -3471,7 +3481,7 @@ function downloadSlabPDF() {
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9.5);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('DIAGRAM 3: SECTION B-B — SHORT DIRECTION', 0.6, 7.05);
 
   let startX_sec3 = 0.8;
@@ -3583,7 +3593,7 @@ function downloadSlabPDF() {
   doc.addPage();
   drawBorder(8);
 
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.setFont('times', 'bold');
   doc.setFontSize(16);
   doc.text('7. DESIGN SUMMARY & CONCLUSION', 0.5, 0.7);
@@ -3628,7 +3638,7 @@ function downloadSlabPDF() {
     doc.setFont('helvetica', 'normal');
     doc.text(calc, 3.3, sy);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(201, 168, 76);
+    goldInk(doc);
     doc.text(adop, 5.8, sy);
     doc.setTextColor(60, 60, 60);
     doc.line(0.5, sy + 0.04, 8.0, sy + 0.04);
@@ -3638,7 +3648,7 @@ function downloadSlabPDF() {
   sy += 0.35;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('REINFORCEMENT QUANTITY ESTIMATE', 0.5, sy);
   doc.line(0.5, sy + 0.04, 8.0, sy + 0.04);
 
@@ -3684,7 +3694,7 @@ function downloadSlabPDF() {
   sy += 0.35;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9.5);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('CONCLUDING STRUCTURAL NOTES:', 0.5, sy);
   
   doc.setFont('helvetica', 'normal');
@@ -3740,10 +3750,10 @@ function downloadColumnPDF() {
   const colHeight = parseFloat(document.getElementById('column-height').value) || 10.0;
   const cover = parseFloat(document.getElementById('column-cover').value) || 1.5;
 
-  const projName = document.getElementById('column-proj-name').value || "TwinAnalytic Tower";
+  const projName = document.getElementById('column-proj-name').value || '—';
   const projNum = document.getElementById('column-proj-num').value || "2026-001";
-  const designerInitials = document.getElementById('column-designer').value || "TwinAnalytic Engineer";
-  const reviewerInitials = document.getElementById('column-reviewer').value || "TwinAnalytic";
+  const designerInitials = document.getElementById('column-designer').value || '—';
+  const reviewerInitials = document.getElementById('column-reviewer').value || '—';   // a blank to be signed, not a name the tool supplied
 
   if (isNaN(pdl) || pdl <= 0 || isNaN(pll) || pll <= 0 || isNaN(fc) || fc <= 0 || isNaN(fy) || fy <= 0 || isNaN(p) || p < 0.01 || p > 0.08 || isNaN(colHeight) || colHeight <= 0) {
     alert('Please enter valid input parameters before downloading the PDF report.');
@@ -4123,7 +4133,8 @@ function downloadColumnPDF() {
     doc.setFontSize(7.5);
     doc.setTextColor(150, 150, 150);
     doc.text('Calculated via TwinAnalytic — www.twinanalytic.com', 0.5, 10.6);
-    doc.text(`Page ${pageNum}`, 7.5, 10.6);
+    // Page number comes from BNBCPdf.footer at the end, where the total is
+    // known; this one had no total and sat next to it.
   }
 
   // ==========================================
@@ -4148,6 +4159,21 @@ function downloadColumnPDF() {
   doc.setFontSize(8.5);
   doc.setTextColor(255, 255, 255);
   doc.text('ENGINEERING CALCULATIONS & COMPLIANCE REPORTS', 2.0, 1.25);
+
+  /* The verdict, before the title. Sits in what was blank paper between the
+     header band and the report title, so the answer is the first thing on the
+     page rather than something the reader digs out of section 6. */
+  if (window.BNBCPdf && window.BNBCPdf.verdict) {
+    const phiPnNum = parseFloat(phiPnStr);
+    const dcrOk = isFinite(dcRatio) && dcRatio <= 1.0;
+    window.BNBCPdf.verdict(doc, 1.0, 2.42, 6.4, {
+      pass: dcrOk && isRatioOk,
+      headline: `Pu = ${Pu.toFixed(1)} kips   vs   phi.Pn,max = ${isFinite(phiPnNum) ? phiPnNum.toFixed(1) : phiPnStr} kips`,
+      detail: `Demand-capacity ratio ${isFinite(dcRatio) ? dcRatio.toFixed(3) : dcRatioStr}`
+            + ` (axial capacity, ACI 318-19 22.4.2.1).  Longitudinal steel ratio `
+            + `${(p_actual * 100).toFixed(2)}% — ${isRatioOk ? 'within' : 'OUTSIDE'} the 1% to 8% limits of ACI 318-19 10.6.1.1.`
+    });
+  }
 
   doc.setTextColor(30, 30, 30);
   doc.setFont('times', 'bold');
@@ -4189,7 +4215,7 @@ function downloadColumnPDF() {
 
   doc.setFont('times', 'bold');
   doc.setFontSize(10);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text(`Designed per ${code} | CE 317 Method | ${new Date().toLocaleDateString()}`, 1.0, 10.2);
 
   // ==========================================
@@ -4203,7 +4229,7 @@ function downloadColumnPDF() {
   // SECTION 2
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('SECTION 2 — PROJECT DATA & DESIGN INPUTS', 0.5, cy);
   cy += 0.15;
 
@@ -4250,7 +4276,7 @@ function downloadColumnPDF() {
   cy += 0.15;
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('SECTION 3 — FACTORED LOADS & LOAD COMBINATIONS', 0.5, cy);
   cy += 0.20;
 
@@ -4346,7 +4372,7 @@ function downloadColumnPDF() {
   checkPageBreak(doc, 2.5);
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('SECTION 4 — MATERIAL PROPERTIES & CODE FACTORS', 0.5, cy);
   cy += 0.15;
 
@@ -4407,7 +4433,7 @@ function downloadColumnPDF() {
   // SECTION 5
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('SECTION 5 — COLUMN SIZING', 0.5, cy);
   cy += 0.15;
 
@@ -4483,7 +4509,7 @@ function downloadColumnPDF() {
   // SECTION 6
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('SECTION 6 — LONGITUDINAL REINFORCEMENT DESIGN', 0.5, cy);
   cy += 0.15;
 
@@ -4592,7 +4618,7 @@ function downloadColumnPDF() {
   // SECTION 7
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('SECTION 7 — AXIAL CAPACITY VERIFICATION', 0.5, cy);
   cy += 0.15;
 
@@ -4653,7 +4679,7 @@ function downloadColumnPDF() {
   // SECTION 8
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('SECTION 8 — LATERAL REINFORCEMENT DESIGN', 0.5, cy);
   cy += 0.15;
 
@@ -4746,7 +4772,7 @@ function downloadColumnPDF() {
   // SECTION 9
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('SECTION 9 — INTERACTION DIAGRAM CHECK (if moment present)', 0.5, cy);
   cy += 0.15;
 
@@ -4917,7 +4943,7 @@ function downloadColumnPDF() {
   // SECTION 10
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('SECTION 10 — BIAXIAL BENDING (if Mux and Muy both present)', 0.5, cy);
   cy += 0.15;
 
@@ -4979,7 +5005,7 @@ function downloadColumnPDF() {
   // SECTION 11
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('SECTION 11 — SHEAR DESIGN', 0.5, cy);
   cy += 0.15;
 
@@ -5158,7 +5184,7 @@ function downloadColumnPDF() {
   // SECTION 12
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('SECTION 12 — SLENDERNESS CHECK', 0.5, cy);
   cy += 0.15;
 
@@ -5268,7 +5294,7 @@ function downloadColumnPDF() {
 
   doc.setFont('times', 'bold');
   doc.setFontSize(11);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text(`12.4 Minimum Eccentricity Check (${code} §6.6.4.5):`, 0.5, cy);
   cy += 0.16;
 
@@ -5346,7 +5372,7 @@ function downloadColumnPDF() {
   checkPageBreak(doc, 3.2);
   doc.setFont('times', 'bold');
   doc.setFontSize(11);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text(`12.5 Moment Magnification Factor Derivation (${code} Section 6.6):`, 0.5, cy);
   cy += 0.16;
 
@@ -5499,7 +5525,7 @@ function downloadColumnPDF() {
   checkPageBreak(doc, 2.5);
   doc.setFont('times', 'bold');
   doc.setFontSize(11);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('12.6 Moment Capacity at Minimum Eccentricity (Force Equilibrium):', 0.5, cy);
   cy += 0.16;
 
@@ -5604,7 +5630,7 @@ function downloadColumnPDF() {
   // SECTION 13
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('SECTION 13 — REINFORCEMENT DETAILING SCHEDULE', 0.5, cy);
   cy += 0.15;
 
@@ -5770,7 +5796,7 @@ function downloadColumnPDF() {
   // SECTION 14
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('SECTION 14 — DESIGN SUMMARY TABLE', 0.5, cy);
   cy += 0.15;
 
@@ -5839,7 +5865,7 @@ function downloadColumnPDF() {
   checkPageBreak(doc, 3.5);
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('SECTION 15 — REINFORCEMENT DETAILING DRAWINGS', 0.5, cy);
   cy += 0.20;
 
@@ -6081,7 +6107,7 @@ function downloadColumnPDF() {
   checkPageBreak(doc, 2.2);
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text('SECTION 16 — CODE REFERENCES', 0.5, cy);
   cy += 0.15;
 
@@ -6124,7 +6150,7 @@ function downloadColumnPDF() {
   cy += 0.15;
   doc.setFont('times', 'bold');
   doc.setFontSize(9.5);
-  doc.setTextColor(201, 168, 76);
+  goldInk(doc);
   doc.text(`Designed per ${code} | CE 317 Method | ${new Date().toLocaleDateString()}`, 0.5, cy);
 
   if (window.BNBCPdf) {

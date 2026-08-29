@@ -910,7 +910,7 @@
             <div class="input-grid" style="margin-bottom: 1rem;">
               <div class="input-field">
                 <label>Project Name</label>
-                <input type="text" id="beam-proj-name" value="TwinAnalytic Tower">
+                <input type="text" id="beam-proj-name" placeholder="e.g. Gulshan Heights">
               </div>
               <div class="input-field">
                 <label>Beam Mark / Element</label>
@@ -918,7 +918,7 @@
               </div>
               <div class="input-field">
                 <label>Designer Name</label>
-                <input type="text" id="beam-designer" value="TwinAnalytic">
+                <input type="text" id="beam-designer" placeholder="Your name or initials">
               </div>
               <div class="input-field">
                 <label>Support Condition</label>
@@ -2236,10 +2236,16 @@
       }
     }
 
-    function createReportPage(pageNum, contentHtml) {
-      const projName = document.getElementById('beam-proj-name').value || "TwinAnalytic Tower";
-      const beamMark = document.getElementById('beam-mark').value || "B1";
-      const designer = document.getElementById('beam-designer').value || "AH";
+    /* Pages number themselves. They used to be numbered by hand at each
+       call site, which had already drifted — two pages were both labelled 8
+       — and removing a page meant renumbering every one after it. */
+    let reportPageSeq = 0;
+    function createReportPage(contentHtml) {
+      const pageNum = ++reportPageSeq;
+      const projName = document.getElementById('beam-proj-name').value || '—';
+      const beamMark = document.getElementById('beam-mark').value || '—';
+      const designer = document.getElementById('beam-designer').value || '—';
+      const checker = '—';   // no checker field yet: a blank to be signed, not an invented name
       const date = new Date().toLocaleDateString();
 
       const page = document.createElement('div');
@@ -2260,7 +2266,7 @@
             </div>
             <div class="header-col col-meta">
               <div><strong>DESIGN BY:</strong> ${designer}</div>
-              <div><strong>CHECKED BY:</strong> MB</div>
+              <div><strong>CHECKED BY:</strong> ${checker}</div>
               <div><strong>DATE:</strong> ${date}</div>
             </div>
           </div>
@@ -2271,7 +2277,7 @@
           <!-- Footer -->
           <div class="report-footer">
             <div class="footer-left">Calculated via TwinAnalytic — www.twinanalytic.com</div>
-            <div class="footer-right">Page ${pageNum} of 10</div>
+            <div class="footer-right">Page ${pageNum} of <span class="report-total-pages">?</span></div>
           </div>
         </div>
       `;
@@ -2285,12 +2291,13 @@
         return;
       }
       
-      const projName = document.getElementById('beam-proj-name').value || "TwinAnalytic Tower";
-      const beamMark = document.getElementById('beam-mark').value || "B1";
-      const designer = document.getElementById('beam-designer').value || "AH";
+      const projName = document.getElementById('beam-proj-name').value || '—';
+      const beamMark = document.getElementById('beam-mark').value || '—';
+      const designer = document.getElementById('beam-designer').value || '—';
       const date = new Date().toLocaleDateString();
 
       const container = document.getElementById('report-preview-container');
+      reportPageSeq = 0;
       container.innerHTML = ''; // clear
 
       // Modulus calculations
@@ -2390,7 +2397,7 @@
       detailTable += '  NOTE: Compression bars L2 (2×#20) REMOVED — not required.';
 
       // Page 1
-      const p1 = createReportPage(1, `
+      const p1 = createReportPage(`
 <div class="report-section-header">STRUCTURAL DESIGN CALCULATION SHEET</div>
 
 SCOPE OF CALCULATION:
@@ -2419,59 +2426,11 @@ Design Summary Table:
 │ phi factor           │ ${r.phi.toFixed(3)}                 │
 └──────────────────────┴──────────────────────┘
 
-<div class="revision-note-box" style="border: 2px solid #dc2626; background-color: #fef2f2; padding: 15px; margin-top: 20px; border-radius: 6px; color: #3f3f46; font-family: inherit;">
-  <strong style="color: #dc2626; font-size: 1.1em; display: block; margin-bottom: 8px;">REVISION NOTE</strong>
-  This report supersedes the original B1 report dated 6/9/2026. Corrections applied:
-  <ul style="margin: 5px 0 0 20px; padding: 0;">
-    <li>Beam type changed to Singly Reinforced (compression steel removed)</li>
-    <li>Tension bars increased from 3 to 4 &times; #25</li>
-    <li>d' arithmetic error corrected (60 &rarr; 70 mm)</li>
-    <li>All downstream calculations updated.</li>
-  </ul>
-</div>
+
 `);
       container.appendChild(p1);
 
       // Page 2: Calculation Corrections Log
-      const pCorr = createReportPage(2, `
-<div class="report-section-header">CALCULATION CORRECTIONS — ORIGINAL vs REVISED</div>
-
-<div class="report-subsection-header">Revision Comparison Summary</div>
-  This calculation sheet presents the corrected design for Beam B1.
-  The table below outlines the comparison between the original analysis and this revision.
-
-┌───┬──────────────────────┬────────────────────┬────────────────────┬─────────┐
-│ # │ Item                 │ Original (Error)   │ Corrected          │ Impact  │
-├───┼──────────────────────┼────────────────────┼────────────────────┼─────────┤
-│ 1 │ Beam type            │ Doubly reinforced  │ Singly reinforced  │ Major   │
-│ 2 │ Tension bars n       │ 3 × #25            │ 4 × #25            │ Major   │
-│ 3 │ Compression bars     │ 2 × #20 (A's=628)  │ None required      │ Major   │
-│ 4 │ d' calculation       │ 60.0 mm (wrong)    │ 70.0 mm (correct)  │ Minor*  │
-│ 5 │ As provided          │ 1472.6 mm²         │ 1963.5 mm²         │ Major   │
-│ 6 │ a (stress block)     │ 67.2 mm            │ 115.5 mm           │ Major   │
-│ 7 │ c (neutral axis)     │ 79.1 mm            │ 135.9 mm           │ Major   │
-│ 8 │ εt (tensile strain)  │ 0.01739            │ 0.00886            │ Major   │
-│ 9 │ φMn                  │ 278.4 kN·m         │ ${r.phiMn.toFixed(1)} kN·m       │ Major   │
-│10 │ DCR                  │ 1.247 (FAIL)       │ ${r.dcr.toFixed(3)} (PASS)      │ Major   │
-│11 │ Design Status        │ ❌ INADEQUATE       │ ✅ ADEQUATE         │ Major   │
-└───┴──────────────────────┴────────────────────┴────────────────────┴─────────┘
-
-* d' error (item 4) is moot since compression steel is removed entirely.
-  Shown here for completeness of the error log.
-
-<div class="report-subsection-header">Root Cause Analysis</div>
-  ROOT CAUSE ANALYSIS:
-  The original report incorrectly selected a doubly reinforced beam
-  configuration despite the reinforcement ratio being well within
-  singly reinforced limits (ρ = 0.00913, ρ_max = 0.02064). The
-  addition of compression steel masked the real deficiency: the
-  tension steel (3 bars) was insufficient to meet Mu. Furthermore,
-  the d' arithmetic (50+10+10=60 instead of 70mm) propagated errors
-  into ε's, f's, Mn, φMn, and DCR. The correct fix is simply to
-  increase tension bars from 3 to 4 × #25, giving adequate capacity
-  with no compression steel needed.
-`);
-      container.appendChild(pCorr);
 
       // Page 3
       let doublyInputText = '';
@@ -2486,7 +2445,7 @@ Design Summary Table:
          = ${d_prime_val.toFixed(1)} mm`;
       }
 
-      const p2 = createReportPage(3, `
+      const p2 = createReportPage(`
 <div class="report-section-header">1.0  GIVEN DATA AND DESIGN PARAMETERS</div>
 
 <div class="report-subsection-header">1.1  Material Properties</div>
@@ -2558,7 +2517,7 @@ ${doublyInputText}
       container.appendChild(p2);
 
       // Page 4
-      const p3 = createReportPage(4, `
+      const p3 = createReportPage(`
 <div class="report-section-header">2.0  FACTORED LOADS AND DESIGN MOMENT <span style="color: #16a34a; font-size: 0.7em; font-weight: normal; margin-left: 15px;">[NO CHANGE — VALUES VERIFIED]</span></div>
 
   Load combination per ACI 318-19 Section 5.3.1:
@@ -2582,7 +2541,7 @@ ${doublyInputText}
       container.appendChild(p3);
 
       // Page 5
-      const p4 = createReportPage(5, `
+      const p4 = createReportPage(`
 <div class="report-section-header">3.0  REINFORCEMENT RATIO LIMITS <span style="color: #16a34a; font-size: 0.7em; font-weight: normal; margin-left: 15px;">[NO CHANGE — VALUES VERIFIED]</span></div>
 
 <div class="report-subsection-header">3.1  Balanced Reinforcement Ratio (ACI 318 R21.2.2)</div>
@@ -2637,7 +2596,7 @@ ${doublyInputText}
       container.appendChild(p4);
 
   // Page 6 (Singly Reinforced Flexural Analysis)
-      const p5 = createReportPage(6, `
+      const p5 = createReportPage(`
 <div class="report-section-header">4.0  FLEXURAL ANALYSIS — NOMINAL MOMENT CAPACITY</div>
 
 <div class="report-subsection-header">4.1  Provided Steel Area</div>
@@ -2726,7 +2685,7 @@ ${doublyInputText}
       checkListTable += '  └──────────────────────┴──────────────┴──────────────┴──────┘';
 
       // Page 7
-      const p6 = createReportPage(7, `
+      const p6 = createReportPage(`
 <div class="report-section-header">5.0  DESIGN ADEQUACY CHECK</div>
  
 <div class="report-subsection-header">5.1  Flexural Strength Check</div>
@@ -2780,7 +2739,7 @@ ${checkListTable}
       container.appendChild(p6);
 
       // Page: Shear design
-      const pShear = createReportPage(8, `
+      const pShear = createReportPage(`
 <div class="report-section-header">6.0  SHEAR DESIGN (ACI 318 Ch.22 &amp; 18.6.4)</div>
 
 <div class="report-subsection-header">6.1  Design Shear at the Critical Section</div>
@@ -2833,7 +2792,7 @@ ${(r.shearLimits || []).map(l => '  ' + (isFinite(l.v) ? l.v.toFixed(1) : '—')
       container.appendChild(pShear);
 
       // Page 8: Detailing Diagrams (with SVGs)
-      const p7 = createReportPage(8, `
+      const p7 = createReportPage(`
 <div class="report-section-header">5.0  BEAM DETAILING DIAGRAMS</div>
 <div id="report-diagram-svg-host" style="display:flex; flex-direction:column; align-items:center; gap:1.25rem; margin-top:1rem;"></div>
 <div class="report-subsection-header">Bar Spacing Detailing Check:</div>
@@ -2850,7 +2809,7 @@ ${(r.shearLimits || []).map(l => '  ' + (isFinite(l.v) ? l.v.toFixed(1) : '—')
       drawReportSVGs(svgHost, r);
 
       // Page 9
-      const p8 = createReportPage(9, `
+      const p8 = createReportPage(`
 <div class="report-section-header">6.0  DETAILING REQUIREMENTS (ACI 318-19)</div>
 
 <div class="report-subsection-header">6.1  Concrete Cover (ACI 318 Table 20.6.1.3)</div>
@@ -2905,7 +2864,7 @@ ${detailTable}
       container.appendChild(p8);
 
       // Page 10
-      const p9 = createReportPage(10, `
+      const p9 = createReportPage(`
 <div class="report-section-header">7.0  REFERENCES</div>
  
   [1]  ACI Committee 318. Building Code Requirements for
@@ -2933,6 +2892,11 @@ ${detailTable}
   geometric conditions only.
 `);
       container.appendChild(p9);
+
+      // Now that every page exists, fill in the "of N" each footer left blank.
+      const totalPages = container.querySelectorAll('.report-page-a4').length;
+      container.querySelectorAll('.report-total-pages')
+               .forEach(el => { el.textContent = totalPages; });
 
       // Show modal preview
       if (showModal) {
@@ -3062,9 +3026,10 @@ ${detailTable}
         doc.setTextColor(26, 32, 44);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(7);
-        const projName = document.getElementById('beam-proj-name').value || "TwinAnalytic Tower";
-        const beamMark = document.getElementById('beam-mark').value || "B1";
-        const designer = document.getElementById('beam-designer').value || "AH";
+        const projName = document.getElementById('beam-proj-name').value || '—';
+        const beamMark = document.getElementById('beam-mark').value || '—';
+        const designer = document.getElementById('beam-designer').value || '—';
+      const checker = '—';   // no checker field yet: a blank to be signed, not an invented name
 
         const splitProj = doc.splitTextToSize(`PROJECT: ${projName}`, 78);
         doc.text(splitProj, 73, 14.5);
@@ -3081,7 +3046,7 @@ ${detailTable}
         doc.setFont('helvetica', 'bold');
         doc.text('CHECKED BY:', 155, 20);
         doc.setFont('helvetica', 'normal');
-        doc.text('MB', 178, 20);
+        doc.text(checker, 178, 20);
 
         doc.setFont('helvetica', 'bold');
         doc.text('DATE:', 155, 25);
@@ -3098,7 +3063,7 @@ ${detailTable}
         doc.setFontSize(7.5);
         doc.text('Calculated via TwinAnalytic — www.twinanalytic.com', 13, 284);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Page ${pageNum}`, 175, 284);
+        doc.text(`Page ${pageNum} of {tp}`, 175, 284);   // {tp} resolved by putTotalPages on save
       }
 
       let cy = 35;
@@ -3124,7 +3089,7 @@ ${detailTable}
             
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(11);
-            doc.setTextColor(201, 168, 76);
+            doc.setTextColor(138, 107, 46);   // gold that clears AA on white; #C9A84C is 2.29:1
             doc.text(title, x, cy + 4);
             
             cy += 5.5;
@@ -3229,9 +3194,10 @@ ${detailTable}
       doc.setTextColor(30, 30, 30);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(20);
-      const projName = document.getElementById('beam-proj-name').value || "TwinAnalytic Tower";
-      const beamMark = document.getElementById('beam-mark').value || "B1";
-      const designer = document.getElementById('beam-designer').value || "AH";
+      const projName = document.getElementById('beam-proj-name').value || '—';
+      const beamMark = document.getElementById('beam-mark').value || '—';
+      const designer = document.getElementById('beam-designer').value || '—';
+      const checker = '—';   // no checker field yet: a blank to be signed, not an invented name
 
       const tLines = doc.splitTextToSize("Reinforced Concrete Beam Flexural Design Report", 160);
       doc.text(tLines, 20, 85);
@@ -3257,39 +3223,9 @@ ${detailTable}
 
       doc.setFont('helvetica', 'normal');
       doc.text(`Designed By:      ${designer}`, 20, 170);
-      doc.text(`Reviewed By:      MB`, 20, 176);
+      doc.text(`Checked By:       ${checker}`, 20, 176);
       doc.text(`Date:             ${new Date().toLocaleDateString()}`, 20, 182);
 
-      // Revision Note Box (Red bordered)
-      doc.setDrawColor(220, 38, 38);
-      doc.setLineWidth(0.4);
-      doc.rect(105, 120, 75, 60);
-      doc.setFillColor(255, 245, 245);
-      doc.rect(105.2, 120.2, 74.6, 59.6, 'F');
-
-      doc.setTextColor(220, 38, 38);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8.5);
-      doc.text('REVISION NOTE', 110, 127);
-
-      doc.setTextColor(50, 50, 50);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7.5);
-      const revLines = [
-        "This report supersedes the original",
-        "B1 report dated 6/9/2026. Corrections:",
-        " (1) Beam type: Singly Reinforced",
-        " (2) Tension bars: 4 x #25 (was 3)",
-        " (3) Compression steel removed",
-        " (4) d' arithmetic error corrected",
-        "     (60 mm -> 70 mm)",
-        "All downstream calculations updated."
-      ];
-      let ry = 133;
-      revLines.forEach(line => {
-        doc.text(line, 110, ry);
-        ry += 4.5;
-      });
 
       doc.setDrawColor(201, 168, 76);
       doc.setLineWidth(0.4);
@@ -3333,7 +3269,7 @@ ${detailTable}
           doc.line(10, cy, 200, cy);
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(11);
-          doc.setTextColor(201, 168, 76);
+          doc.setTextColor(138, 107, 46);   // gold that clears AA on white; #C9A84C is 2.29:1
           doc.text('5.0  BEAM DETAILING DIAGRAMS', 13, cy + 4);
           cy += 5.5;
           doc.line(10, cy, 200, cy);

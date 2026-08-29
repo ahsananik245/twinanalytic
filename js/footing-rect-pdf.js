@@ -16,28 +16,25 @@ function downloadRectFootingPDF() {
   // it, which is what pushed the right-hand column off the page.
   if (window.BNBCPdf) window.BNBCPdf.harden(doc);
 
-  // The real monogram, from js/brand-mark.js. This was a plain gold square
-  // standing in for a logo — the only report in the suite that never had one.
-  if (window.TWBrandMark) {
-    window.TWBrandMark.draw(doc, 0.5, 0.48, 0.48);
+  /* The house header and footer, rather than the one-off logo, title and rule
+     this report used to draw for itself. It was the only report in the suite
+     that carried neither the shared band nor a page number, so a client
+     receiving it alongside a beam or seismic report got an odd one out.
+
+     BNBCPdf.geom() reads the page size the document was created with, so the
+     mm/A4 geometry scales correctly onto this letter/inch page. */
+  if (window.BNBCPdf) {
+    window.BNBCPdf.page(doc, 'Isolated Rectangular Footing Design', 1);
   } else {
-    doc.setFillColor(201, 168, 76);
-    doc.rect(0.5, 0.5, 0.4, 0.4, 'F');
+    if (window.TWBrandMark) window.TWBrandMark.draw(doc, 0.5, 0.48, 0.48);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(30, 40, 50);
+    doc.text('ISOLATED RECTANGULAR FOOTING DESIGN', 1.1, 0.7);
+    doc.setDrawColor(201, 168, 76);
+    doc.setLineWidth(0.02);
+    doc.line(0.5, 1.1, 8.0, 1.1);
   }
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
-  doc.setTextColor(30, 40, 50);
-  doc.text('ISOLATED RECTANGULAR FOOTING DESIGN', 1.1, 0.7);
-
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(100, 100, 100);
-  doc.text('Calculated via TwinAnalytic — www.twinanalytic.com', 1.1, 0.85);
-
-  doc.setDrawColor(201, 168, 76);
-  doc.setLineWidth(0.02);
-  doc.line(0.5, 1.1, 8.0, 1.1);
 
   function v(id) {
     const el = document.getElementById(id);
@@ -84,11 +81,23 @@ function downloadRectFootingPDF() {
   doc.setTextColor(0,0,0);
   doc.text(`Status: ${v('footing-rect-status-badge')}`, 0.5, 7.6);
 
-  doc.setDrawColor(200, 200, 200);
-  doc.roundedRect(0.5, 7.8, 7.0, 2.0, 0.1, 0.1, 'S');
+  /* An empty bordered box captioned "(Review Interactive Dimension Schematic
+     Online)" used to sit here. On a report a client may print and file, a
+     large blank rectangle telling them to go and look somewhere else reads as
+     unfinished. The dimensions it was gesturing at are printed instead. */
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(30, 30, 30);
+  doc.text('3. PROPORTIONS', 0.5, 8.1);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(60, 60, 60);
+  doc.text(`Plan: ${v('footing-out-lb')} ft`, 0.5, 8.5);
+  doc.text(`Trial effective depth, d: ${v('footing-d')} in`, 0.5, 8.8);
+  doc.text(`Column: ${v('footing-c1')} in x ${v('footing-c2')} in`, 4.5, 8.5);
   doc.setFont('helvetica', 'italic');
-  doc.setTextColor(150, 150, 150);
-  doc.text('(Review Interactive Dimension Schematic Online)', 2.5, 8.8);
+  doc.setFontSize(8);
+  doc.setTextColor(120, 120, 120);
+  doc.text('Plan and reinforcement layout are shown on the calculator page.', 0.5, 9.2);
 
   doc.save(`twinanalytic_footing_rect_s-103_${new Date().toISOString().split('T')[0]}.pdf`);
 }

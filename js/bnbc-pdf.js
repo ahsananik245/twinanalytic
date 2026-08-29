@@ -134,7 +134,19 @@ const BNBCPdf = (function () {
     return s.replace(/[^\x09\x0A\x0D\x20-\xFF]/g, '');
   }
 
-  /* Wrap a jsPDF document so every text call is encoded automatically. */
+  /* Placeholder for the page count.
+
+     Reports are built a page at a time and do not know their own length
+     until they are finished, so almost all of them called footer() without
+     a total and printed a bare "Page 3". On a stamped calculation package
+     that is a real omission — "of 7" is how a checker knows the set is
+     complete. Rather than rewrite 26 call sites to count ahead, the footer
+     writes this token and jsPDF's putTotalPages swaps it for the real count
+     when the document is saved. */
+  const TOTAL_TOKEN = '{tp}';
+
+  /* Wrap a jsPDF document so every text call is encoded automatically, and
+     so the page count is resolved on the way out. */
   function harden(doc) {
     if (doc.__bnbcHardened) return doc;
     const origText = doc.text.bind(doc);
@@ -144,8 +156,45 @@ const BNBCPdf = (function () {
     };
     const origSplit = doc.splitTextToSize.bind(doc);
     doc.splitTextToSize = function (txt, w, o) { return origSplit(safe(txt), w, o); };
+
+    /* Hooking save() rather than asking every report to remember a
+       finalise() call — one that forgets would ship "Page 3 of {tp}". */
+    ['save', 'output'].forEach(function (m) {
+      if (typeof doc[m] !== 'function') return;
+      const orig = doc[m].bind(doc);
+      doc[m] = function () {
+        if (!doc.__bnbcTotalled) {
+          doc.__bnbcTotalled = true;
+          try { doc.putTotalPages(TOTAL_TOKEN); } catch (e) { /* older jsPDF */ }
+          try { applyDocInfo(doc); } catch (e) { }
+        }
+        return orig.apply(null, arguments);
+      };
+    });
+
     doc.__bnbcHardened = true;
     return doc;
+  }
+
+  /* Every report was leaving the PDF untitled — no Title, Author or Subject,
+     so a client's document system files it as "jsPDF 2.5.1" with a blank
+     name. Reports set BNBCPdf.docInfo(doc, {...}) if they have something
+     better; this is the floor. */
+  function docInfo(doc, info) {
+    doc.__bnbcInfo = Object.assign({}, doc.__bnbcInfo, info || {});
+    return doc;
+  }
+
+  function applyDocInfo(doc) {
+    const i = doc.__bnbcInfo || {};
+    if (typeof doc.setProperties !== 'function') return;
+    doc.setProperties({
+      title: i.title || 'TwinAnalytic Calculation Report',
+      subject: i.subject || 'Structural design calculation to BNBC 2020 / ACI 318',
+      author: i.author || 'TwinAnalytic',
+      keywords: i.keywords || 'structural engineering, BNBC 2020, ACI 318, calculation report, TwinAnalytic',
+      creator: 'TwinAnalytic — twinanalytic.com'
+    });
   }
 
   /* -------------------------------------------------------------------
@@ -276,7 +325,7 @@ const BNBCPdf = (function () {
     const g = geom(doc);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7); doc.setTextColor(130, 130, 130);
-    doc.text('Page ' + page + (total ? ' of ' + total : ''), g.w / 2, g.h - 8 * g.k, { align: 'center' });
+    doc.text('Page ' + page + ' of ' + (total || TOTAL_TOKEN), g.w / 2, g.h - 8 * g.k, { align: 'center' });
     doc.text('© ' + new Date().getFullYear() +
       ' TwinAnalytic  ·  twinanalytic.com  ·  Verify against project specific requirements before construction.',
       g.w / 2, g.h - 4 * g.k, { align: 'center' });
@@ -298,6 +347,54 @@ const BNBCPdf = (function () {
     doc.setDrawColor(GOLD[0], GOLD[1], GOLD[2]); doc.setLineWidth(0.3 * g.k);
     doc.line(g.m, y + 1.5 * g.k, g.w - g.m, y + 1.5 * g.k);
     return y + 6 * g.k;
+  }
+
+  /* The governing check, stated on the cover.
+
+     A reader currently has to reach page 4 of an 8-page report to find out
+     whether the member passed. This puts the one comparison that decides the
+     design where they look first, colour-coded, with the clause that governs
+     it. Geometry is in the shared mm units and scales via geom(), so it lands
+     correctly on the inch/letter reports too. */
+  function verdict(doc, x, y, w, o) {
+    const g = geom(doc);
+    o = o || {};
+    /* Font and size are put back on the way out. The text COLOUR is not —
+       jsPDF has no getter for it — so a caller that had one set must set it
+       again after calling this. */
+    let prevFont = null, prevSize = null;
+    try { prevFont = doc.getFont(); prevSize = doc.getFontSize(); } catch (e) { }
+    const pass = !!o.pass;
+    const edge = pass ? [22, 110, 58] : [178, 34, 34];
+    const fill = pass ? [239, 248, 242] : [253, 241, 241];
+    const h = (o.h || 22) * g.k;
+
+    doc.setFillColor(fill[0], fill[1], fill[2]);
+    doc.setDrawColor(edge[0], edge[1], edge[2]);
+    doc.setLineWidth(0.35 * g.k);
+    doc.rect(x, y, w, h, 'FD');
+    doc.setFillColor(edge[0], edge[1], edge[2]);
+    doc.rect(x, y, 1.8 * g.k, h, 'F');          // status spine
+
+    const tx = x + 5 * g.k;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
+    doc.setTextColor(edge[0], edge[1], edge[2]);
+    doc.text(o.label || ('GOVERNING CHECK  —  ' + (pass ? 'PASS' : 'FAIL')), tx, y + 6 * g.k);
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5);
+    doc.setTextColor(25, 25, 25);
+    doc.text(String(o.headline || ''), tx, y + 12.2 * g.k);
+
+    if (o.detail) {
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.2);
+      doc.setTextColor(95, 95, 95);
+      doc.text(doc.splitTextToSize(String(o.detail), w - 9 * g.k), tx, y + 17 * g.k);
+    }
+    try {
+      if (prevFont) doc.setFont(prevFont.fontName, prevFont.fontStyle);
+      if (prevSize) doc.setFontSize(prevSize);
+    } catch (e) { }
+    return y + h;
   }
 
   /* A label / value row */
@@ -328,7 +425,7 @@ const BNBCPdf = (function () {
   }
 
   return {
-    safe, harden, mark, wordmark, bandFill, header, footer, page, section, row, geom,
+    safe, harden, docInfo, mark, wordmark, bandFill, verdict, header, footer, page, section, row, geom,
     brandAllPages, M, PW, PH, HEADER_H, GOLD, GOLD_INK, STEEL, STEEL_INK, INK
   };
 })();

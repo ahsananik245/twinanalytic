@@ -25,9 +25,9 @@ function downloadFootingPDF() {
   if (!r) { alert('Run the calculation first.'); return; }
 
   const txt = id => { const el = document.getElementById(id); return el ? (el.value || el.textContent || '') : ''; };
-  const proj = txt('footing-proj-name') || 'TwinAnalytic Tower';
+  const proj = txt('footing-proj-name') || '—';
   const mark = txt('footing-mark') || 'F1';
-  const designer = txt('footing-designer') || 'TwinAnalytic';
+  const designer = txt('footing-designer') || '—';
 
   const M = P ? P.M : 14, PW = P ? P.PW : 210, PH = P ? P.PH : 297;
   let page = 1, y = 32;
@@ -42,7 +42,7 @@ function downloadFootingPDF() {
   function step(n, title, formula, sub, res, ok) {
     need(22);
     doc.setFont('helvetica', 'bold'); doc.setFontSize(8.8);
-    doc.setTextColor(201, 140, 20);
+    doc.setTextColor(138, 107, 46);
     doc.text('STEP ' + n + ' - ' + title, M, y); y += 4.6;
     doc.setFont('courier', 'normal'); doc.setFontSize(7.2); doc.setTextColor(70, 70, 70);
     [formula, sub].forEach(block => {
