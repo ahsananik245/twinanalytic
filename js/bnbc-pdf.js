@@ -166,6 +166,7 @@ const BNBCPdf = (function () {
         if (!doc.__bnbcTotalled) {
           doc.__bnbcTotalled = true;
           if (!doc.__bnbcNoWatermark) { try { watermark(doc); } catch (e) { } }
+          try { applyOutline(doc); } catch (e) { }
           try { doc.putTotalPages(TOTAL_TOKEN); } catch (e) { /* older jsPDF */ }
           try { applyDocInfo(doc); } catch (e) { }
         }
@@ -175,6 +176,36 @@ const BNBCPdf = (function () {
 
     doc.__bnbcHardened = true;
     return doc;
+  }
+
+  /* PDF bookmarks.
+
+     The beam report runs to seventeen pages with no way to navigate it but
+     scrolling. Entries are collected as the report is built and written to
+     the outline at save time, because jsPDF wants a page number and the
+     report only knows its own shape once it is finished.
+
+     Call it as each section starts; the page number defaults to whichever
+     page is current at that moment. */
+  function bookmark(doc, title, pageNumber) {
+    if (!title) return;
+    doc.__bnbcOutline = doc.__bnbcOutline || [];
+    let pn = pageNumber;
+    if (!pn) {
+      try { pn = doc.getCurrentPageInfo().pageNumber; } catch (e) { pn = doc.getNumberOfPages(); }
+    }
+    doc.__bnbcOutline.push({ title: safe(String(title)), page: pn });
+  }
+
+  function applyOutline(doc) {
+    const items = doc.__bnbcOutline;
+    if (!items || !items.length) return;
+    if (!doc.outline || typeof doc.outline.add !== 'function') return;
+    const total = doc.getNumberOfPages();
+    items.forEach(function (it) {
+      const pn = Math.min(Math.max(it.page || 1, 1), total);
+      try { doc.outline.add(null, it.title, { pageNumber: pn }); } catch (e) { }
+    });
   }
 
   /* The centred watermark: the full lockup, monogram over wordmark, stamped
@@ -389,6 +420,7 @@ const BNBCPdf = (function () {
   /* A section heading in the house style */
   function section(doc, y, text) {
     const g = geom(doc);
+    bookmark(doc, text);
     doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
     doc.setTextColor(20, 20, 20);
     doc.text(text, g.m, y);
@@ -415,7 +447,18 @@ const BNBCPdf = (function () {
     const pass = !!o.pass;
     const edge = pass ? [22, 110, 58] : [178, 34, 34];
     const fill = pass ? [239, 248, 242] : [253, 241, 241];
-    const h = (o.h || 22) * g.k;
+    const tx = x + 5 * g.k;
+    const inner = w - 9 * g.k;
+
+    /* Measure before drawing: a headline long enough to wrap has to grow the
+       box, or it prints over the border. Set the font first — splitTextToSize
+       measures against whatever is current. */
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5);
+    const head = doc.splitTextToSize(String(o.headline || ''), inner);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.2);
+    const detail = o.detail ? doc.splitTextToSize(String(o.detail), inner) : [];
+    const h = ((o.h || 22) + Math.max(0, head.length - 1) * 5
+      + Math.max(0, detail.length - 2) * 3.2) * g.k;
 
     doc.setFillColor(fill[0], fill[1], fill[2]);
     doc.setDrawColor(edge[0], edge[1], edge[2]);
@@ -424,19 +467,18 @@ const BNBCPdf = (function () {
     doc.setFillColor(edge[0], edge[1], edge[2]);
     doc.rect(x, y, 1.8 * g.k, h, 'F');          // status spine
 
-    const tx = x + 5 * g.k;
     doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
     doc.setTextColor(edge[0], edge[1], edge[2]);
     doc.text(o.label || ('GOVERNING CHECK  —  ' + (pass ? 'PASS' : 'FAIL')), tx, y + 6 * g.k);
 
     doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5);
     doc.setTextColor(25, 25, 25);
-    doc.text(String(o.headline || ''), tx, y + 12.2 * g.k);
+    doc.text(head, tx, y + 12.2 * g.k);
 
-    if (o.detail) {
+    if (detail.length) {
       doc.setFont('helvetica', 'normal'); doc.setFontSize(7.2);
       doc.setTextColor(95, 95, 95);
-      doc.text(doc.splitTextToSize(String(o.detail), w - 9 * g.k), tx, y + 17 * g.k);
+      doc.text(detail, tx, y + (12.2 + 4.8 + Math.max(0, head.length - 1) * 5) * g.k);
     }
     try {
       if (prevFont) doc.setFont(prevFont.fontName, prevFont.fontStyle);
@@ -533,7 +575,7 @@ const BNBCPdf = (function () {
   }
 
   return {
-    safe, harden, docInfo, mark, wordmark, bandFill, watermark, verdict, signatures, header, footer, page, section, row, geom,
+    safe, harden, docInfo, bookmark, mark, wordmark, bandFill, watermark, verdict, signatures, header, footer, page, section, row, geom,
     brandAllPages, M, PW, PH, HEADER_H, GOLD, GOLD_INK, STEEL, STEEL_INK, INK
   };
 })();

@@ -2391,7 +2391,6 @@
       detailTable += '  │ Mark │ Bar Size │ Quantity │ Length (m)  │ Remarks                  │\n';
       detailTable += '  ├──────┼──────────┼──────────┼─────────────┼──────────────────────────┤\n';
       detailTable += `  │ L1   │ #${db.toString().padEnd(8)} │ 4        │ ${long_len.toString().padEnd(11)} │ Bottom Longitudinal Bars │\n`;
-      detailTable += `  │      │          │ [was 3]  │             │ [REVISED +1 bar]         │\n`;
       detailTable += `  │ T1   │ #${ds.toString().padEnd(8)} │ ${N_stirrups.toString().padEnd(8)} │ ${L_stirrup_total.toFixed(2).padEnd(11)} │ Stirrups @ ${s_stirrup}mm c/c       │\n`;
       detailTable += '  └──────┴──────────┴──────────┴─────────────┴──────────────────────────┘\n\n';
       detailTable += '  NOTE: Compression bars L2 (2×#20) REMOVED — not required.';
@@ -2426,13 +2425,10 @@ Design Summary Table:
 │ phi factor           │ ${r.phi.toFixed(3)}                 │
 └──────────────────────┴──────────────────────┘
 
-
 `);
       container.appendChild(p1);
 
-      // Page 2: Calculation Corrections Log
-
-      // Page 3
+      // Page 2
       let doublyInputText = '';
       if (r.type === 'doubly') {
         const d_prime_val = cc + ds + r.db_prime/2;
@@ -2484,7 +2480,7 @@ Design Summary Table:
   Clear cover:             cc  = ${cc} mm
   Stirrup diameter:        ds  = ${ds} mm
   Main bar diameter:       db  = ${db} mm
-  Number of tension bars:  n   = ${n_bars}  [REVISED: was 3, now 4]
+  Number of tension bars:  n   = ${n_bars}
 
   Effective depth:
       d = h − cc − ds − db/2
@@ -2518,7 +2514,7 @@ ${doublyInputText}
 
       // Page 4
       const p3 = createReportPage(`
-<div class="report-section-header">2.0  FACTORED LOADS AND DESIGN MOMENT <span style="color: #16a34a; font-size: 0.7em; font-weight: normal; margin-left: 15px;">[NO CHANGE — VALUES VERIFIED]</span></div>
+<div class="report-section-header">2.0  FACTORED LOADS AND DESIGN MOMENT</div>
 
   Load combination per ACI 318-19 Section 5.3.1:
       U = 1.2D + 1.6L
@@ -2542,7 +2538,7 @@ ${doublyInputText}
 
       // Page 5
       const p4 = createReportPage(`
-<div class="report-section-header">3.0  REINFORCEMENT RATIO LIMITS <span style="color: #16a34a; font-size: 0.7em; font-weight: normal; margin-left: 15px;">[NO CHANGE — VALUES VERIFIED]</span></div>
+<div class="report-section-header">3.0  REINFORCEMENT RATIO LIMITS</div>
 
 <div class="report-subsection-header">3.1  Balanced Reinforcement Ratio (ACI 318 R21.2.2)</div>
   At balanced condition: concrete reaches epsilon_u = 0.003
@@ -2600,7 +2596,6 @@ ${doublyInputText}
 <div class="report-section-header">4.0  FLEXURAL ANALYSIS — NOMINAL MOMENT CAPACITY</div>
 
 <div class="report-subsection-header">4.1  Provided Steel Area</div>
-  [REVISED: 4 bars instead of 3]
 
   Area of single bar:
       Ab = pi/4 × db²
@@ -2610,7 +2605,7 @@ ${doublyInputText}
   Total tension steel area:
       As,prov = n × Ab
               = ${n_bars} × ${(Math.PI * db * db / 4).toFixed(1)}
-              = ${As_prov} mm²  [REVISED: was 3 bars, now 4]
+              = ${As_prov} mm²
 
   Provided reinforcement ratio:
       rho = As / (b × d)
@@ -3226,7 +3221,6 @@ ${detailTable}
       doc.text(`Checked By:       ${checker}`, 20, 176);
       doc.text(`Date:             ${new Date().toLocaleDateString()}`, 20, 182);
 
-
       doc.setDrawColor(201, 168, 76);
       doc.setLineWidth(0.4);
       doc.rect(20, 195, 160, 60);
@@ -3257,10 +3251,20 @@ ${detailTable}
       doc.text('Software Reference: TwinAnalytic — www.twinanalytic.com', 20, 262);
 
       // Loop through pages 2 to 10
+      if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, 'Cover and Key Metrics', 1);
       for (let i = 1; i < 10; i++) {
         doc.addPage();
         drawPageBorderAndHeader(doc, i + 1);
         cy = 36;
+
+        /* Bookmark each page by its own section heading, read off the
+           on-screen report this PDF is rendered from, so the outline tracks
+           the report rather than a list maintained separately. */
+        if (window.BNBCPdf && window.BNBCPdf.bookmark && pages[i]) {
+          const hdr = pages[i].querySelector('.report-section-header');
+          const label = hdr ? hdr.textContent.trim() : ('Page ' + (i + 1));
+          window.BNBCPdf.bookmark(doc, label, doc.getNumberOfPages());
+        }
         
         if (i === 7) {
           // Page 8: Detailing Diagrams
@@ -3524,6 +3528,7 @@ ${detailTable}
       if (window.BNBCPdf && window.BNBCPdf.signatures) {
         doc.addPage();
         drawPageBorderAndHeader(doc, doc.getNumberOfPages());
+        window.BNBCPdf.bookmark(doc, 'Certification', doc.getNumberOfPages());
         window.BNBCPdf.signatures(doc, 45, {
           heading: 'Certification',
           designer: designer && designer !== '—' ? designer : ''
@@ -3538,7 +3543,6 @@ ${detailTable}
         btn.disabled = false;
       }
     }
-
 
     function drawReportSVGs(containerEl, r) {
       const w_el = 600;

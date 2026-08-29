@@ -2548,6 +2548,7 @@ function downloadSlabPDF() {
   goldInk(doc);
   doc.setFont('times', 'bold');
   doc.setFontSize(16);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, "1. DESIGN PARAMETERS SUMMARY");
   doc.text('1. DESIGN PARAMETERS SUMMARY', 0.5, 0.7);
   doc.line(0.5, 0.78, 8.0, 0.78);
 
@@ -2596,6 +2597,7 @@ function downloadSlabPDF() {
   goldInk(doc);
   doc.setFont('times', 'bold');
   doc.setFontSize(16);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, "2. CODE SLAB THICKNESS SIZING & COMPLIANCE");
   doc.text('2. CODE SLAB THICKNESS SIZING & COMPLIANCE', 0.5, 0.7);
   doc.line(0.5, 0.78, 8.0, 0.78);
 
@@ -2661,6 +2663,7 @@ function downloadSlabPDF() {
   goldInk(doc);
   doc.setFont('times', 'bold');
   doc.setFontSize(13);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, "3. BEAM STIFFNESS & DDM APPLICABILITY CHECKS");
   doc.text('3. BEAM STIFFNESS & DDM APPLICABILITY CHECKS', 0.5, ddmY);
   doc.line(0.5, ddmY + 0.05, 8.0, ddmY + 0.05);
 
@@ -2741,6 +2744,7 @@ function downloadSlabPDF() {
   goldInk(doc);
   doc.setFont('times', 'bold');
   doc.setFontSize(16);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, "3. LOADS & DIRECT DESIGN MOMENTS");
   doc.text('3. LOADS & DIRECT DESIGN MOMENTS', 0.5, 0.7);
   doc.line(0.5, 0.78, 8.0, 0.78);
 
@@ -2919,6 +2923,7 @@ function downloadSlabPDF() {
   goldInk(doc);
   doc.setFont('times', 'bold');
   doc.setFontSize(16);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, "4. FLEXURAL REINFORCEMENT DESIGN");
   doc.text('4. FLEXURAL REINFORCEMENT DESIGN', 0.5, 0.7);
   doc.line(0.5, 0.78, 8.0, 0.78);
 
@@ -3080,6 +3085,7 @@ function downloadSlabPDF() {
   goldInk(doc);
   doc.setFont('times', 'bold');
   doc.setFontSize(16);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, "5. SHEAR STRENGTH VERIFICATIONS");
   doc.text('5. SHEAR STRENGTH VERIFICATIONS', 0.5, 0.7);
   doc.line(0.5, 0.78, 8.0, 0.78);
   doc.setTextColor(60, 60, 60);
@@ -3267,6 +3273,7 @@ function downloadSlabPDF() {
   goldInk(doc);
   doc.setFont('times', 'bold');
   doc.setFontSize(16);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, "6. REINFORCEMENT DETAILING DIAGRAMS");
   doc.text('6. REINFORCEMENT DETAILING DIAGRAMS', 0.5, 0.65);
   doc.line(0.5, 0.72, 8.0, 0.72);
 
@@ -3596,6 +3603,7 @@ function downloadSlabPDF() {
   goldInk(doc);
   doc.setFont('times', 'bold');
   doc.setFontSize(16);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, "7. DESIGN SUMMARY & CONCLUSION");
   doc.text('7. DESIGN SUMMARY & CONCLUSION', 0.5, 0.7);
   doc.line(0.5, 0.78, 8.0, 0.78);
 
@@ -4227,6 +4235,7 @@ function downloadColumnPDF() {
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   goldInk(doc);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, 'SECTION 2 — PROJECT DATA & DESIGN INPUTS');
   doc.text('SECTION 2 — PROJECT DATA & DESIGN INPUTS', 0.5, cy);
   cy += 0.15;
 
@@ -4274,6 +4283,7 @@ function downloadColumnPDF() {
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   goldInk(doc);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, 'SECTION 3 — FACTORED LOADS & LOAD COMBINATIONS');
   doc.text('SECTION 3 — FACTORED LOADS & LOAD COMBINATIONS', 0.5, cy);
   cy += 0.20;
 
@@ -4370,6 +4380,7 @@ function downloadColumnPDF() {
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   goldInk(doc);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, 'SECTION 4 — MATERIAL PROPERTIES & CODE FACTORS');
   doc.text('SECTION 4 — MATERIAL PROPERTIES & CODE FACTORS', 0.5, cy);
   cy += 0.15;
 
@@ -4431,6 +4442,7 @@ function downloadColumnPDF() {
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   goldInk(doc);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, 'SECTION 5 — COLUMN SIZING');
   doc.text('SECTION 5 — COLUMN SIZING', 0.5, cy);
   cy += 0.15;
 
@@ -4507,6 +4519,7 @@ function downloadColumnPDF() {
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   goldInk(doc);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, 'SECTION 6 — LONGITUDINAL REINFORCEMENT DESIGN');
   doc.text('SECTION 6 — LONGITUDINAL REINFORCEMENT DESIGN', 0.5, cy);
   cy += 0.15;
 
@@ -4616,6 +4629,7 @@ function downloadColumnPDF() {
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   goldInk(doc);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, 'SECTION 7 — AXIAL CAPACITY VERIFICATION');
   doc.text('SECTION 7 — AXIAL CAPACITY VERIFICATION', 0.5, cy);
   cy += 0.15;
 
@@ -4677,6 +4691,7 @@ function downloadColumnPDF() {
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   goldInk(doc);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, 'SECTION 8 — LATERAL REINFORCEMENT DESIGN');
   doc.text('SECTION 8 — LATERAL REINFORCEMENT DESIGN', 0.5, cy);
   cy += 0.15;
 
@@ -4770,6 +4785,7 @@ function downloadColumnPDF() {
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   goldInk(doc);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, 'SECTION 9 — INTERACTION DIAGRAM CHECK (if moment present)');
   doc.text('SECTION 9 — INTERACTION DIAGRAM CHECK (if moment present)', 0.5, cy);
   cy += 0.15;
 
@@ -4941,6 +4957,7 @@ function downloadColumnPDF() {
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   goldInk(doc);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, 'SECTION 10 — BIAXIAL BENDING (if Mux and Muy both present)');
   doc.text('SECTION 10 — BIAXIAL BENDING (if Mux and Muy both present)', 0.5, cy);
   cy += 0.15;
 
@@ -5003,6 +5020,7 @@ function downloadColumnPDF() {
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   goldInk(doc);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, 'SECTION 11 — SHEAR DESIGN');
   doc.text('SECTION 11 — SHEAR DESIGN', 0.5, cy);
   cy += 0.15;
 
@@ -5182,6 +5200,7 @@ function downloadColumnPDF() {
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   goldInk(doc);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, 'SECTION 12 — SLENDERNESS CHECK');
   doc.text('SECTION 12 — SLENDERNESS CHECK', 0.5, cy);
   cy += 0.15;
 
@@ -5628,6 +5647,7 @@ function downloadColumnPDF() {
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   goldInk(doc);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, 'SECTION 13 — REINFORCEMENT DETAILING SCHEDULE');
   doc.text('SECTION 13 — REINFORCEMENT DETAILING SCHEDULE', 0.5, cy);
   cy += 0.15;
 
@@ -5794,6 +5814,7 @@ function downloadColumnPDF() {
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   goldInk(doc);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, 'SECTION 14 — DESIGN SUMMARY TABLE');
   doc.text('SECTION 14 — DESIGN SUMMARY TABLE', 0.5, cy);
   cy += 0.15;
 
@@ -5863,6 +5884,7 @@ function downloadColumnPDF() {
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   goldInk(doc);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, 'SECTION 15 — REINFORCEMENT DETAILING DRAWINGS');
   doc.text('SECTION 15 — REINFORCEMENT DETAILING DRAWINGS', 0.5, cy);
   cy += 0.20;
 
@@ -6105,6 +6127,7 @@ function downloadColumnPDF() {
   doc.setFont('times', 'bold');
   doc.setFontSize(12);
   goldInk(doc);
+  if (window.BNBCPdf && window.BNBCPdf.bookmark) window.BNBCPdf.bookmark(doc, 'SECTION 16 — CODE REFERENCES');
   doc.text('SECTION 16 — CODE REFERENCES', 0.5, cy);
   cy += 0.15;
 

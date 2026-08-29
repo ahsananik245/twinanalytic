@@ -371,16 +371,50 @@ const BNBCUI = (function () {
 
     doc.setTextColor(30, 30, 30);
     doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+    if (typeof BNBCPdf !== 'undefined' && BNBCPdf.bookmark) BNBCPdf.bookmark(doc, CFG.title);
     doc.text(CFG.title, M, y); y += 6;
     doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
     doc.setTextColor(60, 60, 60);
-    doc.splitTextToSize(res.headline || '', PW - 2 * M).forEach(l => { doc.text(l, M, y); y += 4.4; });
+    /* Where the calculator reached a verdict, state it in the box rather
+       than as another line of prose. The engines already make the
+       distinction: a check sets status PASS or FAIL, while a pure analysis
+       — base shear, wind pressure, load combinations — sets INFO, and there
+       is nothing to pass or fail. So this needs no per-report judgement. */
+    const isCheck = res.status === 'PASS' || res.status === 'FAIL';
+    if (isCheck && typeof BNBCPdf !== 'undefined' && BNBCPdf.verdict) {
+      y = BNBCPdf.verdict(doc, M, y - 3, PW - 2 * M, {
+        pass: res.status === 'PASS',
+        headline: res.headline || '',
+        detail: (res.warnings && res.warnings.length)
+          ? res.warnings.length + ' note' + (res.warnings.length > 1 ? 's' : '')
+            + ' recorded below. Full working follows.'
+          : 'Full working follows.'
+      }) + 4;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+      doc.setTextColor(60, 60, 60);
+    } else {
+      doc.splitTextToSize(res.headline || '', PW - 2 * M).forEach(l => { doc.text(l, M, y); y += 4.4; });
+    }
+
+    /* State the unit system the report was produced in. The suite converts
+       at the display edge, so the same calculation can be exported in either
+       — and a reader holding the paper has no other way to tell which. */
+    if (typeof BNBCProject !== 'undefined' && BNBCProject.unitSystem) {
+      const sys = BNBCProject.unitSystem();
+      doc.setFontSize(7.5); doc.setTextColor(110, 110, 110);
+      doc.text('Units: ' + (sys === 'IMP'
+        ? 'US customary (kip, ft, in, ksi)'
+        : 'Metric SI (kN, m, mm, MPa)'), M, y);
+      doc.setFontSize(8.5); doc.setTextColor(60, 60, 60);
+      y += 4.4;
+    }
     y += 3;
 
     /* Inputs */
     if (CFG.pdfInputs) {
       need(12);
       doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(20, 20, 20);
+      if (typeof BNBCPdf !== 'undefined' && BNBCPdf.bookmark) BNBCPdf.bookmark(doc, 'Design Inputs');
       doc.text('Design Inputs', M, y); y += 5;
       doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
       CFG.pdfInputs(LAST.inputs).forEach(p => {
@@ -395,6 +429,7 @@ const BNBCUI = (function () {
     /* Results */
     need(12);
     doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(20, 20, 20);
+    if (typeof BNBCPdf !== 'undefined' && BNBCPdf.bookmark) BNBCPdf.bookmark(doc, 'Analysis Output');
     doc.text('Analysis Output', M, y); y += 5;
     doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
     (res.results || []).forEach(r => {
@@ -410,6 +445,7 @@ const BNBCUI = (function () {
     (res.steps || []).forEach(s => {
       need(16);
       doc.setFont('helvetica', 'bold'); doc.setFontSize(8.8); doc.setTextColor(138, 107, 46);
+      if (typeof BNBCPdf !== 'undefined' && BNBCPdf.bookmark) BNBCPdf.bookmark(doc, 'STEP ' + s.n + ' - ' + s.title);
       doc.text('STEP ' + s.n + ' — ' + s.title, M, y); y += 4.6;
       doc.setFont('courier', 'normal'); doc.setFontSize(7.2); doc.setTextColor(70, 70, 70);
       [s.formula, s.sub].forEach(block => {
@@ -462,6 +498,7 @@ const BNBCUI = (function () {
       need(14);
       y += 4;
       doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(170, 90, 10);
+      if (typeof BNBCPdf !== 'undefined' && BNBCPdf.bookmark) BNBCPdf.bookmark(doc, 'Notes and Warnings');
       doc.text('Notes and Warnings', M, y); y += 5;
       doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(90, 70, 40);
       res.warnings.forEach(w => {
@@ -477,6 +514,7 @@ const BNBCUI = (function () {
       const blockH = BNBCPdf.signatures.height(doc, 3);
       y += 6;
       need(blockH);
+      BNBCPdf.bookmark(doc, 'Certification');
       BNBCPdf.signatures(doc, y, { heading: 'Certification' });
     }
 
