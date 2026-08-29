@@ -1024,6 +1024,16 @@
             <div class="result-label" style="margin-bottom:0.75rem;">Plan</div>
             <div id="footing-rect-diagram"></div>
           </div>
+
+          <!-- js/footing-rect-pdf.js has always bound to this id, but the
+               button itself was only ever added to the square-footing page,
+               so this report was unreachable. Enabled by the calculation once
+               the design checks out, same as its sibling. -->
+          <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+            <button class="btn btn-gold" id="btn-footing-pdf" disabled style="flex: 1.2; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.88rem;">
+              <i class="fa-solid fa-file-pdf"></i> Download Full Report (PDF)
+            </button>
+          </div>
         </section>
 
 

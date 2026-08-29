@@ -125,16 +125,23 @@ function runRectFootingLogic() {
   document.getElementById('footing-out-rebar-b').textContent = `${rebarS_mm}mm @ ${spacing_B}" c/c`;
 
   const statusEl = document.getElementById('footing-rect-status-badge');
+  const pdfBtn = document.getElementById('btn-footing-pdf');
   if (pVc1 >= Vu1 && pVc2L >= Vu2L && pVc2B >= Vu2B && A_furnished >= A_req) {
     statusEl.textContent = "CHECK PASSED";
     statusEl.style.backgroundColor = "rgba(46, 204, 113, 0.2)";
     statusEl.style.color = "#2ecc71";
     statusEl.style.border = "1px solid #2ecc71";
+
+    // Release the report only once the section checks out, matching the
+    // square-footing page — a stamped report of a failing design is a
+    // liability, not a deliverable.
+    if (pdfBtn) pdfBtn.disabled = false;
   } else {
     statusEl.textContent = "CHECK FAILED (REVISE DIMS/d)";
     statusEl.style.backgroundColor = "rgba(231, 76, 60, 0.2)";
     statusEl.style.color = "#e74c3c";
     statusEl.style.border = "1px solid #e74c3c";
+    if (pdfBtn) pdfBtn.disabled = true;
   }
   statusEl.style.display = 'inline-block';
   statusEl.style.marginBottom = '1.5rem';
