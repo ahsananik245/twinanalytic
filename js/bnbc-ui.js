@@ -470,6 +470,16 @@ const BNBCUI = (function () {
       });
     }
 
+    /* Certification block. Kept whole — if it will not fit in the space
+       left, it starts a fresh page rather than splitting a signature row
+       across the break. */
+    if (typeof BNBCPdf !== 'undefined' && BNBCPdf.signatures) {
+      const blockH = BNBCPdf.signatures.height(doc, 3);
+      y += 6;
+      need(blockH);
+      BNBCPdf.signatures(doc, y, { heading: 'Certification' });
+    }
+
     doc.save((CFG.slug || 'twinanalytic-report') + '.pdf');
   }
 

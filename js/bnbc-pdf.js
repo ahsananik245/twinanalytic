@@ -397,6 +397,66 @@ const BNBCPdf = (function () {
     return y + h;
   }
 
+  /* The certification block.
+
+     A calculation package is a document somebody signs. The reports had
+     nowhere to do it — two of them drew a pair of ruled lines, the other
+     twenty-six had nothing at all — so a client received numbers with no
+     record of who produced them, who checked them, or that nobody had.
+
+     Rows are given generous height because these get printed and signed by
+     hand. The note underneath is the honest statement of what a free web
+     calculator has produced, and belongs on the document rather than in the
+     footer's small print. */
+  function signatures(doc, y, o) {
+    o = o || {};
+    const g = geom(doc);
+    const rows = o.rows || [
+      ['Designed by', o.designer],
+      ['Checked by', o.checker],
+      ['Approved by', o.approver]
+    ];
+    const x = g.m, w = g.w - 2 * g.m;
+    const rh = 13 * g.k;
+    const cName = w * 0.44, cSig = w * 0.34;
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+    doc.setTextColor(20, 20, 20);
+    doc.text(o.heading || 'Certification', x, y);
+    y += 2.6 * g.k;
+
+    doc.setDrawColor(165, 165, 165); doc.setLineWidth(0.25 * g.k);
+    doc.rect(x, y, w, rh * rows.length);
+    doc.line(x + cName, y, x + cName, y + rh * rows.length);
+    doc.line(x + cName + cSig, y, x + cName + cSig, y + rh * rows.length);
+
+    rows.forEach(function (r, i) {
+      const ry = y + i * rh;
+      if (i) doc.line(x, ry, x + w, ry);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(6.6);
+      doc.setTextColor(115, 115, 115);
+      doc.text(String(r[0]).toUpperCase(), x + 2 * g.k, ry + 4 * g.k);
+      doc.text('SIGNATURE', x + cName + 2 * g.k, ry + 4 * g.k);
+      doc.text('DATE', x + cName + cSig + 2 * g.k, ry + 4 * g.k);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+      doc.setTextColor(25, 25, 25);
+      doc.text(r[1] ? String(r[1]) : '', x + 2 * g.k, ry + 10 * g.k);
+    });
+
+    y += rh * rows.length + 4 * g.k;
+    doc.setFont('helvetica', 'italic'); doc.setFontSize(6.8);
+    doc.setTextColor(120, 120, 120);
+    doc.text(o.note || 'Computer-generated calculation. Not valid for construction until'
+      + ' independently checked, signed and sealed by a licensed engineer.', x, y);
+    return y + 4 * g.k;
+  }
+
+  /* Height signatures() will occupy, so a caller can page-break for it. */
+  signatures.height = function (doc, nRows) {
+    const g = geom(doc);
+    return (2.6 + 13 * (nRows || 3) + 8) * g.k;
+  };
+
   /* A label / value row */
   function row(doc, y, label, value, flag) {
     const g = geom(doc);
@@ -425,7 +485,7 @@ const BNBCPdf = (function () {
   }
 
   return {
-    safe, harden, docInfo, mark, wordmark, bandFill, verdict, header, footer, page, section, row, geom,
+    safe, harden, docInfo, mark, wordmark, bandFill, verdict, signatures, header, footer, page, section, row, geom,
     brandAllPages, M, PW, PH, HEADER_H, GOLD, GOLD_INK, STEEL, STEEL_INK, INK
   };
 })();

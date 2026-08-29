@@ -139,5 +139,15 @@ function downloadFootingPDF() {
   doc.text('FOOTING ' + mark + ' IS ' + (ok ? 'ADEQUATE' : 'INADEQUATE') + ' FOR SHEAR',
     PW / 2, y + 3.5, { align: 'center' });
 
+  /* Certification, kept whole. */
+  if (P && P.signatures) {
+    y += 16;
+    need(P.signatures.height(doc, 3));
+    P.signatures(doc, y, {
+      heading: 'Certification',
+      designer: designer && designer !== '—' ? designer : ''
+    });
+  }
+
   doc.save('twinanalytic-footing-' + String(mark || 'F1').toLowerCase().replace(/\s+/g, '-') + '.pdf');
 }

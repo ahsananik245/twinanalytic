@@ -208,13 +208,22 @@ def main():
     on_ink(mark, 64).save(ico, sizes=[(16, 16), (32, 32), (48, 48), (64, 64)])
     print(f'  {ico.name:28s} {"16/32/48/64":12s} {os.path.getsize(ico):>8,d} bytes')
 
-    # The PDF copy, which is base64'd into a script every calculator page
-    # loads, so its weight is page weight. 256px is better than 300 dpi at
-    # the largest placement in the suite (0.8in, on the report cover), and
-    # 128 colours is indistinguishable from full RGBA once the mark is drawn
-    # at half an inch. Together they cost ~24 KB instead of ~71 KB.
+    # The PDF copy. 256px is better than 300 dpi at the largest placement in
+    # the suite (0.8in, on the report cover).
+    #
+    # Saved as a PALETTE png, which matters far more than the base64 length
+    # suggests. jsPDF cannot use an RGBA png's own compression: it splits the
+    # image into colour plus a soft mask and re-encodes both, so the 18 KB
+    # file this used to be became 230 KB inside every report — the logo was
+    # most of a 250 KB PDF. A palette png goes in at 17 KB. Measured in a
+    # real 3-page document: 233,755 B against 20,523 B.
+    #
+    # This costs nothing in quality. The mark was already being quantised to
+    # 128 colours and then converted straight back to RGBA, so the palette
+    # banding was in production already and the RGBA round-trip bought
+    # nothing; a 256-colour palette is a slight improvement on it.
     pdf_mark = mark.resize((256, round(256 * mark.height / mark.width)), Image.LANCZOS)
-    pdf_mark = pdf_mark.quantize(colors=128, method=Image.FASTOCTREE).convert('RGBA')
+    pdf_mark = pdf_mark.quantize(colors=256, method=Image.FASTOCTREE)
     buf = io.BytesIO()
     pdf_mark.save(buf, format='PNG', optimize=True)
     b64 = base64.b64encode(buf.getvalue()).decode('ascii')

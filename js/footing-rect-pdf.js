@@ -99,5 +99,22 @@ function downloadRectFootingPDF() {
   doc.setTextColor(120, 120, 120);
   doc.text('Plan and reinforcement layout are shown on the calculator page.', 0.5, 9.2);
 
+  /* Certification. This report is a single letter page and the block fits
+     below the proportions above; if the layout ever grows past it, this
+     starts a fresh page rather than overprinting. */
+  if (window.BNBCPdf && window.BNBCPdf.signatures) {
+    let sy = 9.5;
+    const blockH = window.BNBCPdf.signatures.height(doc, 3);
+    if (sy + blockH > 10.3) {
+      doc.addPage();
+      window.BNBCPdf.page(doc, 'Isolated Rectangular Footing Design', 2);
+      sy = 1.6;
+    }
+    window.BNBCPdf.signatures(doc, sy, {
+      heading: 'Certification',
+      designer: v('footing-designer') || ''
+    });
+  }
+
   doc.save(`twinanalytic_footing_rect_s-103_${new Date().toISOString().split('T')[0]}.pdf`);
 }

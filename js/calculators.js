@@ -3707,17 +3707,14 @@ function downloadSlabPDF() {
   sy += 0.14;
   doc.text('* Design based on ACI 318 Building Code Requirements.', 0.5, sy);
 
-  // Signatures
-  sy += 0.35;
-  doc.setLineWidth(0.008);
-  doc.setDrawColor(100, 100, 100);
-  doc.line(0.7, sy + 0.4, 2.7, sy + 0.4);
-  doc.line(5.3, sy + 0.4, 7.3, sy + 0.4);
-  
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7.5);
-  doc.text('DESIGNER SIGNATURE', 1.0, sy + 0.52);
-  doc.text('REVIEWER SIGNATURE', 5.6, sy + 0.52);
+  // Certification. Was a pair of ruled lines labelled DESIGNER / REVIEWER
+  // SIGNATURE; now the same block every other report in the suite carries.
+  if (window.BNBCPdf && window.BNBCPdf.signatures) {
+    sy += 0.30;
+    const blockH = window.BNBCPdf.signatures.height(doc, 3);
+    if (sy + blockH > 10.2) { doc.addPage(); sy = 0.9; }
+    window.BNBCPdf.signatures(doc, sy, { heading: 'Certification', designer: designer || '' });
+  }
 
   if (window.BNBCPdf) {
     const n = doc.getNumberOfPages();
@@ -6152,6 +6149,19 @@ function downloadColumnPDF() {
   doc.setFontSize(9.5);
   goldInk(doc);
   doc.text(`Designed per ${code} | CE 317 Method | ${new Date().toLocaleDateString()}`, 0.5, cy);
+
+  /* Certification. Starts a fresh page rather than splitting a signature
+     row across the break. */
+  if (window.BNBCPdf && window.BNBCPdf.signatures) {
+    const blockH = window.BNBCPdf.signatures.height(doc, 3);
+    cy += 0.30;
+    if (cy + blockH > 10.2) { doc.addPage(); drawPageBorderAndHeader(doc, doc.getNumberOfPages()); cy = 1.9; }
+    window.BNBCPdf.signatures(doc, cy, {
+      heading: 'Certification',
+      designer: designerInitials && designerInitials !== '—' ? designerInitials : '',
+      checker: reviewerInitials && reviewerInitials !== '—' ? reviewerInitials : ''
+    });
+  }
 
   if (window.BNBCPdf) {
     const n = doc.getNumberOfPages();

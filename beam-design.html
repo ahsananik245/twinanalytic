@@ -3518,6 +3518,18 @@ ${detailTable}
         }
       }
 
+      /* Certification. Given its own page — the beam report runs to a dozen
+         pages of working and the block should not be squeezed onto whatever
+         gap is left at the foot of the last one. */
+      if (window.BNBCPdf && window.BNBCPdf.signatures) {
+        doc.addPage();
+        drawPageBorderAndHeader(doc, doc.getNumberOfPages());
+        window.BNBCPdf.signatures(doc, 45, {
+          heading: 'Certification',
+          designer: designer && designer !== '—' ? designer : ''
+        });
+      }
+
       // Save PDF
       doc.save(`twinanalytic_beam_report_${new Date().toISOString().split('T')[0]}.pdf`);
 
