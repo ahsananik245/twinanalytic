@@ -521,6 +521,67 @@ const BNBCPdf = (function () {
     return y + h;
   }
 
+  /* Revision history.
+
+     Rows come from js/revisions.js, entered by the user and kept per
+     calculator. Nothing is drawn when there are none: a first issue has no
+     revision history, and an empty table saying so is noise. This replaces
+     the fabricated history that used to be hardcoded into the beam report.
+
+     Passing `rows` explicitly overrides the stored ones, so a report can
+     supply its own. */
+  function revisionRows(o) {
+    if (o && o.rows) return o.rows;
+    const src = (typeof window !== 'undefined') && window.TWRevisions;
+    return (src && src.rows) ? src.rows() : [];
+  }
+
+  function revisions(doc, y, o) {
+    o = o || {};
+    const list = revisionRows(o);
+    if (!list.length) return y;
+    const g = geom(doc);
+    const x = g.m, w = g.w - 2 * g.m;
+    const cols = [0.09, 0.19, 0.58, 0.14].map(f => f * w);
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+    doc.setTextColor(20, 20, 20);
+    doc.text(o.heading || 'Revision History', x, y);
+    y += 4.2 * g.k;
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(6.6);
+    doc.setTextColor(115, 115, 115);
+    let cx = x;
+    ['REV', 'DATE', 'DESCRIPTION', 'BY'].forEach(function (h, i) {
+      doc.text(h, cx + 1 * g.k, y); cx += cols[i];
+    });
+    y += 1.6 * g.k;
+    doc.setDrawColor(190, 190, 190); doc.setLineWidth(0.2 * g.k);
+    doc.line(x, y, x + w, y);
+    y += 3 * g.k;
+
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.2);
+    list.forEach(function (r) {
+      const desc = doc.splitTextToSize(String(r.desc || ''), cols[2] - 2 * g.k);
+      const cells = [String(r.rev || ''), String(r.date || ''), desc, String(r.by || '')];
+      let px = x;
+      doc.setTextColor(40, 40, 40);
+      cells.forEach(function (c, i) {
+        doc.text(c, px + 1 * g.k, y); px += cols[i];
+      });
+      y += Math.max(1, desc.length) * 3.2 * g.k + 1.2 * g.k;
+    });
+    return y + 1.5 * g.k;
+  }
+
+  revisions.height = function (doc, o) {
+    const list = revisionRows(o);
+    if (!list.length) return 0;
+    const g = geom(doc);
+    /* Two lines allowed per description, which covers all but the wordiest. */
+    return (4.2 + 4.6 + list.length * 8.6 + 1.5) * g.k;
+  };
+
   /* Code clause index.
 
      The reports cite clauses inline all the way through but never gather
@@ -738,7 +799,7 @@ const BNBCPdf = (function () {
   }
 
   return {
-    safe, harden, docInfo, bookmark, reportRef, mark, wordmark, bandFill, watermark, verdict, clauseIndex, limitations, signatures, header, footer, page, section, row, geom,
+    safe, harden, docInfo, bookmark, reportRef, mark, wordmark, bandFill, watermark, verdict, revisions, clauseIndex, limitations, signatures, header, footer, page, section, row, geom,
     brandAllPages, M, PW, PH, HEADER_H, GOLD, GOLD_INK, STEEL, STEEL_INK, INK
   };
 })();

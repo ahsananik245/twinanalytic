@@ -142,8 +142,11 @@ function downloadFootingPDF() {
   /* Certification, kept whole. */
   if (P && P.signatures) {
     y += 16;
-    need((P.clauseIndex ? P.clauseIndex.height(doc) : 0)
+    need((P.revisions ? P.revisions.height(doc) : 0) + (P.clauseIndex ? P.clauseIndex.height(doc) : 0)
        + (P.limitations ? P.limitations.height(doc) : 0) + P.signatures.height(doc, 3));
+    if (P.revisions && P.revisions.height(doc)) {
+      P.bookmark(doc, 'Revision History'); y = P.revisions(doc, y) + 3;
+    }
     if (P.clauseIndex && P.clauseIndex.height(doc)) {
       P.bookmark(doc, 'Code Clauses Referenced'); y = P.clauseIndex(doc, y) + 3;
     }

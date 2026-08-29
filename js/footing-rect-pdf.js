@@ -111,6 +111,10 @@ function downloadRectFootingPDF() {
       window.BNBCPdf.page(doc, 'Isolated Rectangular Footing Design', 2);
       sy = 1.6;
     }
+    if (window.BNBCPdf.revisions && window.BNBCPdf.revisions.height(doc)) {
+      window.BNBCPdf.bookmark(doc, 'Revision History');
+      sy = window.BNBCPdf.revisions(doc, sy) + 0.10;
+    }
     if (window.BNBCPdf.clauseIndex && window.BNBCPdf.clauseIndex.height(doc)) {
       window.BNBCPdf.bookmark(doc, 'Code Clauses Referenced');
       sy = window.BNBCPdf.clauseIndex(doc, sy) + 0.10;

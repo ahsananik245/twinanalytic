@@ -3533,6 +3533,10 @@ ${detailTable}
         doc.addPage();
         drawPageBorderAndHeader(doc, doc.getNumberOfPages());
         let cty = 42;
+        if (window.BNBCPdf.revisions && window.BNBCPdf.revisions.height(doc)) {
+          window.BNBCPdf.bookmark(doc, 'Revision History', doc.getNumberOfPages());
+          cty = window.BNBCPdf.revisions(doc, cty) + 4;
+        }
         if (window.BNBCPdf.clauseIndex && window.BNBCPdf.clauseIndex.height(doc)) {
           window.BNBCPdf.bookmark(doc, 'Code Clauses Referenced', doc.getNumberOfPages());
           cty = window.BNBCPdf.clauseIndex(doc, cty) + 4;
@@ -3753,6 +3757,7 @@ ${detailTable}
     }
   </script>
 
+  <script src="js/revisions.js"></script>
   <script src="js/brand-mark.js"></script>
   <script src="js/bnbc-pdf.js"></script>
   <script src="js/main.js"></script>
