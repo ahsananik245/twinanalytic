@@ -3456,7 +3456,8 @@ function downloadSlabPDF() {
   // 6. Draw dimension lines on right side
   let rightX = startX_sec + W_sec + 0.2;
   drawDimArrowV(rightX, startY_sec, startY_sec + H_sec, 'h = ' + hFinal.toFixed(1) + ' in');
-  drawDimArrowV(rightX + 0.45, startY_sec, y_bot_line, 'd1 = ' + dLong.toFixed(2) + ' in');
+  // 0.45 put this label hard against the 'h =' one beside it; 0.62 clears it.
+  drawDimArrowV(rightX + 0.62, startY_sec, y_bot_line, 'd1 = ' + dLong.toFixed(2) + ' in');
 
   // 7. Draw bar extension indicators ABOVE the section
   doc.setDrawColor(200, 0, 0);

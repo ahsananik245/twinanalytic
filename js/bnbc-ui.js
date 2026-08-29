@@ -469,27 +469,47 @@ const BNBCUI = (function () {
 
       const cols = res.table.headers.length;
       const cw = (PW - 2 * M) / cols;
-      doc.setFontSize(6.4);
+      const PAD = 1;
+
+      /* Cells were clipped at 16 characters, which has nothing to do with how
+         wide 16 characters actually are. On the drift table — twelve columns
+         in 182mm — "Sway allow (mm)" is under the limit and still overran the
+         column beside it, printing as "Sway allow (mSway". Both are measured
+         against the real column width now, and the font steps down once a
+         table is wide enough to need it. */
+      const fs = cols > 10 ? 5.5 : (cols > 8 ? 6.0 : 6.4);
+      const clip = (txt) => {
+        let t = String(txt);
+        if (doc.getTextWidth(t) <= cw - PAD * 2) return t;
+        while (t.length > 1 && doc.getTextWidth(t) > cw - PAD * 2) t = t.slice(0, -1);
+        return t;
+      };
+
+      doc.setFontSize(fs);
+      /* Headers wrap to a second line rather than being cut: the column name
+         is what makes the number underneath mean anything. */
+      const heads = res.table.headers.map(h => doc.splitTextToSize(String(h), cw - PAD * 2).slice(0, 2));
+      const hLines = heads.reduce((m, a) => Math.max(m, a.length), 1);
+      const lineH = fs * 0.40;
+      const headH = hLines * lineH + 1.8;
+
       doc.setFillColor(235, 232, 220);
-      doc.rect(M, y - 3.6, PW - 2 * M, 5.2, 'F');
-      res.table.headers.forEach((h, i) => {
-        doc.setTextColor(40, 40, 40);
-        doc.text(String(h).substring(0, 16), M + i * cw + 1, y);
-      });
-      y += 4;
+      doc.rect(M, y - 3.6, PW - 2 * M, headH, 'F');
+      doc.setTextColor(40, 40, 40);
+      heads.forEach((lines, i) => doc.text(lines, M + i * cw + PAD, y));
+      y += headH - 1.2;
+
       doc.setFont('helvetica', 'normal');
       res.table.rows.forEach((r, ri) => {
         if (y > PH - 20) { doc.addPage(); page++; header(page); y = 32; }
         if (ri % 2) { doc.setFillColor(247, 247, 244); doc.rect(M, y - 3.2, PW - 2 * M, 4.4, 'F'); }
-        r.forEach((c, i) => {
-          doc.setTextColor(45, 45, 45);
-          doc.text(String(c).substring(0, 16), M + i * cw + 1, y);
-        });
+        doc.setTextColor(45, 45, 45);
+        r.forEach((c, i) => doc.text(clip(c), M + i * cw + PAD, y));
         y += 4.4;
       });
       if (res.table.foot) {
         doc.setFont('helvetica', 'bold'); doc.setTextColor(20, 20, 20);
-        res.table.foot.forEach((c, i) => doc.text(String(c).substring(0, 16), M + i * cw + 1, y));
+        res.table.foot.forEach((c, i) => doc.text(clip(c), M + i * cw + PAD, y));
       }
     }
 
