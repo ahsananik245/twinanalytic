@@ -93,11 +93,23 @@ function downloadRectFootingPDF() {
   doc.setTextColor(60, 60, 60);
   doc.text(`Plan: ${v('footing-out-lb')} ft`, 0.5, 8.5);
   doc.text(`Trial effective depth, d: ${v('footing-d')} in`, 0.5, 8.8);
-  doc.text(`Column: ${v('footing-c1')} in x ${v('footing-c2')} in`, 4.5, 8.5);
-  doc.setFont('helvetica', 'italic');
-  doc.setFontSize(8);
-  doc.setTextColor(120, 120, 120);
-  doc.text('Plan and reinforcement layout are shown on the calculator page.', 0.5, 9.2);
+  doc.text(`Column: ${v('footing-c1')} in x ${v('footing-c2')} in`, 0.5, 9.1);
+  /* The plan itself, rather than a line telling the reader it is somewhere
+     else. That note was a placeholder and this replaces it. */
+  if (window.BNBCPdf && window.BNBCPdf.footingPlan) {
+    const dims = String(v('footing-out-lb') || '').split(/\s*x\s*/);
+    const Lft = parseFloat(dims[0]), Bft = parseFloat(dims[1]);
+    if (isFinite(Lft) && isFinite(Bft)) {
+      window.BNBCPdf.bookmark(doc, 'Plan');
+      window.BNBCPdf.footingPlan(doc, 4.4, 8.15, 3.5, {
+        L: Lft, B: Bft,
+        c1: parseFloat(v('footing-c1')), c2: parseFloat(v('footing-c2')),
+        nL: 7, nB: 5,
+        heading: 'Plan',
+        note: 'Reinforcement indicative; see schedule above.'
+      });
+    }
+  }
 
   /* Certification. This report is a single letter page and the block fits
      below the proportions above; if the layout ever grows past it, this

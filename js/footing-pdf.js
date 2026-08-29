@@ -139,6 +139,22 @@ function downloadFootingPDF() {
   doc.text('FOOTING ' + mark + ' IS ' + (ok ? 'ADEQUATE' : 'INADEQUATE') + ' FOR SHEAR',
     PW / 2, y + 3.5, { align: 'center' });
 
+  /* Plan. The report reached its verdict without ever showing the reader
+     what shape the footing is. */
+  if (P && P.footingPlan) {
+    y += 14;                       // clear the verdict banner drawn just above
+    need(P.footingPlan.height(doc, { note: true }) + 6);
+    P.bookmark(doc, 'Plan');
+    y = P.footingPlan(doc, M, y, PW - 2 * M, {
+      L: r.B, B: r.B, c1: r.c1, c2: r.c2,
+      nL: r.num_bars, nB: r.num_bars,
+      heading: 'Plan - Footing ' + mark,
+      note: 'Square footing ' + f(r.B, 2) + ' ft each way, ' + r.num_bars + ' nos '
+          + f(r.rebarL, 0) + ' mm at ' + f(r.spacing, 0) + ' in c/c both ways. '
+          + 'Bar count and spacing as designed; not a construction drawing.'
+    }) + 4;
+  }
+
   /* Certification, kept whole. */
   if (P && P.signatures) {
     y += 16;

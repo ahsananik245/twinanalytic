@@ -521,6 +521,83 @@ const BNBCPdf = (function () {
     return y + h;
   }
 
+  /* Footing plan.
+
+     Both footing reports described a drawing the reader could not see — the
+     rectangular one literally said "Plan and reinforcement layout are shown
+     on the calculator page", which is no use to someone holding a printout.
+
+     Drawn as vectors rather than captured from the on-screen SVG. A capture
+     would mean serialising the SVG, loading it through an Image and reading
+     it back off a canvas — all asynchronous, inside a PDF build that is
+     synchronous, so a fast click would race it and silently drop the
+     drawing. The geometry here is a rectangle, a column and two bar grids;
+     redrawing it costs little and prints sharp at any size.
+
+     L and B are in feet, c1 and c2 in inches, matching what the footing
+     engines already hold. */
+  function footingPlan(doc, x, y, boxW, o) {
+    o = o || {};
+    const g = geom(doc);
+    const L = Number(o.L), B = Number(o.B);
+    if (!isFinite(L) || !isFinite(B) || L <= 0 || B <= 0) return y;
+
+    const maxH = (o.maxH || 46) * g.k;
+    const s = Math.min(boxW / L, maxH / B);          // uniform scale, both ways
+    const pw = L * s, ph = B * s;
+    const px = x + (boxW - pw) / 2, py = y;
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+    doc.setTextColor(20, 20, 20);
+    doc.text(o.heading || 'Plan', x, py - 2 * g.k);
+
+    /* Footing outline */
+    doc.setDrawColor(120, 130, 145); doc.setLineWidth(0.45 * g.k);
+    doc.rect(px, py, pw, ph);
+
+    /* Reinforcement, both directions, drawn at the computed count so the
+       drawing reflects the design rather than a fixed decoration. */
+    const nL = Math.max(2, Math.min(24, Math.round(o.nL || 6)));
+    const nB = Math.max(2, Math.min(24, Math.round(o.nB || 6)));
+    doc.setDrawColor(150, 120, 60); doc.setLineWidth(0.16 * g.k);
+    for (let i = 1; i < nB; i++) {
+      const yy = py + ph * i / nB;
+      doc.line(px + pw * 0.03, yy, px + pw * 0.97, yy);
+    }
+    for (let i = 1; i < nL; i++) {
+      const xx = px + pw * i / nL;
+      doc.line(xx, py + ph * 0.03, xx, py + ph * 0.97);
+    }
+
+    /* Column stub, centred */
+    const c1 = (Number(o.c1) || 0) / 12, c2 = (Number(o.c2) || 0) / 12;
+    if (c1 > 0 && c2 > 0) {
+      doc.setFillColor(201, 168, 76);
+      doc.setDrawColor(138, 107, 46); doc.setLineWidth(0.4 * g.k);
+      doc.rect(px + (pw - c1 * s) / 2, py + (ph - c2 * s) / 2, c1 * s, c2 * s, 'FD');
+    }
+
+    /* Dimensions */
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(6.8);
+    doc.setTextColor(90, 90, 90);
+    doc.text(fmtFt(L), px + pw / 2, py + ph + 4 * g.k, { align: 'center' });
+    doc.text(fmtFt(B), px - 1.5 * g.k, py + ph / 2, { align: 'right' });
+    if (o.note) {
+      doc.setFontSize(6.4); doc.setTextColor(120, 120, 120);
+      doc.text(doc.splitTextToSize(o.note, boxW), x, py + ph + 11 * g.k);
+    }
+    return py + ph + (o.note ? 16 : 7) * g.k;
+  }
+
+  function fmtFt(v) {
+    return (Math.round(v * 100) / 100).toFixed(2) + ' ft';
+  }
+
+  footingPlan.height = function (doc, o) {
+    const g = geom(doc);
+    return ((o && o.maxH ? o.maxH : 46) + (o && o.note ? 18 : 9)) * g.k;
+  };
+
   /* Revision history.
 
      Rows come from js/revisions.js, entered by the user and kept per
@@ -799,7 +876,7 @@ const BNBCPdf = (function () {
   }
 
   return {
-    safe, harden, docInfo, bookmark, reportRef, mark, wordmark, bandFill, watermark, verdict, revisions, clauseIndex, limitations, signatures, header, footer, page, section, row, geom,
+    safe, harden, docInfo, bookmark, reportRef, mark, wordmark, bandFill, watermark, verdict, footingPlan, revisions, clauseIndex, limitations, signatures, header, footer, page, section, row, geom,
     brandAllPages, M, PW, PH, HEADER_H, GOLD, GOLD_INK, STEEL, STEEL_INK, INK
   };
 })();
