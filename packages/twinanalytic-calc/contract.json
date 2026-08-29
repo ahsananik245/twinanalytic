@@ -1,0 +1,447 @@
+{
+  "seismicStatic": {
+    "inputs": [
+      "Z",
+      "I",
+      "R",
+      "damping",
+      "H",
+      "n",
+      "storeyHeight",
+      "wFloor",
+      "soil",
+      "periodType",
+      "storeys"
+    ],
+    "arrayProp": "storeys",
+    "rowKeys": []
+  },
+  "windLoad": {
+    "inputs": [
+      "V",
+      "Kzt",
+      "Kd",
+      "I",
+      "damping",
+      "hr",
+      "he",
+      "width",
+      "length",
+      "GCpi",
+      "exposure",
+      "direction",
+      "roofType",
+      "periodType",
+      "levels"
+    ],
+    "arrayProp": "levels",
+    "rowKeys": []
+  },
+  "verticalSeismic": {
+    "inputs": [
+      "Z",
+      "Fa",
+      "Ss",
+      "mode",
+      "soil"
+    ],
+    "arrayProp": null,
+    "rowKeys": []
+  },
+  "pDeltaCheck": {
+    "inputs": [
+      "I",
+      "Cd",
+      "beta",
+      "levels"
+    ],
+    "arrayProp": "levels",
+    "rowKeys": [
+      "h",
+      "P",
+      "V",
+      "disp",
+      "name"
+    ]
+  },
+  "baseShearCheck": {
+    "inputs": [
+      "DL",
+      "SDL",
+      "LL",
+      "llFactor",
+      "EQ",
+      "Z",
+      "I",
+      "R",
+      "Ct",
+      "m",
+      "H",
+      "damping",
+      "soil"
+    ],
+    "arrayProp": null,
+    "rowKeys": []
+  },
+  "driftCheck": {
+    "inputs": [
+      "Cd",
+      "I",
+      "driftLimit",
+      "swayDenom",
+      "levels"
+    ],
+    "arrayProp": "levels",
+    "rowKeys": [
+      "h",
+      "disp",
+      "name"
+    ]
+  },
+  "softStorey": {
+    "inputs": [
+      "levels"
+    ],
+    "arrayProp": "levels",
+    "rowKeys": [
+      "k",
+      "name"
+    ]
+  },
+  "torsionalIrregularity": {
+    "inputs": [
+      "cases"
+    ],
+    "arrayProp": "cases",
+    "rowKeys": []
+  },
+  "overturningCheck": {
+    "inputs": [
+      "weight",
+      "dlFactor",
+      "arm",
+      "FSreq",
+      "inputMode",
+      "levels"
+    ],
+    "arrayProp": "levels",
+    "rowKeys": [
+      "h",
+      "f",
+      "name"
+    ]
+  },
+  "stairDesign": {
+    "inputs": [
+      "fc",
+      "fy",
+      "sdl",
+      "ll",
+      "bw",
+      "bws",
+      "startLanding",
+      "endLanding",
+      "tread",
+      "riser",
+      "nTread",
+      "nRiser",
+      "cover",
+      "dbMain",
+      "dbShear",
+      "t",
+      "phiV",
+      "phiM",
+      "lambda",
+      "concUW",
+      "caseNo"
+    ],
+    "arrayProp": null,
+    "rowKeys": []
+  },
+  "cantileverSlabWSD": {
+    "inputs": [
+      "fc",
+      "fy",
+      "sdl",
+      "ll",
+      "L",
+      "t",
+      "cover",
+      "mainBar",
+      "distBar",
+      "concUW"
+    ],
+    "arrayProp": null,
+    "rowKeys": []
+  },
+  "beamShearRebar": {
+    "inputs": [
+      "bw",
+      "h",
+      "fy",
+      "covEff",
+      "legs",
+      "AvReq",
+      "dbStirrup",
+      "dbLongMin",
+      "frame"
+    ],
+    "arrayProp": null,
+    "rowKeys": []
+  },
+  "columnTieRebar": {
+    "inputs": [
+      "c1",
+      "c2",
+      "clearSpan",
+      "legs",
+      "AvReq",
+      "dbTie",
+      "dbLongMin",
+      "frame"
+    ],
+    "arrayProp": null,
+    "rowKeys": []
+  },
+  "shearWallRebar": {
+    "inputs": [
+      "H",
+      "L",
+      "t",
+      "dv",
+      "dh",
+      "Sv",
+      "Sh",
+      "rhoV",
+      "rhoH",
+      "AvTot",
+      "AhRate",
+      "unit"
+    ],
+    "arrayProp": null,
+    "rowKeys": []
+  },
+  "developmentLength": {
+    "inputs": [
+      "fy",
+      "fc",
+      "psiT",
+      "psiE",
+      "lambda",
+      "bars"
+    ],
+    "arrayProp": null,
+    "rowKeys": []
+  },
+  "foundationEstimate": {
+    "inputs": [
+      "L",
+      "B",
+      "depth",
+      "tRCC",
+      "tCS",
+      "tBS",
+      "sideCut",
+      "sideCover",
+      "nBotL",
+      "dBotL",
+      "nBotB",
+      "dBotB",
+      "nTopL",
+      "dTopL",
+      "nTopB",
+      "dTopB",
+      "dryFactor",
+      "cftPerBag",
+      "rccC",
+      "rccS",
+      "rccK",
+      "csC",
+      "csS",
+      "csK",
+      "bsC",
+      "bsS",
+      "pCement",
+      "pSandC",
+      "pSandL",
+      "pStone",
+      "pBrickChip",
+      "pSteel",
+      "pBrick",
+      "pShutter",
+      "pEarth",
+      "bricksPerCft",
+      "hasTop",
+      "aggregate"
+    ],
+    "arrayProp": null,
+    "rowKeys": []
+  },
+  "twoWaySlabCoeff": {
+    "inputs": [
+      "fc",
+      "fy",
+      "sdl",
+      "ll",
+      "A",
+      "B",
+      "X",
+      "bw",
+      "bh",
+      "barNo",
+      "t",
+      "cover",
+      "caseNo",
+      "concUW",
+      "wallLen",
+      "wallTh",
+      "wallHt",
+      "wallUW",
+      "method"
+    ],
+    "arrayProp": null,
+    "rowKeys": []
+  },
+  "circularColumn": {
+    "inputs": [
+      "fc",
+      "fy",
+      "D",
+      "Pu",
+      "Mu",
+      "Vu",
+      "nBar",
+      "pitch",
+      "cover",
+      "code",
+      "bar",
+      "spiral",
+      "tieType",
+      "barOrientation"
+    ],
+    "arrayProp": null,
+    "rowKeys": []
+  },
+  "combinedFooting": {
+    "inputs": [
+      "fc",
+      "fy",
+      "Qa",
+      "c1w",
+      "c1d",
+      "c2w",
+      "c2d",
+      "P1dl",
+      "P1ll",
+      "P2dl",
+      "P2ll",
+      "M1",
+      "M2",
+      "L1",
+      "S",
+      "L2",
+      "B",
+      "Df",
+      "T",
+      "qs",
+      "ws",
+      "cover",
+      "bar",
+      "bearingBasis"
+    ],
+    "arrayProp": null,
+    "rowKeys": []
+  },
+  "shearWallDesign": {
+    "inputs": [
+      "fc",
+      "fy",
+      "Pu",
+      "Mu",
+      "Vu",
+      "L",
+      "t",
+      "B",
+      "Dbulb",
+      "hw",
+      "nBulb",
+      "nHoriz",
+      "sHoriz",
+      "nVert",
+      "sVert",
+      "nHoopB",
+      "nHoopL",
+      "sHoop",
+      "coverBulb",
+      "bulbBar",
+      "horizBar",
+      "vertBar",
+      "hoopBar"
+    ],
+    "arrayProp": null,
+    "rowKeys": []
+  },
+  "beamEstimate": {
+    "inputs": [
+      "bw",
+      "bh",
+      "cover",
+      "stirrupDia",
+      "sStirrup",
+      "legs",
+      "hookFactor",
+      "lapFactor",
+      "dryFactor",
+      "cftPerBag",
+      "mixC",
+      "mixS",
+      "mixK",
+      "pCement",
+      "pSand",
+      "pAgg",
+      "pSteel",
+      "pShutter",
+      "lapPct",
+      "spans"
+    ],
+    "arrayProp": "spans",
+    "rowKeys": []
+  },
+  "momentMagnifier": {
+    "inputs": [
+      "fc",
+      "fy",
+      "b",
+      "h",
+      "D",
+      "lu",
+      "k",
+      "Pu",
+      "M1",
+      "M2",
+      "betaDns",
+      "Ec",
+      "frame",
+      "shape",
+      "curvature"
+    ],
+    "arrayProp": null,
+    "rowKeys": []
+  },
+  "loadCombinations": {
+    "inputs": [
+      "D",
+      "L",
+      "Lr",
+      "W",
+      "E",
+      "H",
+      "F",
+      "Ev",
+      "rho",
+      "f1"
+    ],
+    "arrayProp": null,
+    "rowKeys": []
+  }
+}

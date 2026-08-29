@@ -1,0 +1,40 @@
+{
+  "name": "@twinanalytic/calc",
+  "version": "1.0.0",
+  "description": "BNBC 2020 / ACI 318 structural calculation engines. Pure functions, no DOM, no dependencies.",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "commonjs",
+  "main": "./src/index.cjs",
+  "module": "./src/index.mjs",
+  "exports": {
+    ".": {
+      "import": "./src/index.mjs",
+      "require": "./src/index.cjs",
+      "default": "./src/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "fixtures.js",
+    "test",
+    "CONTRACT.md",
+    "contract.json",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node test/run.js"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "keywords": [
+    "structural-engineering",
+    "bnbc-2020",
+    "aci-318",
+    "seismic",
+    "wind-load",
+    "reinforced-concrete"
+  ]
+}
