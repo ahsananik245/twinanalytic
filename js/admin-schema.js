@@ -758,6 +758,10 @@ window.ADMIN_SCHEMA = {
       title: 'Lead Inbox',
       desc: 'Submissions captured in this browser. The authoritative record is your Google Sheet — see the note below.' },
 
+    { id: 'licences', label: 'Licences', icon: 'fa-solid fa-key', group: 'Data', custom: 'licences',
+      title: 'Issue an EtabsX Licence',
+      desc: 'Check the payment arrived, paste the machine code the customer sent, and issue the key. The signing key stays on the server — it is never loaded into this page.' },
+
     { id: 'publish', label: 'Publish', icon: 'fa-solid fa-cloud-arrow-up', group: 'Data', custom: 'publish',
       title: 'Publish Changes',
       desc: 'Push your edits to the live site, or export them as a file.' },

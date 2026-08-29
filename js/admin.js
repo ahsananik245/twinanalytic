@@ -1069,6 +1069,7 @@
     switch (section.custom) {
       case 'dashboard': body.innerHTML = dashboardHtml(); wireDashboard(body); break;
       case 'leads': body.innerHTML = leadsHtml(); wireLeads(body); break;
+      case 'licences': body.innerHTML = licencesHtml(); wireLicences(body); break;
       case 'publish': body.innerHTML = publishHtml(); wirePublish(body); break;
       case 'history': body.innerHTML = historyHtml(); wireHistory(body); break;
       case 'settings': body.innerHTML = settingsHtml(); wireSettings(body); break;
@@ -1470,6 +1471,145 @@
       var t = Date.parse(l.timestamp);
       return !isNaN(t) && t >= cutoff;
     }).length;
+  }
+
+  /* ------------------------------------------------------------------
+     EtabsX licences
+
+     The seller checks the bKash or bank payment by hand and this does the
+     rest. Nothing secret is held here: the page posts the machine code and
+     the admin passcode to /api/licence, and the signing key never leaves
+     the server. That is the same arrangement as publishing, and for the
+     same reason - a key in the browser is a key in everyone's browser.
+     ------------------------------------------------------------------ */
+  var PLAN_LABELS = {
+    project: 'Project — 30 days, one-off',
+    quarterly: 'Quarterly — 90 days',
+    annual: 'Annual — 365 days',
+    perpetual: 'Perpetual — no expiry'
+  };
+
+  function licencesHtml() {
+    var opts = Object.keys(PLAN_LABELS).map(function (k) {
+      return '<option value="' + k + '"' + (k === 'annual' ? ' selected' : '') +
+             '>' + PLAN_LABELS[k] + '</option>';
+    }).join('');
+
+    return '' +
+      '<div class="a-card">' +
+        '<div class="a-card-head"><i class="fa-solid fa-key"></i>' +
+          '<span>Issue a key</span></div>' +
+        '<div class="a-field-grid">' +
+          '<div class="a-field wide">' +
+            '<label for="lic-machine">Machine code</label>' +
+            '<input id="lic-machine" type="text" placeholder="ABCD-1234-EF56-7890" ' +
+              'autocomplete="off" spellcheck="false" style="text-transform:uppercase">' +
+            '<p class="a-hint">Copy it from what the customer sent. Retyping it ' +
+              'is how you issue a key that unlocks nobody’s computer.</p>' +
+          '</div>' +
+          '<div class="a-field">' +
+            '<label for="lic-plan">Plan</label>' +
+            '<select id="lic-plan">' + opts + '</select>' +
+          '</div>' +
+          '<div class="a-field">' +
+            '<label for="lic-name">Issued to <span class="a-opt">optional</span></label>' +
+            '<input id="lic-name" type="text" placeholder="Firm or engineer" autocomplete="off">' +
+          '</div>' +
+        '</div>' +
+        '<div class="a-actions">' +
+          '<button class="a-btn a-btn-primary" id="lic-issue">' +
+            '<i class="fa-solid fa-key"></i> Issue licence</button>' +
+        '</div>' +
+        '<div id="lic-out"></div>' +
+      '</div>' +
+
+      '<div class="a-card">' +
+        '<div class="a-card-head"><i class="fa-solid fa-circle-info"></i>' +
+          '<span>Before you issue</span></div>' +
+        '<ol class="a-steps">' +
+          '<li>Confirm the bKash, Nagad or bank payment actually arrived. ' +
+            'Nothing here checks that for you.</li>' +
+          '<li>Paste the machine code exactly as the customer sent it. A key ' +
+            'is bound to that one computer.</li>' +
+          '<li>Email the key back. They paste it into EtabsX and it keeps ' +
+            'working — same executable, no reinstall.</li>' +
+        '</ol>' +
+        '<p class="a-hint">A term licence stops working when it expires, so a ' +
+          'renewal is simply a new key for the same machine.</p>' +
+      '</div>';
+  }
+
+  function wireLicences(root) {
+    var btn = $('#lic-issue', root);
+    var out = $('#lic-out', root);
+    if (!btn) return;
+
+    btn.addEventListener('click', function () {
+      var machine = ($('#lic-machine', root).value || '').trim().toUpperCase();
+      var plan = $('#lic-plan', root).value;
+      var name = ($('#lic-name', root).value || '').trim();
+
+      if (!/^[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}$/.test(machine)) {
+        out.innerHTML = '<p class="a-msg a-msg-bad">That is not a machine code. ' +
+          'It is sixteen hex characters in four groups, like ABCD-1234-EF56-7890.</p>';
+        return;
+      }
+
+      /* The passcode lives in the session, exactly as publishing reads it.
+         An earlier version of this reached for state.passcode, which does
+         not exist, so every request would have come back "Wrong passcode". */
+      var key = sessionKey();
+      if (!key) {
+        out.innerHTML = '<p class="a-msg a-msg-bad">Your session has no ' +
+          'passcode. Sign in again.</p>';
+        return;
+      }
+
+      btn.disabled = true;
+      out.innerHTML = '<p class="a-msg">Signing…</p>';
+
+      fetch('/api/licence', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          passcode: key, machine: machine, plan: plan, name: name
+        })
+      }).then(function (r) {
+        return r.json().then(function (j) { return { ok: r.ok, j: j }; });
+      }).then(function (res) {
+        btn.disabled = false;
+        if (!res.ok) {
+          out.innerHTML = '<p class="a-msg a-msg-bad">' +
+            esc(res.j.error || 'Could not issue the licence.') + '</p>';
+          return;
+        }
+        out.innerHTML =
+          '<p class="a-msg a-msg-good">Issued — ' + esc(res.j.plan) +
+            ', expires ' + esc(res.j.expires) + '.</p>' +
+          '<div class="a-field wide" style="margin-top:0.8rem;">' +
+            '<label for="lic-key">Licence key — send this to the customer</label>' +
+            '<textarea id="lic-key" rows="4" readonly ' +
+              'style="font-family:var(--font-mono);font-size:0.78rem;' +
+              'word-break:break-all;">' + esc(res.j.key) + '</textarea>' +
+          '</div>' +
+          '<div class="a-actions">' +
+            '<button class="a-btn" id="lic-copy"><i class="fa-solid fa-copy"></i> ' +
+              'Copy key</button></div>';
+        var copy = $('#lic-copy', root);
+        if (copy) {
+          copy.addEventListener('click', function () {
+            var ta = $('#lic-key', root);
+            ta.select();
+            try { document.execCommand('copy'); } catch (e) { }
+            if (navigator.clipboard) navigator.clipboard.writeText(ta.value).catch(function () { });
+            copy.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+          });
+        }
+      }).catch(function (e) {
+        btn.disabled = false;
+        out.innerHTML = '<p class="a-msg a-msg-bad">' + esc(String(e.message || e)) + '</p>';
+      });
+    });
   }
 
   function wireLeads(root) {
