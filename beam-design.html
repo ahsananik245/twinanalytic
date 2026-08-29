@@ -3049,10 +3049,7 @@ ${detailTable}
         drawTwinAnalyticLogo(doc, 13, 11, 8, false);
 
         // Brand
-        doc.setTextColor(201, 168, 76);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(14);
-        doc.text('TwinAnalytic', 23, 16);
+        window.BNBCPdf.wordmark(doc, 23, 16, { size: 14, onLight: true });
         
         doc.setTextColor(74, 85, 104);
         doc.setFont('helvetica', 'bold');
@@ -3217,16 +3214,12 @@ ${detailTable}
       doc.setFillColor(245, 247, 250);
       doc.rect(10.5, 30.5, 189, 249.2, 'F');
       
-      doc.setFillColor(30, 30, 30);
-      doc.rect(10.5, 30.5, 189, 30, 'F');
+      window.BNBCPdf.bandFill(doc, 10.5, 30.5, 189, 30, [30, 30, 30]);
 
       // Logo
       drawTwinAnalyticLogo(doc, 20, 35, 20, true);
 
-      doc.setTextColor(201, 168, 76);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(20);
-      doc.text('TWINANALYTIC CALCULATIONS', 44, 47);
+      window.BNBCPdf.wordmark(doc, 44, 47, { size: 20, upper: true, suffix: ' CALCULATIONS' });
       
       doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'normal');

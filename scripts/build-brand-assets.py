@@ -16,7 +16,7 @@ Outputs
     assets/brand-banner.jpg og:image
     assets/favicon.png      192px, opaque, for browser tabs and Google
     favicon.ico             16/32/48/64 multi-size at the document root
-    js/brand-mark.js        the monogram as base64 for jsPDF
+    js/brand-mark.js        the monogram and the header texture, base64, for jsPDF
 
 Why the artwork is masked rather than just cropped: it is a 3D render of the
 logo standing on a dark textured wall, complete with bevels and a drop
@@ -36,6 +36,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / 'assets' / 'brand-source.jpg'
+TEX_SRC = ROOT / 'assets' / 'header-texture-source.jpg'
 
 INK = (0x13, 0x13, 0x13)   # --bg-primary, the site background
 
@@ -58,6 +59,10 @@ CORE_LUM = 78          # confidently-mark pixels, used to find the blobs
 ALPHA_FLOOR = 0.30     # for the monogram; see note in cut()
 LOCKUP_FLOOR = 0.08    # the tagline is 20px type and cannot afford it
 SS = 3                 # supersample factor while masking
+
+# Header texture. See build_header_texture() for why these two exist.
+TEX_MEAN = 26.0        # target mean luminance of the band
+TEX_CAP = 54.0         # soft ceiling, so no patch washes out the gold
 
 
 def cut(box, min_area=400, floor=ALPHA_FLOOR):
@@ -143,6 +148,33 @@ def on_ink(img, size, inset=0.76):
     return canvas.convert('RGB')
 
 
+def build_header_texture():
+    """Prepare the slate texture that backs the dark header bands.
+
+    Returns (base64 jpeg, (w, h)).
+
+    The supplied photograph averages #2A2A2B, which is lighter than the flat
+    fill it replaces and bright enough in places to drop the gold wordmark to
+    4.0:1 — under AA for body text. So it is scaled to a mean of TEX_MEAN and
+    its highlights are run through a soft knee rather than a hard clip, which
+    holds the brightest 3% of the band at #2A2A2B and the gold above 6:1
+    everywhere on it, while keeping the grain the clip would have flattened.
+    """
+    src = Image.open(TEX_SRC).convert('RGB')
+    a = np.asarray(src).astype(np.float32)
+    a = a * (TEX_MEAN / a.mean())
+    knee = TEX_CAP * 0.6
+    a = np.where(a > knee, knee + (TEX_CAP - knee) * np.tanh((a - knee) / (TEX_CAP - knee)), a)
+    im = Image.fromarray(np.clip(a, 0, 255).astype(np.uint8))
+
+    # A wide strip, not the whole frame: the bands are 4.4:1 to 8.75:1, and
+    # squashing a 3:2 photo into those smears the grain into streaks.
+    strip = im.crop((0, 300, im.width, 640)).resize((1024, 226), Image.LANCZOS)
+    buf = io.BytesIO()
+    strip.save(buf, format='JPEG', quality=74, optimize=True)
+    return base64.b64encode(buf.getvalue()).decode('ascii'), strip.size
+
+
 def write(path, img, **kw):
     path.parent.mkdir(parents=True, exist_ok=True)
     img.save(path, **kw)
@@ -188,10 +220,14 @@ def main():
     b64 = base64.b64encode(buf.getvalue()).decode('ascii')
     aspect = round(pdf_mark.width / pdf_mark.height, 5)
 
-    lines = [b64[i:i + 100] for i in range(0, len(b64), 100)]
-    body = "'" + "' +\n    '".join(lines) + "'"
+    tex_b64, tex_size = build_header_texture()
+
+    def wrap(s, indent=4):
+        parts = [s[i:i + 100] for i in range(0, len(s), 100)]
+        return "'" + ("' +\n" + ' ' * indent + "'").join(parts) + "'"
+
     js = f'''/* =====================================================================
-   TwinAnalytic — the brand mark, for PDF reports
+   TwinAnalytic — brand assets for PDF reports
    ---------------------------------------------------------------------
    GENERATED FILE. Do not edit by hand.
    Rebuild with: python scripts/build-brand-assets.py
@@ -202,17 +238,22 @@ def main():
    embedded here instead, cut from the same assets/brand-source.jpg that
    produces the favicon and the nav bar logo.
 
-   {pdf_mark.width}x{pdf_mark.height}, which is over 300 dpi at the largest size the suite
-   places it (0.8in, on the report cover).
+   Mark:    {pdf_mark.width}x{pdf_mark.height}, over 300 dpi at the largest size the suite
+            places it (0.8in, on the report cover).
+   Texture: {tex_size[0]}x{tex_size[1]} slate, for the dark header bands that used to be
+            a flat fill.
    ===================================================================== */
 
 (function (root) {{
   'use strict';
 
   var PNG = 'data:image/png;base64,' +
-    {body};
+    {wrap(b64)};
 
-  var ASPECT = {aspect};   // width / height
+  var TEXTURE = 'data:image/jpeg;base64,' +
+    {wrap(tex_b64)};
+
+  var ASPECT = {aspect};   // width / height of the mark
 
   /* Draw the mark into a box `size` wide at (x, y), in whatever unit the
      document was created with. Fitted by width, never by height, so a
@@ -231,13 +272,36 @@ def main():
     }}
   }}
 
-  root.TWBrandMark = {{ png: PNG, aspect: ASPECT, draw: draw, height: function (size) {{ return size / ASPECT; }} }};
+  /* Fill a header band with the slate texture instead of flat black. The
+     strip is stored wide (aspect ~4.5) because the bands it fills run from
+     4.4:1 to 8.75:1 — stretching a squarer image into those would smear the
+     grain into visible horizontal streaks.
+
+     Callers must paint their flat fill first and treat this as an overlay
+     that may not arrive: if the image fails to decode, the band is still
+     the right colour, just untextured. */
+  function band(doc, x, y, w, h) {{
+    try {{
+      doc.addImage(TEXTURE, 'JPEG', x, y, w, h);
+      return true;
+    }} catch (e) {{
+      if (typeof console !== 'undefined') console.warn('header texture failed to draw:', e);
+      return false;
+    }}
+  }}
+
+  root.TWBrandMark = {{
+    png: PNG, texture: TEXTURE, aspect: ASPECT,
+    draw: draw, band: band,
+    height: function (size) {{ return size / ASPECT; }}
+  }};
 }})(typeof window !== 'undefined' ? window : this);
 '''
     out = ROOT / 'js' / 'brand-mark.js'
     out.write_text(js, encoding='utf-8', newline='\n')
     print(f'  {"js/brand-mark.js":28s} {f"{pdf_mark.width}x{pdf_mark.height}":12s} '
-          f'{os.path.getsize(out):>8,d} bytes  (aspect {aspect})')
+          f'{os.path.getsize(out):>8,d} bytes  (mark aspect {aspect}, '
+          f'texture {tex_size[0]}x{tex_size[1]})')
 
 
 if __name__ == '__main__':

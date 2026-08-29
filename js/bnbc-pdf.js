@@ -19,6 +19,29 @@ const BNBCPdf = (function () {
   const INK = [11, 15, 23];
   const SLATE = [240, 244, 248];
 
+  /* The wordmark is two-tone in the artwork — TWIN in brushed steel,
+     ANALYTIC in gold — and the reports used to set it in flat gold
+     throughout.
+
+     Each tone needs a light-background variant, because neither screen
+     colour survives white paper. Measured against the rendered PDF:
+
+                        on the textured band    on white
+       #B7B6B6 steel          7.29:1              2.2:1  fails
+       #C9A84C gold           6.45:1              2.29:1 fails
+       #3A4048 steel-ink        --                10.46:1
+       #8A6B2E gold-ink         --                4.97:1
+
+     The light pair also has to stay distinguishable from each other, which
+     is what rules out simply darkening both: #725A22 gold against #5C6169
+     steel measures 1.05:1 and the split disappears. This pair sits 2.10:1
+     apart with a warm/cool hue split on top of that. The gold-ink is close
+     to the artwork's own median gold (#9F7C4C) — #C9A84C is the highlight
+     of the metallic gradient, not its body colour. */
+  const STEEL = [183, 182, 182];      // on the dark header bands
+  const GOLD_INK = [138, 107, 46];    // gold, on white
+  const STEEL_INK = [58, 64, 72];     // steel, on white
+
   /* -------------------------------------------------------------------
      Latin-1 safe transliteration.
      Ordered longest-first where a symbol maps to several characters.
@@ -165,6 +188,46 @@ const BNBCPdf = (function () {
   }
 
   /* -------------------------------------------------------------------
+     The wordmark, split the way the logo splits it.
+
+     Returns the total width drawn, so a caller can lay something out after
+     it. `upper` sets TWINANALYTIC rather than TwinAnalytic; `suffix` is set
+     in the gold alongside ANALYTIC; `onLight` picks the steel that survives
+     a white background; `align` accepts 'center' and 'right', which plain
+     doc.text cannot do once a string is split across two colours.
+     ------------------------------------------------------------------- */
+  function wordmark(doc, x, y, opts) {
+    opts = opts || {};
+    const first = opts.upper ? 'TWIN' : 'Twin';
+    const second = (opts.upper ? 'ANALYTIC' : 'Analytic') + (opts.suffix || '');
+    doc.setFont('helvetica', opts.style || 'bold');
+    if (opts.size) doc.setFontSize(opts.size);
+    const w1 = doc.getTextWidth(first);
+    const w2 = doc.getTextWidth(second);
+    let sx = x;
+    if (opts.align === 'center') sx = x - (w1 + w2) / 2;
+    else if (opts.align === 'right') sx = x - (w1 + w2);
+    const s = opts.onLight ? STEEL_INK : STEEL;
+    const g = opts.onLight ? GOLD_INK : GOLD;
+    doc.setTextColor(s[0], s[1], s[2]);
+    doc.text(first, sx, y);
+    doc.setTextColor(g[0], g[1], g[2]);
+    doc.text(second, sx + w1, y);
+    return w1 + w2;
+  }
+
+  /* A dark header band, backed by the slate texture rather than a flat
+     fill. The flat colour goes down first and stays visible if the texture
+     fails to decode, so the band is never left as bare white paper. */
+  function bandFill(doc, x, y, w, h, rgb) {
+    const c = rgb || INK;
+    doc.setFillColor(c[0], c[1], c[2]);
+    doc.rect(x, y, w, h, 'F');
+    const art = (typeof window !== 'undefined') && window.TWBrandMark;
+    if (art && art.band) art.band(doc, x, y, w, h);
+  }
+
+  /* -------------------------------------------------------------------
      Standard header band and footer rule. Every report in the suite calls
      these, so the identity and the geometry match everywhere.
      ------------------------------------------------------------------- */
@@ -187,19 +250,13 @@ const BNBCPdf = (function () {
   function header(doc, title, subtitle) {
     harden(doc);
     const g = geom(doc);
-    doc.setFillColor(INK[0], INK[1], INK[2]);
-    doc.rect(0, 0, g.w, g.hh, 'F');
+    bandFill(doc, 0, 0, g.w, g.hh);
 
     /* 14mm wide leaves a 2mm gap before the wordmark at +16mm, and the y
        centres the mark on the two lines of type rather than on the band. */
     mark(doc, g.m, 5.9 * g.k, 14 * g.k);
 
-    doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(15);
-    doc.text('Twin', g.m + 16 * g.k, 12 * g.k);
-    const wTwin = doc.getTextWidth('Twin');
-    doc.setTextColor(GOLD[0], GOLD[1], GOLD[2]);
-    doc.text('Analytic', g.m + 16 * g.k + wTwin, 12 * g.k);
+    wordmark(doc, g.m + 16 * g.k, 12 * g.k, { size: 15 });
 
     doc.setTextColor(190, 195, 205);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
@@ -271,8 +328,8 @@ const BNBCPdf = (function () {
   }
 
   return {
-    safe, harden, mark, header, footer, page, section, row, geom,
-    brandAllPages, M, PW, PH, HEADER_H, GOLD
+    safe, harden, mark, wordmark, bandFill, header, footer, page, section, row, geom,
+    brandAllPages, M, PW, PH, HEADER_H, GOLD, GOLD_INK, STEEL, STEEL_INK, INK
   };
 })();
 

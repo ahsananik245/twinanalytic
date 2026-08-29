@@ -2108,6 +2108,31 @@ function drawTwinAnalyticLogo(doc, x, y, size, isDarkBg) {
   drawTwinAnalyticLogoFallback(doc, x, y, size, isDarkBg);
 }
 
+/* The wordmark, split the way the logo splits it — TWIN in steel, ANALYTIC
+   in gold — rather than the flat gold these reports used to set it in.
+   Delegates to js/bnbc-pdf.js so every report agrees on the two steels; the
+   fallback keeps the old flat gold if that file is somehow absent. */
+function drawTwinAnalyticWordmark(doc, x, y, opts) {
+  const P = window.BNBCPdf;
+  if (P && P.wordmark) return P.wordmark(doc, x, y, opts);
+  opts = opts || {};
+  doc.setFont('helvetica', 'bold');
+  if (opts.size) doc.setFontSize(opts.size);
+  doc.setTextColor(201, 168, 76);
+  const s = (opts.upper ? 'TWINANALYTIC' : 'TwinAnalytic') + (opts.suffix || '');
+  doc.text(s, x, y, opts.align ? { align: opts.align } : undefined);
+  return doc.getTextWidth(s);
+}
+
+/* A dark header band with the slate texture behind it. */
+function drawTwinAnalyticBand(doc, x, y, w, h, rgb) {
+  const P = window.BNBCPdf;
+  if (P && P.bandFill) return P.bandFill(doc, x, y, w, h, rgb);
+  const c = rgb || [30, 30, 30];
+  doc.setFillColor(c[0], c[1], c[2]);
+  doc.rect(x, y, w, h, 'F');
+}
+
 function drawTwinAnalyticLogoFallback(doc, x, y, size, isDarkBg) {
   const slateR = isDarkBg ? 240 : 47;
   const slateG = isDarkBg ? 244 : 55;
@@ -2371,10 +2396,7 @@ function downloadSlabPDF() {
 
     // Logo
     drawTwinAnalyticLogo(doc, 7.3, 0.09, 0.13, false);
-    doc.setTextColor(201, 168, 76);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.text('TwinAnalytic', 7.47, 0.19);
+    drawTwinAnalyticWordmark(doc, 7.47, 0.19, { size: 8, onLight: true });
 
     // Gold border
     doc.setDrawColor(201, 168, 76);
@@ -2501,10 +2523,7 @@ function downloadSlabPDF() {
 
   // Branding at bottom
   drawTwinAnalyticLogo(doc, 4.0, 8.6, 0.5, false);
-  doc.setTextColor(201, 168, 76);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
-  doc.text('TwinAnalytic', 4.25, 9.4, { align: 'center' });
+  drawTwinAnalyticWordmark(doc, 4.25, 9.4, { size: 16, align: 'center', onLight: true });
   doc.setFont('helvetica', 'italic');
   doc.setFontSize(8.5);
   doc.setTextColor(120, 120, 120);
@@ -4044,10 +4063,7 @@ function downloadColumnPDF() {
     // Logo. Held to 0.33 wide so it clears the wordmark at x=0.70.
     drawTwinAnalyticLogo(doc, 0.35, 0.365, 0.33, false);
 
-    doc.setTextColor(201, 168, 76);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(14);
-    doc.text('TwinAnalytic', 0.70, 0.58);
+    drawTwinAnalyticWordmark(doc, 0.70, 0.58, { size: 14, onLight: true });
 
     doc.setTextColor(80, 80, 80);
     doc.setFont('helvetica', 'normal');
@@ -4120,18 +4136,14 @@ function downloadColumnPDF() {
   doc.setFillColor(245, 247, 250);
   doc.rect(0.3, 0.3, 7.9, 10.4, 'F');
 
-  doc.setFillColor(30, 30, 30);
-  doc.rect(0.3, 0.3, 7.9, 1.8, 'F');
+  drawTwinAnalyticBand(doc, 0.3, 0.3, 7.9, 1.8, [30, 30, 30]);
 
   // Logo. Sized to the 1.8in band and vertically centred on the wordmark
   // beside it — the real mark is wider than tall, where the old placeholder
   // was square, so the old y left it riding high.
   drawTwinAnalyticLogo(doc, 0.9, 0.52, 1.0, true);
 
-  doc.setTextColor(201, 168, 76);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(24);
-  doc.text('TWINANALYTIC', 2.0, 0.9);
+  drawTwinAnalyticWordmark(doc, 2.0, 0.9, { size: 24, upper: true });
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
   doc.setTextColor(255, 255, 255);
