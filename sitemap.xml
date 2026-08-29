@@ -85,6 +85,11 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://twinanalytic.com/etabsx</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://twinanalytic.com/seismic-analysis</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>monthly</changefreq>

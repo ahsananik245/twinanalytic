@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/favicon.png">
+  <link rel="shortcut icon" href="favicon.ico">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0A0A0A">
+  <title>EtabsX — BNBC 2020 Compliance for ETABS | TwinAnalytic</title>
+  <meta name="description" content="EtabsX reads your open ETABS model, computes BNBC 2020 seismic and wind parameters, writes load patterns and combinations back, and audits the model against the code. 60-day trial.">
+  <link rel="canonical" href="https://twinanalytic.com/etabsx">
+
+  <!-- Open Graph / social sharing -->
+  <meta property="og:title" content="EtabsX — BNBC 2020 Compliance for ETABS | TwinAnalytic" />
+  <meta property="og:description" content="Reads your open ETABS model, computes BNBC 2020 parameters, writes them back, and audits the model against the code — every number citing its clause." />
+  <meta property="og:image" content="https://twinanalytic.com/assets/brand-banner.jpg" />
+  <meta property="og:url" content="https://twinanalytic.com/etabsx" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://twinanalytic.com/assets/brand-banner.jpg">
+
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Content engine: hydrates this page from data/content.json -->
+  <script src="js/site-content.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .page-banner {
+      padding: 10rem 0 4rem 0;
+      background: radial-gradient(circle at 10% 20%, rgba(13, 17, 23, 0.95) 0%, rgba(10, 10, 10, 0.98) 90%),
+                  repeating-linear-gradient(45deg, rgba(201, 168, 76, 0.03) 0px, rgba(201, 168, 76, 0.03) 2px, transparent 2px, transparent 10px);
+      border-bottom: 1px solid var(--border-gold);
+      text-align: center;
+    }
+    .page-banner h1 {
+      font-family: var(--font-serif);
+      font-size: 3.5rem;
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.6rem;
+    }
+    .page-banner .by {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      letter-spacing: 0.04em;
+      margin-bottom: 1rem;
+    }
+    .page-banner p.eyebrow {
+      color: var(--color-gold);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+    }
+
+    .lede {
+      max-width: 780px;
+      margin: 0 auto 3.5rem;
+      font-size: 1.12rem;
+      line-height: 1.85;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+    .lede strong { color: #fff; font-weight: 500; }
+
+    .x-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 3.5rem;
+    }
+    @media (max-width: 900px) { .x-grid { grid-template-columns: 1fr; } }
+
+    .x-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 8px;
+      padding: 1.9rem;
+    }
+    .x-card.does { border-top: 2px solid var(--color-gold); }
+    .x-card.doesnt { border-top: 2px solid var(--color-steel-dim); }
+    .x-card h3 {
+      font-family: var(--font-serif);
+      font-size: 1.35rem;
+      font-weight: 400;
+      margin: 0 0 0.4rem;
+      color: #fff;
+    }
+    .x-card .sub {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-secondary);
+      margin-bottom: 1.2rem;
+    }
+    .x-card ul { list-style: none; padding: 0; margin: 0; }
+    .x-card li {
+      position: relative;
+      padding-left: 1.5rem;
+      margin-bottom: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      font-size: 0.95rem;
+    }
+    .x-card li::before {
+      position: absolute; left: 0; top: 0;
+      font-family: var(--font-mono); font-size: 0.85rem;
+    }
+    .x-card.does li::before { content: '+'; color: var(--color-gold); }
+    .x-card.doesnt li::before { content: '\2013'; color: var(--color-steel-dim); }
+    .x-card li strong { color: #fff; font-weight: 500; }
+
+    .section-head {
+      font-family: var(--font-serif);
+      font-size: 2rem;
+      font-weight: 400;
+      margin-bottom: 0.6rem;
+      color: #fff;
+    }
+    .section-note {
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+      line-height: 1.8;
+      max-width: 760px;
+    }
+
+    .check-cols {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 900px) { .check-cols { grid-template-columns: 1fr; } }
+    .check-col {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 6px;
+      padding: 1.4rem;
+    }
+    .check-col h4 {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--color-gold);
+      margin: 0 0 1rem;
+    }
+    .check-col ul { list-style: none; padding: 0; margin: 0; }
+    .check-col li {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      padding: 0.4rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      line-height: 1.55;
+    }
+    .check-col li:last-child { border-bottom: none; }
+    .check-col li span { color: #6b7280; font-size: 0.78rem; display: block; }
+
+    .req-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
+    .req-table td {
+      padding: 0.85rem 0.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      vertical-align: top;
+    }
+    .req-table td:first-child {
+      color: #fff; width: 34%; font-weight: 500;
+    }
+
+    .trial-box {
+      border: 1px solid var(--border-gold);
+      border-radius: 8px;
+      padding: 2.2rem;
+      background: linear-gradient(135deg, rgba(201,168,76,0.06), rgba(255,255,255,0.01));
+      text-align: center;
+    }
+    .trial-box h3 {
+      font-family: var(--font-serif); font-size: 1.8rem; font-weight: 400;
+      color: #fff; margin: 0 0 0.8rem;
+    }
+    .trial-box p { color: var(--text-secondary); line-height: 1.8; max-width: 620px; margin: 0 auto 1.6rem; }
+
+    .caveat {
+      border-left: 3px solid var(--color-steel-dim);
+      padding: 1rem 1.2rem;
+      background: rgba(255,255,255,0.02);
+      color: var(--text-secondary);
+      font-size: 0.92rem;
+      line-height: 1.75;
+      margin-top: 2rem;
+      border-radius: 0 4px 4px 0;
+    }
+    .caveat strong { color: #fff; }
+  </style>
+
+  <!-- Structured data: identifies the software and this page to search engines -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "EtabsX",
+        "applicationCategory": "EngineeringApplication",
+        "operatingSystem": "Windows 10, Windows 11",
+        "url": "https://twinanalytic.com/etabsx",
+        "description": "Desktop assistant that reads an open ETABS model, computes BNBC 2020 seismic and wind parameters, writes load patterns and combinations back into the model, and audits it against the code.",
+        "author": { "@id": "https://twinanalytic.com/#organization" },
+        "publisher": { "@id": "https://twinanalytic.com/#organization" }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://twinanalytic.com/" },
+          { "@type": "ListItem", "position": 2, "name": "EtabsX", "item": "https://twinanalytic.com/etabsx" }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+  <a href="#main-content" class="skip-link">Skip to Main Content</a>
+
+  <!-- NAVIGATION BAR -->
+  <nav class="navbar scrolled" id="navbar">
+    <div class="container">
+      <a href="index.html" class="logo" data-tw-list="brandLogo">
+        <img src="assets/logo.png" alt="TwinAnalytic logo" height="38" style="height: 38px; width: auto; margin-right: 10px; vertical-align: middle;">
+        Twin<span>Analytic</span>
+      </a>
+      <ul class="nav-links" id="nav-links" data-tw-list="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="etabsx.html" class="active">EtabsX</a></li>
+        <li><a href="calculators.html">Calculators</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- BANNER -->
+  <header id="main-content" tabindex="-1" class="page-banner">
+    <div class="container">
+      <p class="eyebrow">BNBC 2020 Compliance for ETABS</p>
+      <h1>EtabsX</h1>
+      <p class="by">by TwinAnalytic</p>
+    </div>
+  </header>
+
+  <!-- WHAT IT IS -->
+  <section class="section-padding">
+    <div class="container">
+      <p class="lede">
+        EtabsX handles the <strong>repetitive, error-prone parts</strong> of building an
+        ETABS model to the Bangladesh National Building Code 2020. It reads your open
+        model over the CSI API, computes the BNBC parameters, and writes load patterns,
+        area loads, combinations, stiffness modifiers, mass sources, pier labels and
+        earth pressures back into the model — <strong>each with the code clause it comes
+        from shown beside it</strong>.
+      </p>
+
+      <div class="x-grid">
+        <div class="x-card does">
+          <h3>What it does</h3>
+          <div class="sub">Computed from your model</div>
+          <ul>
+            <li>Computes the equivalent-static <strong>seismic</strong> base shear and the parameters ETABS needs to reproduce the BNBC spectrum (Sec 2.5).</li>
+            <li>Computes <strong>wind</strong> pressures and per-storey forces by the analytical procedure (Sec 2.4).</li>
+            <li>Creates <strong>load patterns</strong>, area loads by storey, <strong>load combinations</strong> — strength, service, overstrength, serviceability — stiffness modifiers, the mass source, restraints, edge constraints and pier labels.</li>
+            <li>Runs a <strong>10-point pre-analysis audit</strong>, then post-analysis irregularity, P-&Delta;, torsion and spectrum-scaling checks, and reports modal, drift, reaction and wall-share results.</li>
+            <li>Exports foundation reactions, a <strong>quantity take-off</strong>, a member schedule and a design-basis report, and saves your inputs to a reusable project file.</li>
+          </ul>
+        </div>
+
+        <div class="x-card doesnt">
+          <h3>What it deliberately does not do</h3>
+          <div class="sub">Limits, stated up front</div>
+          <ul>
+            <li>It <strong>never saves your model.</strong> Your undo is closing ETABS without saving.</li>
+            <li>It does <strong>not run the analysis</strong> — you press F5 in ETABS yourself.</li>
+            <li>It does <strong>not design</strong> anything. ETABS does that.</li>
+            <li>It does <strong>not choose R for you</strong> — it tells you what the wall share implies.</li>
+            <li>It does not replace your engineering judgement, or your professional seal.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- THE CHECKS -->
+  <section class="section-padding" style="padding-top: 0;">
+    <div class="container">
+      <h2 class="section-head">What it checks</h2>
+      <p class="section-note">
+        Every check names its clause in the log. The third column matters as much as the
+        first two: a compliance tool that does not tell you what it left alone is not
+        much use to the engineer who has to seal the drawing.
+      </p>
+
+      <div class="check-cols">
+        <div class="check-col">
+          <h4>Before the analysis</h4>
+          <ul>
+            <li>Analysis has been run <span>results present</span></li>
+            <li>Load patterns &amp; self-weight <span>Sec 2.3</span></li>
+            <li>Lateral loads generated to BNBC <span>Sec 2.5 / 2.4</span></li>
+            <li>System vs detailing class <span>Table 6.2.19</span></li>
+            <li>Stiffness modifiers <span>Sec 6.3.10.4.1</span></li>
+            <li>Mass source <span>Sec 2.5.7.3</span></li>
+            <li>Diaphragms <span>rigid per storey</span></li>
+            <li>Base restraints, pier labels <span>supports, wall forces</span></li>
+            <li>Load combinations <span>Sec 2.7</span></li>
+          </ul>
+        </div>
+
+        <div class="check-col">
+          <h4>After the analysis</h4>
+          <ul>
+            <li>Modal mass participation <span>Sec 2.5.9.2</span></li>
+            <li>Re-entrant corner (H2) <span>Table 6.1.5</span></li>
+            <li>Diaphragm forces F<sub>px</sub> <span>Sec 1.7.3.8(a)</span></li>
+            <li>Storey drift limit <span>Table 6.2.21</span></li>
+            <li>Torsional irregularity (H1 / A<sub>x</sub>) <span>Table 6.1.5</span></li>
+            <li>Soft storey (V1a) <span>Table 6.1.4</span></li>
+            <li>P-&Delta; stability &theta; <span>Sec 2.5.7.9</span></li>
+            <li>Response-spectrum 85% scaling <span>Sec 2.5.9.4</span></li>
+            <li>Member design, columns <span>BNBC Ch 8</span></li>
+          </ul>
+        </div>
+
+        <div class="check-col">
+          <h4>Not checked — do by hand</h4>
+          <ul>
+            <li>Capacity-design shear V<sub>e</sub> from M<sub>pr</sub> <span>Sec 8.3.8.1/2</span></li>
+            <li>Shear wall boundary elements on demand <span>Sec 8.3.6.6</span></li>
+            <li>Computed member deflection <span>Table 6.1.2</span></li>
+            <li>Deformation compatibility in SDC D <span>Sec 2.5.14.4</span></li>
+            <li>Site-specific study for site class S1 / S2 <span>Sec 2.5.5.4</span></li>
+            <li>Sliding on the foundation <span>Sec 1.6.4</span></li>
+            <li>Time-history analysis <span>Sec 2.5.10 / 2.5.11</span></li>
+            <li>Wind on components and cladding <span>Sec 2.4.9&ndash;2.4.11</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="section-note" style="margin-bottom:0;">
+        A further group — diaphragm discontinuity, out-of-plane offsets, in-plane
+        discontinuity, non-parallel systems, horizontal cantilevers, seismic detailing
+        class — is <em>declared by you</em> in the program, because no model can settle
+        them on its own.
+      </p>
+    </div>
+  </section>
+
+  <!-- REQUIREMENTS -->
+  <section class="section-padding" style="padding-top: 0;">
+    <div class="container">
+      <div class="x-grid" style="margin-bottom: 0;">
+        <div>
+          <h2 class="section-head">Requirements</h2>
+          <table class="req-table">
+            <tr><td>Operating system</td><td>Windows 10 or 11, 64-bit</td></tr>
+            <tr><td>ETABS</td><td>ETABS 22, installed and registered, running with your model open</td></tr>
+            <tr><td>Install</td><td>None. A single executable, with Python bundled.</td></tr>
+            <tr><td>Optional</td><td><code>openpyxl</code> for native .xlsx export — without it every export falls back to CSV automatically</td></tr>
+          </table>
+          <p class="section-note" style="font-size:0.9rem;">
+            ETABS must run at the <strong>same elevation</strong> as EtabsX — both as
+            administrator, or neither — or the connection silently attaches to nothing.
+            The Seismic and Guide tabs compute without ETABS; everything else reads from
+            or writes to a live model.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="section-head">Trial</h2>
+          <div class="trial-box" style="text-align:left;">
+            <h3 style="font-size:1.4rem;">60 days, free</h3>
+            <p style="margin-bottom:1.2rem;">
+              Full access for 60 days from first launch on a computer. After that it
+              locks on that machine and a licence is needed to continue. The trial state
+              is bound to the machine, so reinstalling or moving the clock back will not
+              extend it.
+            </p>
+            <a href="contact.html?enquiry=etabsx" class="btn btn-gold" style="display:inline-flex; align-items:center; gap:0.5rem;">
+              <i class="fa-solid fa-envelope-open-text"></i> Request the trial
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="caveat">
+        <strong>Where this program and the printed code disagree, the code is right.</strong>
+        Every number EtabsX prints carries a clause reference so you can check it against
+        your own copy of BNBC 2020 Part 6. It is an assistant for the repetitive work, not
+        a substitute for the engineer sealing the drawing.
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-top-gradient"></div>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col brand">
+          <h3 data-tw-list="brandFooter">Twin<span>Analytic</span></h3>
+          <p style="color: var(--color-gold); font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; margin-top: -0.5rem;" data-tw="site.tagline">Construction &amp; Engineering</p>
+          <p data-tw="site.footerBlurb">We combine engineering expertise with digital technologies to create safe, optimized, and reliable structures.</p>
+          <p class="footer-slogan" data-tw="site.slogan">Building Tomorrow, Together</p>
+          <div class="footer-socials" data-tw-list="footerSocials">
+            <a href="https://linkedin.com/company/twinanalytic" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
+          </div>
+        </div>
+        <div data-tw-list="footerColumns" style="display: contents;">
+        <div class="footer-col">
+          <h3>Services</h3>
+          <ul class="footer-links">
+            <li><a href="services.html#structural">Structural Engineering</a></li>
+            <li><a href="services.html#bim">BIM &amp; Digital Engineering</a></li>
+            <li><a href="services.html#support">Construction Support</a></li>
+            <li><a href="services.html#consultancy">Engineering Consultancy</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Load Analysis</h3>
+          <ul class="footer-links">
+            <li><a href="etabsx.html">EtabsX for ETABS</a></li>
+            <li><a href="seismic-analysis.html">Seismic Base Shear</a></li>
+            <li><a href="wind-load.html">Wind Load (MWFRS)</a></li>
+            <li><a href="vertical-seismic.html">Vertical Earthquake Effect</a></li>
+            <li><a href="base-shear-check.html">Base Shear Verification</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Member Design</h3>
+          <ul class="footer-links">
+            <li><a href="beam-design.html">RC Beam Design</a></li>
+            <li><a href="column-design.html">RC Column Design</a></li>
+            <li><a href="slab-design.html">RC Slab Design</a></li>
+            <li><a href="stair-design.html">RC Stair Design</a></li>
+            <li><a href="calculators.html">All 26 Calculators</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Navigation</h3>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="projects.html">Projects</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p data-tw="site.copyright">&copy; 2026 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
+        <div class="footer-bottom-links" data-tw-list="footerBottomLinks">
+          <a href="privacy.html">Privacy Protocol</a>
+          <a href="sitemap.html">Sitemap</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

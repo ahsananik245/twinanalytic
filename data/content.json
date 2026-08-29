@@ -126,6 +126,11 @@
         "enabled": true
       },
       {
+        "label": "EtabsX",
+        "href": "etabsx.html",
+        "enabled": true
+      },
+      {
         "label": "BIM Viewer",
         "href": "bim-viewer.html",
         "enabled": true
@@ -469,6 +474,10 @@
         "title": "Load Analysis",
         "links": [
           {
+            "label": "EtabsX for ETABS",
+            "href": "etabsx.html"
+          },
+          {
             "label": "Seismic Base Shear",
             "href": "seismic-analysis.html"
           },
@@ -483,16 +492,6 @@
           {
             "label": "Base Shear Verification",
             "href": "base-shear-check.html"
-          },
-          {
-            "label": "Worked Example",
-            "href": "worked-example.html",
-            "enabled": true
-          },
-          {
-            "label": "Worked Example — Columns",
-            "href": "worked-example-columns.html",
-            "enabled": true
           }
         ]
       },
