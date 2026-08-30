@@ -54,6 +54,36 @@
       width: auto;
       max-width: 100%;
     }
+
+    /* Download. The SmartScreen warning is stated up front rather than
+       left as a surprise: an unsigned binary tells every first-time user
+       that Windows "protected" them from it, and a page that says nothing
+       reads as though it has something to hide. */
+    .dl-wrap { margin-top: 2rem; }
+    .dl-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1.02rem;
+      padding: 0.95rem 2rem;
+    }
+    .dl-meta {
+      margin: 0.9rem 0 0;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+    }
+    .dl-note {
+      max-width: 46ch;
+      margin: 0.75rem auto 0;
+      font-size: 0.82rem;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      text-wrap: pretty;
+    }
+    .dl-note strong { color: #fff; font-weight: 500; }
+    .dl-note a { color: var(--color-gold); }
     /* Set the way the lockup sets its tagline, because it sits directly
        under it: uppercase, mono, widely tracked. Measured off the artwork —
        the tagline's letter gaps are 0.65x its cap height, which is about
@@ -342,6 +372,27 @@
              width="679" height="560" fetchpriority="high">
       </h1>
       <p class="by">by <strong>TwinAnalytic</strong></p>
+      <!-- The download sits in the banner because the page previously sold
+           the software and then never offered it: the buy flow opens with
+           "send us your machine code", which you can only read out of a copy
+           you are already running. -->
+      <div class="dl-wrap">
+        <a class="btn btn-gold dl-btn"
+           href="https://github.com/ahsananik245/etabsx-releases/releases/latest/download/EtabsX.exe">
+          <i class="fa-solid fa-download" aria-hidden="true"></i>
+          Download EtabsX
+        </a>
+        <p class="dl-meta">
+          Windows · 38&nbsp;MB · free for 30 days, no account needed
+        </p>
+        <p class="dl-note">
+          No installer — double-click the file. Windows will warn that the
+          publisher is unknown, because it is not yet code-signed; choose
+          <strong>More info → Run anyway</strong>.
+          <a href="https://github.com/ahsananik245/etabsx-releases/releases/latest">Checksum
+          and release notes</a>.
+        </p>
+      </div>
     </div>
   </header>
 
@@ -485,9 +536,18 @@
               The free period is bound to the machine, so reinstalling or moving
               the clock back will not extend it.
             </p>
-            <a href="#pricing" class="btn btn-gold" style="display:inline-flex; align-items:center; gap:0.5rem;">
-              <i class="fa-solid fa-tags"></i> See pricing
-            </a>
+            <!-- Download first, pricing second. Someone reading this section
+                 has decided to try it; sending them to a price list instead
+                 of the file is the wrong order. -->
+            <div style="display:flex; flex-wrap:wrap; gap:0.7rem;">
+              <a href="https://github.com/ahsananik245/etabsx-releases/releases/latest/download/EtabsX.exe"
+                 class="btn btn-gold" style="display:inline-flex; align-items:center; gap:0.5rem;">
+                <i class="fa-solid fa-download"></i> Download for Windows
+              </a>
+              <a href="#pricing" class="btn" style="display:inline-flex; align-items:center; gap:0.5rem;">
+                <i class="fa-solid fa-tags"></i> See pricing
+              </a>
+            </div>
           </div>
         </div>
       </div>
