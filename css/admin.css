@@ -1390,3 +1390,80 @@ body.admin-body,
 @media (max-width: 640px) {
   .lic-meta { gap: 0.75rem 1.1rem; }
 }
+
+/* ---- the issued-licence ledger ------------------------------------------
+   Status is a colour AND a word, never colour alone: this table is read
+   quickly to find who needs chasing, and roughly one man in twelve cannot
+   separate the red row from the green one. */
+.lic-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.9rem;
+}
+.lic-pill {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--a-border-strong);
+  color: var(--a-text-dim);
+}
+.lic-pill.is-active    { border-color: rgba(53,200,139,0.45); color: var(--a-green); }
+.lic-pill.is-expiring  { border-color: rgba(224,160,48,0.5);  color: var(--a-amber); }
+.lic-pill.is-expired   { border-color: rgba(240,80,90,0.45);  color: var(--a-red); }
+.lic-pill.is-perpetual { border-color: rgba(201,168,76,0.45); color: var(--a-gold); }
+
+/* The table scrolls inside its own box rather than widening the panel —
+   a machine code plus a date plus a name overflows a narrow window, and a
+   horizontally scrolling PAGE is much worse than a scrolling table. */
+.lic-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--a-border);
+  border-radius: var(--a-radius-sm);
+}
+.lic-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+.lic-table th {
+  text-align: left;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--a-text-faint);
+  font-weight: 600;
+  padding: 0.6rem 0.75rem;
+  background: var(--a-surface-2);
+  border-bottom: 1px solid var(--a-border);
+}
+.lic-table td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--a-border);
+  color: var(--a-text);
+}
+.lic-table tbody tr:last-child td { border-bottom: none; }
+.lic-table tbody tr:hover td { background: var(--a-surface-2); }
+.lic-table td:first-child {
+  text-transform: capitalize;
+  color: var(--a-text-dim);
+  font-size: 0.75rem;
+}
+.lic-dot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  margin-right: 0.45rem;
+  background: var(--a-text-faint);
+  vertical-align: middle;
+}
+.lic-table tr.is-active    .lic-dot { background: var(--a-green); }
+.lic-table tr.is-expiring  .lic-dot { background: var(--a-amber); }
+.lic-table tr.is-expired   .lic-dot { background: var(--a-red); }
+.lic-table tr.is-perpetual .lic-dot { background: var(--a-gold); }
+.lic-table tr.is-expired td { opacity: 0.62; }
+.lic-none { color: var(--a-text-faint); }

@@ -27,6 +27,7 @@
    ========================================================================== */
 
 const crypto = require('crypto');
+const store = require('./_licence-store');
 
 /* Matches PLANS in licence_tool.py. Kept in both because the tool must work
    offline when this endpoint is not reachable. */
@@ -171,12 +172,36 @@ module.exports = async (req, res) => {
     });
   }
 
+  /* Record what was issued.
+
+     Deliberately AFTER signing and deliberately non-fatal. The key above is
+     already correct and the customer is waiting on it; refusing to hand it
+     over because a ledger write failed would turn a bookkeeping problem
+     into a support incident. A failure is reported back in `logged` so the
+     panel can say the key is valid but unrecorded, rather than pretending
+     everything is fine. */
+  let logged = { ok: true };
+  try {
+    const r = await store.append({
+      issued_at: new Date().toISOString(),
+      machine,
+      plan,
+      expires,
+      name,
+      key
+    });
+    if (r && r.skipped) logged = { ok: false, reason: r.skipped };
+  } catch (e) {
+    logged = { ok: false, reason: e.message };
+  }
+
   return res.status(200).json({
     key,
     machine,
     plan,
     expires: expires === 'never' ? 'never'
       : `${expires.slice(0, 4)}-${expires.slice(4, 6)}-${expires.slice(6)}`,
-    name
+    name,
+    logged
   });
 };

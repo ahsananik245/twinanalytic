@@ -1535,6 +1535,18 @@
       '</div>' +
 
       '<div class="a-card">' +
+        '<div class="a-card-title"><i class="fa-solid fa-list-check"></i>' +
+          '<span>Issued licences</span></div>' +
+        '<p class="a-card-desc">Everything issued from this panel, soonest ' +
+          'expiry first — the order you would chase renewals in.</p>' +
+        '<div class="a-btn-row">' +
+          '<button class="a-btn a-btn-sm" id="lic-refresh">' +
+            '<i class="fa-solid fa-rotate"></i> Load</button>' +
+        '</div>' +
+        '<div id="lic-list"><p class="a-field-hint">Not loaded yet.</p></div>' +
+      '</div>' +
+
+      '<div class="a-card">' +
         '<div class="a-card-title"><i class="fa-solid fa-circle-info"></i>' +
           '<span>Before you issue</span></div>' +
         '<ol class="a-steps">' +
@@ -1550,7 +1562,115 @@
       '</div>';
   }
 
+  /* The ledger view. Renders whatever /api/licences returns, with the
+     status worked out server-side so the panel and the customer's own
+     sidebar cannot disagree about who is expiring. */
+  function licenceRowsHtml(res) {
+    var list = res.licences || [];
+    if (!list.length) {
+      return '<p class="a-field-hint">' +
+        (res.unconfigured
+          ? esc(res.error || 'The ledger is not configured.')
+          : 'Nothing issued yet. Keys appear here as you issue them.') +
+        '</p>';
+    }
+    var c = res.counts || {};
+    var head = '<div class="lic-counts">' +
+      '<span class="lic-pill is-active">' + (c.active || 0) + ' active</span>' +
+      '<span class="lic-pill is-expiring">' + (c.expiring || 0) + ' expiring</span>' +
+      '<span class="lic-pill is-expired">' + (c.expired || 0) + ' expired</span>' +
+      (c.perpetual ? '<span class="lic-pill is-perpetual">' + c.perpetual +
+        ' perpetual</span>' : '') +
+      '</div>';
+
+    var rows = list.map(function (l) {
+      var when = l.status === 'perpetual' ? 'never'
+        : (l.days_left === null ? esc(l.expires)
+          : esc(l.expires_iso) + ' · ' +
+            (l.days_left < 0 ? Math.abs(l.days_left) + ' days ago'
+                             : l.days_left + ' days'));
+      return '<tr class="is-' + esc(l.status) + '">' +
+        '<td><span class="lic-dot"></span>' + esc(l.status) + '</td>' +
+        '<td class="lic-mono">' + esc(l.machine) + '</td>' +
+        '<td>' + esc(l.plan) + '</td>' +
+        '<td>' + (l.name ? esc(l.name) : '<span class="lic-none">—</span>') + '</td>' +
+        '<td>' + when + '</td>' +
+        '<td><button class="a-btn a-btn-sm a-btn-icon lic-copy-row" ' +
+          'data-key="' + esc(l.key) + '" title="Copy this key">' +
+          '<i class="fa-solid fa-copy"></i></button></td>' +
+        '</tr>';
+    }).join('');
+
+    return head +
+      '<div class="lic-table-wrap"><table class="lic-table">' +
+        '<thead><tr><th>Status</th><th>Machine</th><th>Plan</th>' +
+          '<th>Issued to</th><th>Expires</th><th></th></tr></thead>' +
+        '<tbody>' + rows + '</tbody>' +
+      '</table></div>' +
+      '<p class="a-field-hint">Source: ' + esc(res.source || '') + '</p>';
+  }
+
+  function wireLicenceList(root) {
+    var btn = $('#lic-refresh', root);
+    var host = $('#lic-list', root);
+    if (!btn || !host) return;
+
+    function load() {
+      var pass = sessionKey();
+      if (!pass) {
+        toast('Your session has no passcode. Lock the panel and sign in again.',
+              'error', 7000);
+        return;
+      }
+      btn.disabled = true;
+      host.innerHTML = '<p class="lic-wait"><i class="fa-solid ' +
+        'fa-circle-notch fa-spin"></i> Loading…</p>';
+      fetch('/api/licences', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passcode: pass })
+      }).then(function (r) {
+        return r.json().then(function (j) { return { ok: r.ok, j: j }; });
+      }).then(function (res) {
+        btn.disabled = false;
+        if (!res.ok) {
+          host.innerHTML = '<p class="a-field-hint">Could not load.</p>';
+          toast(res.j.error || 'Could not load the licence list.', 'error', 9000);
+          return;
+        }
+        host.innerHTML = licenceRowsHtml(res.j);
+        if (res.j.unconfigured) {
+          toast(res.j.error, 'info', 11000);
+        }
+        // Per-row copy, bound after render.
+        var copies = host.querySelectorAll('.lic-copy-row');
+        Array.prototype.forEach.call(copies, function (b) {
+          b.addEventListener('click', function () {
+            var k = b.getAttribute('data-key') || '';
+            if (navigator.clipboard) {
+              navigator.clipboard.writeText(k).catch(function () { });
+            }
+            b.innerHTML = '<i class="fa-solid fa-check"></i>';
+            setTimeout(function () {
+              b.innerHTML = '<i class="fa-solid fa-copy"></i>';
+            }, 1800);
+            toast('Key copied.', 'success', 2500);
+          });
+        });
+      }).catch(function (e) {
+        btn.disabled = false;
+        host.innerHTML = '<p class="a-field-hint">Could not load.</p>';
+        toast(String(e.message || e), 'error', 9000);
+      });
+    }
+
+    btn.addEventListener('click', load);
+    // The list is the reason to open this screen, so it loads itself.
+    load();
+  }
+
   function wireLicences(root) {
+    wireLicenceList(root);
     var btn = $('#lic-issue', root);
     var out = $('#lic-out', root);
     if (!btn) return;
@@ -1626,6 +1746,16 @@
           '</div>';
         toast('Licence issued — ' + res.j.plan + ', expires ' + res.j.expires,
               'success', 6000);
+        /* A key that was signed but not recorded is still a valid key, and
+           the customer should get it. But it will not appear in the list
+           below, so saying nothing would quietly lose it from the books. */
+        if (res.j.logged && res.j.logged.ok === false) {
+          toast('The key is valid, but it was NOT recorded: ' +
+                res.j.logged.reason + ' — copy it somewhere safe.',
+                'error', 14000);
+        }
+        var refresh = $('#lic-refresh', root);
+        if (refresh) refresh.click();
         var copy = $('#lic-copy', root);
         if (copy) {
           copy.addEventListener('click', function () {
