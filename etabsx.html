@@ -54,11 +54,23 @@
       width: auto;
       max-width: 100%;
     }
+    /* Set the way the lockup sets its tagline, because it sits directly
+       under it: uppercase, mono, widely tracked. Measured off the artwork —
+       the tagline's letter gaps are 0.65x its cap height, which is about
+       0.22em here; at the 0.04em it had before, this line read as body copy
+       that had wandered into the banner. TwinAnalytic stays gold because it
+       is the company, not a descriptor. */
     .page-banner .by {
       color: var(--text-secondary);
-      font-size: 0.95rem;
-      letter-spacing: 0.04em;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
       margin-bottom: 1rem;
+    }
+    .page-banner .by strong {
+      color: var(--color-gold);
+      font-weight: 400;
     }
     .page-banner p.eyebrow {
       color: var(--color-gold);
@@ -329,7 +341,7 @@
              alt="EtabsX — Analyze, Design, Innovate"
              width="679" height="560" fetchpriority="high">
       </h1>
-      <p class="by">by TwinAnalytic</p>
+      <p class="by">by <strong>TwinAnalytic</strong></p>
     </div>
   </header>
 
