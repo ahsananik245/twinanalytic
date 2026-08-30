@@ -1526,6 +1526,24 @@
             '<input id="lic-name" class="a-input" type="text" ' +
               'placeholder="Firm or engineer" autocomplete="off">' +
           '</div>' +
+          /* The endpoint has always accepted `days` and `expires`; the form
+             never offered them, so a 7-day extension while a bank transfer
+             cleared, or a date matched to a client's financial year, meant
+             dropping to the command line. */
+          '<div class="a-field">' +
+            '<label for="lic-days">Days <span class="a-tag">overrides plan</span></label>' +
+            '<input id="lic-days" class="a-input" type="number" min="1" ' +
+              'max="3650" placeholder="e.g. 45" autocomplete="off">' +
+            '<p class="a-field-hint">Any length up to 3650. Leave empty to ' +
+              'use the plan above.</p>' +
+          '</div>' +
+          '<div class="a-field">' +
+            '<label for="lic-expires">Exact expiry <span class="a-tag">overrides both</span></label>' +
+            '<input id="lic-expires" class="a-input" type="date" ' +
+              'autocomplete="off">' +
+            '<p class="a-field-hint">For matching a renewal to a fixed date ' +
+              'rather than a length.</p>' +
+          '</div>' +
         '</div>' +
         '<div class="a-btn-row">' +
           '<button class="a-btn a-btn-gold a-btn-block" id="lic-issue">' +
@@ -1581,6 +1599,8 @@
       '<span class="lic-pill is-expired">' + (c.expired || 0) + ' expired</span>' +
       (c.perpetual ? '<span class="lic-pill is-perpetual">' + c.perpetual +
         ' perpetual</span>' : '') +
+      (c.revoked ? '<span class="lic-pill is-revoked">' + c.revoked +
+        ' revoked</span>' : '') +
       '</div>';
 
     var rows = list.map(function (l) {
@@ -1589,15 +1609,25 @@
           : esc(l.expires_iso) + ' · ' +
             (l.days_left < 0 ? Math.abs(l.days_left) + ' days ago'
                              : l.days_left + ' days'));
-      return '<tr class="is-' + esc(l.status) + '">' +
-        '<td><span class="lic-dot"></span>' + esc(l.status) + '</td>' +
+      var st = l.revoked_at ? 'revoked' : l.status;
+      return '<tr class="is-' + esc(st) + '">' +
+        '<td><span class="lic-dot"></span>' + esc(st) + '</td>' +
         '<td class="lic-mono">' + esc(l.machine) + '</td>' +
         '<td>' + esc(l.plan) + '</td>' +
         '<td>' + (l.name ? esc(l.name) : '<span class="lic-none">—</span>') + '</td>' +
         '<td>' + when + '</td>' +
-        '<td><button class="a-btn a-btn-sm a-btn-icon lic-copy-row" ' +
-          'data-key="' + esc(l.key) + '" title="Copy this key">' +
-          '<i class="fa-solid fa-copy"></i></button></td>' +
+        '<td class="lic-row-actions">' +
+          '<button class="a-btn a-btn-sm a-btn-icon lic-copy-row" ' +
+            'data-key="' + esc(l.key) + '" title="Copy this key">' +
+            '<i class="fa-solid fa-copy"></i></button>' +
+          (l.revoked_at
+            ? '<button class="a-btn a-btn-sm a-btn-icon lic-undo-row" ' +
+                'data-key="' + esc(l.key) + '" title="Restore this key">' +
+                '<i class="fa-solid fa-rotate-left"></i></button>'
+            : '<button class="a-btn a-btn-sm a-btn-icon a-btn-danger ' +
+                'lic-revoke-row" data-key="' + esc(l.key) + '" ' +
+                'title="Cancel this key"><i class="fa-solid fa-ban"></i></button>') +
+        '</td>' +
         '</tr>';
     }).join('');
 
@@ -1657,6 +1687,45 @@
             toast('Key copied.', 'success', 2500);
           });
         });
+
+        function revokeCall(b, undo) {
+          var k = b.getAttribute('data-key') || '';
+          if (!undo && !window.confirm(
+                'Cancel this licence?\n\nThe customer keeps the file, but a ' +
+                'running copy will stop when it next fetches the revocation ' +
+                'list. A copy that never reaches the internet keeps working.' +
+                '\n\nThis is reversible.')) {
+            return;
+          }
+          b.disabled = true;
+          fetch('/api/revoke', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ passcode: sessionKey(), key: k, undo: undo })
+          }).then(function (r) {
+            return r.json().then(function (j) { return { ok: r.ok, j: j }; });
+          }).then(function (res) {
+            b.disabled = false;
+            if (!res.ok) {
+              toast(res.j.error || 'Could not change the licence.', 'error', 10000);
+              return;
+            }
+            toast(res.j.note, undo ? 'success' : 'info', 9000);
+            load();
+          }).catch(function (e) {
+            b.disabled = false;
+            toast(String(e.message || e), 'error', 9000);
+          });
+        }
+
+        Array.prototype.forEach.call(
+          host.querySelectorAll('.lic-revoke-row'), function (b) {
+            b.addEventListener('click', function () { revokeCall(b, false); });
+          });
+        Array.prototype.forEach.call(
+          host.querySelectorAll('.lic-undo-row'), function (b) {
+            b.addEventListener('click', function () { revokeCall(b, true); });
+          });
       }).catch(function (e) {
         btn.disabled = false;
         host.innerHTML = '<p class="a-field-hint">Could not load.</p>';
@@ -1679,6 +1748,29 @@
       var machine = ($('#lic-machine', root).value || '').trim().toUpperCase();
       var plan = $('#lic-plan', root).value;
       var name = ($('#lic-name', root).value || '').trim();
+      var days = ($('#lic-days', root).value || '').trim();
+      /* <input type="date"> gives YYYY-MM-DD; the endpoint wants YYYYMMDD. */
+      var expires = ($('#lic-expires', root).value || '').replace(/-/g, '');
+
+      if (days && !(+days >= 1 && +days <= 3650)) {
+        toast('Days must be between 1 and 3650.', 'error', 6000);
+        return;
+      }
+      if (expires && !/^\d{8}$/.test(expires)) {
+        toast('That expiry date is not readable.', 'error', 6000);
+        return;
+      }
+      /* A date in the past would sign a licence that is already dead. The
+         server would accept it quite happily — it only checks the shape. */
+      if (expires) {
+        var end = new Date(+expires.slice(0, 4), +expires.slice(4, 6) - 1,
+                           +expires.slice(6), 23, 59, 59);
+        if (end < new Date()) {
+          toast('That expiry date has already passed — the key would be ' +
+                'dead on arrival.', 'error', 8000);
+          return;
+        }
+      }
 
       if (!/^[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}$/.test(machine)) {
         out.innerHTML = '';
@@ -1707,7 +1799,8 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          passcode: key, machine: machine, plan: plan, name: name
+          passcode: key, machine: machine, plan: plan, name: name,
+          days: days || undefined, expires: expires || undefined
         })
       }).then(function (r) {
         return r.json().then(function (j) { return { ok: r.ok, j: j }; });

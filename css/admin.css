@@ -1467,3 +1467,9 @@ body.admin-body,
 .lic-table tr.is-perpetual .lic-dot { background: var(--a-gold); }
 .lic-table tr.is-expired td { opacity: 0.62; }
 .lic-none { color: var(--a-text-faint); }
+
+.lic-pill.is-revoked   { border-color: rgba(240,80,90,0.55);  color: var(--a-red); }
+.lic-table tr.is-revoked .lic-dot { background: var(--a-red); }
+.lic-table tr.is-revoked td { opacity: 0.55; text-decoration-color: var(--a-red); }
+.lic-table tr.is-revoked td:nth-child(2) { text-decoration: line-through; }
+.lic-row-actions { display: flex; gap: 0.3rem; }

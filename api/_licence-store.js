@@ -25,6 +25,8 @@
    in write(): the ledger refuses to be written to the website repo at all.
    ========================================================================== */
 
+const crypto = require('crypto');
+
 const GITHUB_API = 'https://api.github.com';
 
 function config() {
@@ -144,4 +146,107 @@ async function append(record, cfg) {
   return { ok: true };
 }
 
-module.exports = { config, read, append };
+/* ---------------------------------------------------------------------
+   The public revocation list.
+
+   A key can be cancelled after it has been sent - a refunded payment, a
+   reversed bKash transfer, or the one that will certainly happen sooner or
+   later: --days 3650 typed instead of --days 365, which is a ten-year
+   licence sold for the price of one year and no way to take it back.
+
+   What is published is a list of SHA-256 fingerprints and nothing else. No
+   key, no machine code, no customer name, no expiry. Anyone may fetch it
+   and learn only that some number of keys were cancelled.
+
+   This one DOES belong in the public website repo: the app has to be able
+   to fetch it without credentials.
+   --------------------------------------------------------------------- */
+function siteConfig() {
+  return {
+    token: (process.env.GITHUB_TOKEN || '').trim(),
+    owner: process.env.GITHUB_OWNER || 'ahsananik245',
+    repo: process.env.GITHUB_REPO || 'twinanalytic',
+    branch: process.env.GITHUB_BRANCH || 'main',
+    path: 'etabsx-revoked.json'
+  };
+}
+
+function fingerprint(key) {
+  return crypto.createHash('sha256').update(String(key), 'utf8')
+    .digest('hex').slice(0, 32);
+}
+
+/* Rewritten wholesale from the ledger rather than appended to, so the
+   private ledger stays the single source of truth. A list rebuilt from the
+   records cannot drift from them; one appended to separately can. */
+async function publishRevoked(records) {
+  const cfg = siteConfig();
+  if (!cfg.token) return { skipped: 'GITHUB_TOKEN is not set' };
+
+  const revoked = records.filter(r => r.revoked_at)
+                         .map(r => fingerprint(r.key));
+  const doc = {
+    _comment: 'Fingerprints of cancelled EtabsX licence keys. SHA-256 of ' +
+              'the key, first 32 hex characters. No key, machine code or ' +
+              'customer detail is published here.',
+    updated: new Date().toISOString(),
+    revoked
+  };
+
+  const url = `${GITHUB_API}/repos/${encodeURIComponent(cfg.owner)}/` +
+              `${encodeURIComponent(cfg.repo)}/contents/` +
+              encodeURIComponent(cfg.path);
+
+  const cur = await ghRequest(`${url}?ref=${encodeURIComponent(cfg.branch)}`,
+                              cfg.token);
+  const body = {
+    message: `Revocation list: ${revoked.length} cancelled`,
+    content: Buffer.from(JSON.stringify(doc, null, 2) + '\n', 'utf8')
+      .toString('base64'),
+    branch: cfg.branch
+  };
+  if (cur.ok && cur.body && cur.body.sha) body.sha = cur.body.sha;
+
+  const w = await ghRequest(url, cfg.token, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!w.ok) {
+    throw new Error(`Could not publish the revocation list (${w.status}): ` +
+                    ((w.body && w.body.message) || 'unknown error'));
+  }
+  return { ok: true, count: revoked.length };
+}
+
+/* Replace the whole ledger. Used by revocation, which edits a record in
+   place rather than adding one. */
+async function writeAll(records, message, cfg) {
+  cfg = cfg || config();
+  if (!cfg.token) return { skipped: 'GITHUB_TOKEN is not set' };
+  if (cfg.repo.toLowerCase() === PUBLIC_SITE_REPO) {
+    return { skipped: 'refusing to write the ledger to the public website repo' };
+  }
+  const current = await read(cfg);
+  const body = {
+    message: message || 'Update licence ledger',
+    content: Buffer.from(JSON.stringify(records, null, 2) + '\n', 'utf8')
+      .toString('base64'),
+    branch: cfg.branch
+  };
+  if (current.sha) body.sha = current.sha;
+  const w = await ghRequest(contentsUrl(cfg), cfg.token, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!w.ok) {
+    throw new Error(`Could not write the ledger (${w.status}): ` +
+                    ((w.body && w.body.message) || 'unknown error'));
+  }
+  return { ok: true };
+}
+
+module.exports = {
+  config, read, append, writeAll, publishRevoked, fingerprint, siteConfig
+};

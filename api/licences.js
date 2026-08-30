@@ -53,6 +53,8 @@ function decorate(rec) {
     plan: rec.plan || '',
     name: rec.name || '',
     key: rec.key || '',
+    revoked_at: rec.revoked_at || '',
+    revoked_reason: rec.revoked_reason || '',
     expires: expires,
     expires_iso: '',
     days_left: null,
@@ -136,6 +138,7 @@ module.exports = async (req, res) => {
       active: licences.filter(l => l.status === 'active').length,
       expiring: licences.filter(l => l.status === 'expiring').length,
       expired: licences.filter(l => l.status === 'expired').length,
+      revoked: licences.filter(l => l.revoked_at).length,
       perpetual: licences.filter(l => l.status === 'perpetual').length
     },
     source: `${cfg.owner}/${cfg.repo}/${cfg.path}`,
