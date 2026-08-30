@@ -41,6 +41,19 @@
       letter-spacing: -0.02em;
       margin-bottom: 0.6rem;
     }
+    /* The lockup was rendered on black, which is what this page already
+       is, so it sits on the banner with no plate behind it. Height is
+       capped rather than width: the artwork is nearly square, and sizing
+       a square logo by width makes it tower over the copy on a phone. */
+    .page-banner h1.brand-lockup {
+      margin: 0 0 0.4rem;
+      line-height: 0;
+    }
+    .page-banner h1.brand-lockup img {
+      height: clamp(150px, 26vw, 260px);
+      width: auto;
+      max-width: 100%;
+    }
     .page-banner .by {
       color: var(--text-secondary);
       font-size: 0.95rem;
@@ -308,7 +321,14 @@
   <header id="main-content" tabindex="-1" class="page-banner">
     <div class="container">
       <p class="eyebrow">BNBC 2020 Compliance for ETABS</p>
-      <h1>EtabsX</h1>
+      <!-- The lockup carries the name, so the h1 is the image rather than a
+           heading sitting next to a logo that repeats it. The alt text is
+           the heading for a screen reader and for the crawler. -->
+      <h1 class="brand-lockup">
+        <img src="assets/etabsx-lockup.png"
+             alt="EtabsX — Analyze, Design, Innovate"
+             width="679" height="560" fetchpriority="high">
+      </h1>
       <p class="by">by TwinAnalytic</p>
     </div>
   </header>
