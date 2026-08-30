@@ -87,7 +87,18 @@ module.exports = async (req, res) => {
   }
 
   const passHash = (process.env.ADMIN_PASSCODE_HASH || '').trim().toLowerCase();
-  const seedB64 = (process.env.LICENCE_PRIVATE_KEY || '').trim();
+
+  /* Both spellings are accepted, deliberately.
+
+     This codebase spells it "licence" throughout — licence.py, licence_tool.py,
+     this file — but "license" is the American spelling and the default most
+     people type. The variable was set as LICENSE_PRIVATE_KEY and read as
+     LICENCE_PRIVATE_KEY, so it looked exactly like a variable that had never
+     been saved: the endpoint reported it missing while the dashboard showed it
+     present, and nothing connected the two. Reading both costs one `||` and
+     removes a failure that is invisible from either side on its own. */
+  const seedB64 = (process.env.LICENCE_PRIVATE_KEY ||
+                   process.env.LICENSE_PRIVATE_KEY || '').trim();
 
   if (!passHash) {
     return res.status(500).json({
@@ -96,9 +107,11 @@ module.exports = async (req, res) => {
   }
   if (!seedB64) {
     return res.status(500).json({
-      error: 'LICENCE_PRIVATE_KEY is not set. Run "python licence_tool.py ' +
-             'keygen", then paste the contents of licence_private.key into ' +
-             'the Vercel environment variable.'
+      error: 'LICENCE_PRIVATE_KEY is not set (LICENSE_PRIVATE_KEY with an S ' +
+             'is also accepted). Paste the contents of licence_private.key ' +
+             'into the Vercel environment variable, then redeploy. Do NOT run ' +
+             '"keygen" — that mints a NEW key and invalidates every licence ' +
+             'already issued against the public key inside the shipped .exe.'
     });
   }
 
