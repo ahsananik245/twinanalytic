@@ -1495,47 +1495,58 @@
              '>' + PLAN_LABELS[k] + '</option>';
     }).join('');
 
+    /* Class names here must match css/admin.css. They did not: this panel was
+       written against a-card-head, a-field-grid, a-hint, a-actions and
+       a-btn-primary, none of which exist, and the inputs carried no class at
+       all - so they rendered as raw browser controls while every other panel
+       looked designed. Nothing errors when a class is missing, which is why
+       it survived: the only symptom is that it looks wrong. */
     return '' +
-      '<div class="a-card">' +
-        '<div class="a-card-head"><i class="fa-solid fa-key"></i>' +
+      '<div class="a-card a-card-accent">' +
+        '<div class="a-card-title"><i class="fa-solid fa-key"></i>' +
           '<span>Issue a key</span></div>' +
-        '<div class="a-field-grid">' +
-          '<div class="a-field wide">' +
+        '<p class="a-card-desc">The signing key stays on the server. This page ' +
+          'never sees it.</p>' +
+        '<div class="a-grid">' +
+          '<div class="a-field is-wide">' +
             '<label for="lic-machine">Machine code</label>' +
-            '<input id="lic-machine" type="text" placeholder="ABCD-1234-EF56-7890" ' +
-              'autocomplete="off" spellcheck="false" style="text-transform:uppercase">' +
-            '<p class="a-hint">Copy it from what the customer sent. Retyping it ' +
-              'is how you issue a key that unlocks nobody’s computer.</p>' +
+            '<input id="lic-machine" class="a-input lic-mono" type="text" ' +
+              'placeholder="ABCD-1234-EF56-7890" autocomplete="off" ' +
+              'spellcheck="false">' +
+            '<p class="a-field-hint">Copy it from what the customer sent. ' +
+              'Retyping it is how you issue a key that unlocks nobody’s ' +
+              'computer.</p>' +
           '</div>' +
           '<div class="a-field">' +
             '<label for="lic-plan">Plan</label>' +
-            '<select id="lic-plan">' + opts + '</select>' +
+            '<select id="lic-plan" class="a-select">' + opts + '</select>' +
           '</div>' +
           '<div class="a-field">' +
-            '<label for="lic-name">Issued to <span class="a-opt">optional</span></label>' +
-            '<input id="lic-name" type="text" placeholder="Firm or engineer" autocomplete="off">' +
+            '<label for="lic-name">Issued to <span class="a-tag">optional</span></label>' +
+            '<input id="lic-name" class="a-input" type="text" ' +
+              'placeholder="Firm or engineer" autocomplete="off">' +
           '</div>' +
         '</div>' +
-        '<div class="a-actions">' +
-          '<button class="a-btn a-btn-primary" id="lic-issue">' +
+        '<div class="a-btn-row">' +
+          '<button class="a-btn a-btn-gold a-btn-block" id="lic-issue">' +
             '<i class="fa-solid fa-key"></i> Issue licence</button>' +
         '</div>' +
         '<div id="lic-out"></div>' +
       '</div>' +
 
       '<div class="a-card">' +
-        '<div class="a-card-head"><i class="fa-solid fa-circle-info"></i>' +
+        '<div class="a-card-title"><i class="fa-solid fa-circle-info"></i>' +
           '<span>Before you issue</span></div>' +
         '<ol class="a-steps">' +
           '<li>Confirm the bKash, Nagad or bank payment actually arrived. ' +
             'Nothing here checks that for you.</li>' +
           '<li>Paste the machine code exactly as the customer sent it. A key ' +
             'is bound to that one computer.</li>' +
-          '<li>Email the key back. They paste it into EtabsX and it keeps ' +
+          '<li>Send the key back. They paste it into EtabsX and it keeps ' +
             'working — same executable, no reinstall.</li>' +
         '</ol>' +
-        '<p class="a-hint">A term licence stops working when it expires, so a ' +
-          'renewal is simply a new key for the same machine.</p>' +
+        '<p class="a-field-hint">A term licence stops working when it expires, ' +
+          'so a renewal is simply a new key for the same machine.</p>' +
       '</div>';
   }
 
@@ -1550,8 +1561,11 @@
       var name = ($('#lic-name', root).value || '').trim();
 
       if (!/^[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}$/.test(machine)) {
-        out.innerHTML = '<p class="a-msg a-msg-bad">That is not a machine code. ' +
-          'It is sixteen hex characters in four groups, like ABCD-1234-EF56-7890.</p>';
+        out.innerHTML = '';
+        toast('That is not a machine code. It is sixteen hex characters in ' +
+              'four groups, like ABCD-1234-EF56-7890.', 'error', 7000);
+        var mf = $('#lic-machine', root);
+        if (mf) mf.focus();
         return;
       }
 
@@ -1560,13 +1574,14 @@
          not exist, so every request would have come back "Wrong passcode". */
       var key = sessionKey();
       if (!key) {
-        out.innerHTML = '<p class="a-msg a-msg-bad">Your session has no ' +
-          'passcode. Sign in again.</p>';
+        toast('Your session has no passcode. Lock the panel and sign in again.',
+              'error', 7000);
         return;
       }
 
       btn.disabled = true;
-      out.innerHTML = '<p class="a-msg">Signing…</p>';
+      out.innerHTML = '<p class="lic-wait"><i class="fa-solid fa-circle-notch ' +
+        'fa-spin"></i> Signing…</p>';
 
       fetch('/api/licence', {
         method: 'POST',
@@ -1579,35 +1594,59 @@
       }).then(function (res) {
         btn.disabled = false;
         if (!res.ok) {
-          out.innerHTML = '<p class="a-msg a-msg-bad">' +
-            esc(res.j.error || 'Could not issue the licence.') + '</p>';
+          out.innerHTML = '';
+          toast(res.j.error || 'Could not issue the licence.', 'error', 9000);
           return;
         }
+        /* The key is the deliverable, so it gets the weight: a gold-edged
+           block, the facts as a small header, and the key itself in mono at
+           a size you can actually read back over a phone. */
         out.innerHTML =
-          '<p class="a-msg a-msg-good">Issued — ' + esc(res.j.plan) +
-            ', expires ' + esc(res.j.expires) + '.</p>' +
-          '<div class="a-field wide" style="margin-top:0.8rem;">' +
-            '<label for="lic-key">Licence key — send this to the customer</label>' +
-            '<textarea id="lic-key" rows="4" readonly ' +
-              'style="font-family:var(--font-mono);font-size:0.78rem;' +
-              'word-break:break-all;">' + esc(res.j.key) + '</textarea>' +
-          '</div>' +
-          '<div class="a-actions">' +
-            '<button class="a-btn" id="lic-copy"><i class="fa-solid fa-copy"></i> ' +
-              'Copy key</button></div>';
+          '<div class="lic-result">' +
+            '<div class="lic-result-head">' +
+              '<i class="fa-solid fa-circle-check"></i>' +
+              '<span>Licence issued</span>' +
+            '</div>' +
+            '<dl class="lic-meta">' +
+              '<div><dt>Plan</dt><dd>' + esc(res.j.plan) + '</dd></div>' +
+              '<div><dt>Expires</dt><dd>' + esc(res.j.expires) + '</dd></div>' +
+              '<div><dt>Machine</dt><dd class="lic-mono">' +
+                esc(res.j.machine) + '</dd></div>' +
+              (res.j.name
+                ? '<div><dt>Issued to</dt><dd>' + esc(res.j.name) + '</dd></div>'
+                : '') +
+            '</dl>' +
+            '<label class="a-label" for="lic-key">Send this key to the customer</label>' +
+            '<textarea id="lic-key" class="a-textarea lic-key" rows="4" readonly>' +
+              esc(res.j.key) + '</textarea>' +
+            '<div class="a-btn-row">' +
+              '<button class="a-btn a-btn-gold" id="lic-copy">' +
+                '<i class="fa-solid fa-copy"></i> Copy key</button>' +
+            '</div>' +
+          '</div>';
+        toast('Licence issued — ' + res.j.plan + ', expires ' + res.j.expires,
+              'success', 6000);
         var copy = $('#lic-copy', root);
         if (copy) {
           copy.addEventListener('click', function () {
             var ta = $('#lic-key', root);
             ta.select();
             try { document.execCommand('copy'); } catch (e) { }
-            if (navigator.clipboard) navigator.clipboard.writeText(ta.value).catch(function () { });
+            if (navigator.clipboard) {
+              navigator.clipboard.writeText(ta.value).catch(function () { });
+            }
             copy.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+            // Back to the original label, so a second key can be copied
+            // without wondering whether the button still works.
+            setTimeout(function () {
+              copy.innerHTML = '<i class="fa-solid fa-copy"></i> Copy key';
+            }, 2200);
           });
         }
       }).catch(function (e) {
         btn.disabled = false;
-        out.innerHTML = '<p class="a-msg a-msg-bad">' + esc(String(e.message || e)) + '</p>';
+        out.innerHTML = '';
+        toast(String(e.message || e), 'error', 9000);
       });
     });
   }
