@@ -1,0 +1,8 @@
+{
+  "_comment": "Read by EtabsX on launch to tell the user a newer build exists. Update 'built' and 'version' when you publish a release; 'built' must match the BUILT line Release.py writes into build_info.py.",
+  "version": "2.0",
+  "built": "2026-08-27 21:37:15",
+  "commit": "6905dc7",
+  "notes": "Thirty-day trial, and licence keys that carry an expiry.",
+  "download": "https://twinanalytic.com/etabsx"
+}
