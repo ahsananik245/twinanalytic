@@ -589,9 +589,39 @@
       var tpl = TEMPLATES[name];
       if (!tpl) return;
       var html = tpl(c, arg);
-      // An empty render usually means "no data yet" — keep the fallback markup
-      // rather than leaving a blank hole in the page.
-      if (html && html.trim()) el.innerHTML = html;
+      if (html && html.trim()) { el.innerHTML = html; return; }
+
+      // Nothing rendered. That means one of two very different things, and
+      // treating them the same is how a deleted team member stayed on the
+      // live site: the panel published team:[] correctly, the page rendered
+      // nothing, and the hardcoded fallback — a full profile of a real
+      // person — was kept as though the data had simply failed to load.
+      //
+      //   the key is MISSING      content.json is absent, stale or broken.
+      //                           Keep the fallback; a blank page is worse.
+      //   the key is an EMPTY []  somebody deleted every entry on purpose.
+      //                           The fallback must not outlive that.
+      //
+      // Which of those should win is a property of the MARKUP, not the data.
+      // The projects and blog fallbacks are honest empty states — "case
+      // studies will be published here" — and clearing them would replace a
+      // useful sentence with a hole. The team fallback is a person. So the
+      // container says what it wants with data-tw-empty:
+      //
+      //   (absent)  keep the fallback, as before
+      //   "clear"   empty the container
+      //   "hide"    hide the whole section it sits in
+      var explicitlyEmpty = Array.isArray(get(c, name)) &&
+                            get(c, name).length === 0;
+      if (!explicitlyEmpty) return;
+
+      var mode = el.getAttribute('data-tw-empty');
+      if (mode === 'clear') {
+        el.innerHTML = '';
+      } else if (mode === 'hide') {
+        var host = el.closest ? el.closest('section') : null;
+        (host || el).style.display = 'none';
+      }
     });
   }
 
