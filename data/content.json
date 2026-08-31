@@ -1,7 +1,7 @@
 {
   "_meta": {
     "schemaVersion": 1,
-    "updatedAt": "2026-08-20T18:00:39.992Z",
+    "updatedAt": "2026-08-31T04:16:40.108Z",
     "note": "Single source of truth for all editable TwinAnalytic site content. Edit via /admin.html - do not hand-edit unless you know the schema."
   },
   "site": {
@@ -374,19 +374,7 @@
       "enabled": true
     }
   ],
-  "team": [
-    {
-      "name": "MD. Ahsan Habib Anik",
-      "role": "Founder & CEO",
-      "photo": "assets/team_ceo.jpg",
-      "qualification": "B.Sc. in Civil Engineering (Structural)",
-      "experience": "Founder of TwinAnalytic, building hands-on experience in structural design, BIM coordination, and digital twin workflows.",
-      "expertise": "Structural Engineering, BIM Coordination, Digital Twins",
-      "linkedin": "https://linkedin.com/company/twinanalytic",
-      "twitter": "",
-      "enabled": true
-    }
-  ],
+  "team": [],
   "projects": [],
   "projectsPage": {
     "emptyHeading": "Case Studies in Preparation",
