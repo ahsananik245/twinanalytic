@@ -1,8 +1,8 @@
 {
   "_comment": "Read by EtabsX on launch to tell the user a newer build exists. Update 'built' and 'version' when you publish a release; 'built' must match the BUILT line Release.py writes into build_info.py. Release.py prints this block ready to paste.",
-  "version": "2.0",
-  "built": "2026-08-31 00:47:01",
-  "commit": "21494e9",
-  "notes": "One build: 30 days free on each computer, then a licence key unlocks the same program in place.",
+  "version": "2.0.1",
+  "built": "2026-08-31 09:13:33",
+  "commit": "6e419d2",
+  "notes": "Cancelled keys are now noticed, the licence panel is legible, and the real EtabsX logo is used throughout.",
   "download": "https://github.com/ahsananik245/etabsx-releases/releases/latest/download/EtabsX.exe"
 }

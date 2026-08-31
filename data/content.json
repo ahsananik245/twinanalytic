@@ -248,6 +248,9 @@
       "heading": "Latest Technical R&D",
       "desc": "Read detailed design breakdowns, BIM methodology workflows, and software integration strategies.",
       "emptyMessage": "Technical articles and R&D breakdowns coming soon."
+    },
+    "etabsxSection": {
+      "enabled": true
     }
   },
   "services": [

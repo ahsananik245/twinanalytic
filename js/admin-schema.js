@@ -256,6 +256,11 @@ window.ADMIN_SCHEMA = {
           { key: 'ctaLabel', label: 'Button Label', type: 'text' },
           { key: 'ctaHref', label: 'Button Link', type: 'text' }
         ]},
+        { title: 'EtabsX Section', icon: 'fa-solid fa-cubes', path: 'home.etabsxSection',
+          desc: 'The band promoting EtabsX, sitting after the free calculators because that is the funnel: a free tool checks one member, EtabsX checks the whole model. The copy is in the page itself; this only turns the band on or off.',
+          fields: [
+          { key: 'enabled', label: 'Show this section', type: 'toggle', wide: true }
+        ]},
         { title: 'Tools & Standards (now on the About page)', icon: 'fa-solid fa-microchip', path: 'home.technologySection',
           desc: 'This band was moved off the home page to shorten it. The copy still lives here; it renders on About.',
           fields: [
