@@ -164,6 +164,13 @@
       justify-content: center; margin-top: 1rem;
     }
     .ord-send { display: inline-flex; align-items: center; gap: 0.5rem; }
+    /* Off-screen rather than display:none — some bots skip hidden
+       fields but happily fill ones that are merely positioned away. */
+    .ord-tick.ord-warn { color: #E0A030; }
+    .ord-hp {
+      position: absolute; left: -9999px; width: 1px; height: 1px;
+      overflow: hidden;
+    }
 
     /* Set the way the lockup sets its tagline, because it sits directly
        under it: uppercase, mono, widely tracked. Measured off the artwork —
@@ -768,6 +775,23 @@
               <label for="ord-phone">Phone / WhatsApp <span class="ord-opt">optional</span></label>
               <input id="ord-phone" type="tel" autocomplete="tel"
                      placeholder="01XXXXXXXXX">
+            </div>
+            <div class="ord-field">
+              <label for="ord-pay">How you would like to pay</label>
+              <select id="ord-pay">
+                <option value="bkash">bKash</option>
+                <option value="nagad">Nagad</option>
+                <option value="bank">Bank transfer</option>
+                <option value="unsure" selected>Whichever is easiest — advise me</option>
+              </select>
+              <p class="ord-hint">We reply with the details for whichever you
+                pick. Nothing is charged here.</p>
+            </div>
+            <!-- Honeypot. Hidden from people, irresistible to bots; anything
+                 typed here means the submission is discarded server-side. -->
+            <div class="ord-hp" aria-hidden="true">
+              <label for="ord-website">Leave this empty</label>
+              <input id="ord-website" type="text" tabindex="-1" autocomplete="off">
             </div>
             <div class="ord-field ord-wide">
               <label for="ord-note">Anything else <span class="ord-opt">optional</span></label>

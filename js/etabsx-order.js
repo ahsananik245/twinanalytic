@@ -90,15 +90,23 @@
     return !msg;
   }
 
+  var PAY_LABELS = {
+    bkash: 'bKash', nagad: 'Nagad', bank: 'Bank transfer',
+    unsure: 'whichever is easiest'
+  };
+
   function collect(form) {
+    var hp = $('#ord-website', form);
     return {
       machine: ($('#ord-machine', form).value || '').trim().toUpperCase(),
       plan: $('#ord-plan', form).value,
+      pay: ($('#ord-pay', form) || {}).value || 'unsure',
       name: ($('#ord-name', form).value || '').trim(),
       firm: ($('#ord-firm', form).value || '').trim(),
       email: ($('#ord-email', form).value || '').trim(),
       phone: ($('#ord-phone', form).value || '').trim(),
-      note: ($('#ord-note', form).value || '').trim()
+      note: ($('#ord-note', form).value || '').trim(),
+      website: hp ? hp.value : ''
     };
   }
 
@@ -126,6 +134,7 @@
     return 'EtabsX licence request\n\n' +
       'Machine code: ' + d.machine + '\n' +
       'Plan: ' + (PLANS[d.plan] || d.plan) + '\n' +
+      'Pay by: ' + (PAY_LABELS[d.pay] || d.pay) + '\n' +
       'Name: ' + d.name + '\n' +
       (d.firm ? 'Firm: ' + d.firm + '\n' : '') +
       'Email: ' + d.email + '\n' +
@@ -173,7 +182,11 @@
     return lead;
   }
 
-  function success(form, d) {
+  /* `stored` is what the server actually confirmed, not what we hope.
+     Getting this wrong is the whole reason this rewrite exists: the old
+     form told every customer "Request received" while the endpoint behind
+     it answered 405 and kept nothing. */
+  function success(form, d, stored) {
     var c = contact();
     var msg = encodeURIComponent(messageText(d));
     var wa = c.whatsapp
@@ -185,23 +198,31 @@
       '?subject=' + encodeURIComponent('EtabsX licence — ' + d.machine) +
       '&body=' + msg + '"><i class="fa-solid fa-envelope"></i> Send by email</a>';
 
-    form.parentNode.setAttribute('aria-live', 'polite');
-    form.parentNode.innerHTML =
-      '<div class="ord-done">' +
-        '<div class="ord-tick"><i class="fa-solid fa-circle-check"></i></div>' +
+    var payWord = PAY_LABELS[d.pay] || 'bKash, Nagad or bank transfer';
+    var head = stored
+      ? '<div class="ord-tick"><i class="fa-solid fa-circle-check"></i></div>' +
         '<h3>Request received</h3>' +
         '<p>We have your machine code <strong class="ord-mono">' +
           esc(d.machine) + '</strong> and will reply to <strong>' +
-          esc(d.email) + '</strong> with the payment details — bKash, Nagad ' +
-          'or bank transfer.</p>' +
-        '<p class="ord-sub">Once payment is confirmed you get a licence key. ' +
-          'Paste it into EtabsX and it carries on where it left off — same ' +
-          'program, no reinstall.</p>' +
-        /* The send buttons are the point of this screen, not decoration. A
-           form post through no-cors cannot be confirmed, so giving the
-           customer a way to send the same details themselves is what makes
-           the request reliable rather than hopeful. */
-        '<p class="ord-sub"><strong>To reach us faster, send it directly:</strong></p>' +
+          esc(d.email) + '</strong> with the ' + esc(payWord) + ' details.</p>'
+      /* Not stored. Saying "received" here would be a lie, and the customer
+         would wait for a reply that never comes. */
+      : '<div class="ord-tick ord-warn"><i class="fa-solid fa-triangle-exclamation"></i></div>' +
+        '<h3>Please send it directly</h3>' +
+        '<p>The form could not file your request just now. Nothing is lost — ' +
+          'send the same details with a button below and we will reply with ' +
+          'the ' + esc(payWord) + ' details.</p>';
+
+    form.parentNode.setAttribute('aria-live', 'polite');
+    form.parentNode.innerHTML =
+      '<div class="ord-done">' + head +
+        (stored
+          ? '<p class="ord-sub">Once payment is confirmed you get a licence ' +
+            'key. Paste it into EtabsX and it carries on where it left off — ' +
+            'same program, no reinstall.</p>' +
+            '<p class="ord-sub"><strong>To reach us faster, send it ' +
+            'directly:</strong></p>'
+          : '') +
         '<div class="ord-actions">' + wa + mail + '</div>' +
       '</div>';
   }
@@ -239,8 +260,37 @@
         if (bad) bad.focus();
         return;
       }
-      record(d);
-      success(form, d);
+      var btn = form.querySelector('.ord-submit');
+      var label = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Sending…';
+      }
+      record(d);            // local copy and the legacy sheet, best effort
+
+      /* Same origin, so the response is readable — unlike the old no-cors
+         post, which could not tell whether anything had arrived. The success
+         screen says which happened rather than assuming. */
+      fetch('/api/licence-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(d)
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; })
+          .then(function (j) { return { ok: r.ok, j: j }; });
+      }).then(function (res) {
+        if (!res.ok && res.j && res.j.error &&
+            /machine code|email|name is needed/i.test(res.j.error)) {
+          /* The server rejected a field the browser let through. Show it
+             rather than pretending the request was filed. */
+          if (btn) { btn.disabled = false; btn.innerHTML = label; }
+          fieldError($('#ord-machine', form), res.j.error);
+          return;
+        }
+        success(form, d, res.ok && res.j && res.j.stored === true);
+      }).catch(function () {
+        success(form, d, false);
+      });
     });
   }
 

@@ -94,7 +94,7 @@ async function read(cfg) {
   return { records, sha: r.body.sha || null };
 }
 
-async function append(record, cfg) {
+async function append(record, cfg, message) {
   cfg = cfg || config();
   if (!cfg.token) return { skipped: 'GITHUB_TOKEN is not set' };
 
@@ -107,7 +107,8 @@ async function append(record, cfg) {
   const current = await read(cfg);
   const records = current.records.concat([record]);
   const body = {
-    message: `Licence issued: ${record.machine} (${record.plan}, expires ${record.expires})`,
+    message: message ||
+      `Licence issued: ${record.machine} (${record.plan}, expires ${record.expires})`,
     content: Buffer.from(JSON.stringify(records, null, 2) + '\n', 'utf8')
       .toString('base64'),
     branch: cfg.branch
