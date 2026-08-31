@@ -505,7 +505,10 @@
             <li>Computes <strong>wind</strong> pressures and per-storey forces by the analytical procedure (Sec 2.4).</li>
             <li>Creates <strong>load patterns</strong>, area loads by storey, <strong>load combinations</strong> — strength, service, overstrength, serviceability — stiffness modifiers, the mass source, restraints, edge constraints and pier labels.</li>
             <li>Runs a <strong>10-point pre-analysis audit</strong>, then post-analysis irregularity, P-&Delta;, torsion and spectrum-scaling checks, and reports modal, drift, reaction and wall-share results.</li>
+            <li>Computes at-rest earth pressure on basement walls and writes it into the model as its own load pattern.</li>
+            <li>Runs the BNBC checklist as a worklist: every finding carries a <strong>Fix</strong> that applies the correction and re-runs it, and a <strong>Go</strong> that opens the tab owning the detailed check.</li>
             <li>Exports foundation reactions, a <strong>quantity take-off</strong>, a member schedule and a design-basis report, and saves your inputs to a reusable project file.</li>
+            <li>Produces <strong>AutoCAD DXF detail sheets with a bar bending schedule</strong> — A0 to A3, drawn 1:1 in millimetres, on separate concrete, rebar, link, dimension and schedule layers.</li>
           </ul>
         </div>
 
@@ -590,6 +593,60 @@
   </section>
 
   <!-- REQUIREMENTS -->
+  <!-- DETAILING
+       A whole tab, and the largest deliverable the program produces, was
+       missing from this page entirely. Everything stated here is checked
+       against detailing.py rather than written from the feature list. -->
+  <section class="section-padding" style="padding-top: 0;">
+    <div class="container">
+      <h2 class="section-head">Drawings, not just numbers</h2>
+      <p class="section-note">
+        The Detailing tab writes <strong>AutoCAD DXF sheets</strong> from the
+        results, with the bar bending schedule built as the drawings are
+        produced — so the schedule and the drawings cannot disagree with each
+        other.
+      </p>
+
+      <div class="check-cols">
+        <div class="check-col">
+          <h4>The sheets</h4>
+          <ul>
+            <li>A0, A1, A2 or A3<span>at the plot scale you choose</span></li>
+            <li>Drawn 1:1 in millimetres<span>the way a detailer expects to receive it</span></li>
+            <li>Text and title block scaled to plot<span>2.5&nbsp;mm type comes off the plotter at 2.5&nbsp;mm</span></li>
+            <li>Separate layers<span>concrete, rebar, links, dimensions, text, schedule</span></li>
+            <li>Title block with project, drawing and revision<span>not the tool's name and a .EDB filename</span></li>
+          </ul>
+        </div>
+        <div class="check-col">
+          <h4>The schedule</h4>
+          <ul>
+            <li>Bar mark, diameter, number, cut length, shape</li>
+            <li>Weight per row, and totals by diameter</li>
+            <li>Split by member family<span>beam, column, slab, wall</span></li>
+            <li>Built while the drawings are drawn<span>it cannot drift from what is detailed</span></li>
+          </ul>
+        </div>
+        <div class="check-col">
+          <h4>Detailed to the Code you actually build to</h4>
+          <ul>
+            <li>Tie spacing from the seismic detailing class<span>Sec 8.1.9 — ordinary, intermediate or special</span></li>
+            <li>135&deg; seismic hooks and cross-ties</li>
+            <li><strong>Brick aggregate: 1.5&times; the shrinkage and temperature steel</strong><span>Sec 8.1.11.2(b) — no ACI equivalent, and nothing in an ETABS model records which aggregate was specified</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="caveat">
+        <strong>The frame class is asked for, never guessed.</strong>
+        Whether a frame is ordinary, intermediate or special is a decision the
+        engineer makes, and until it is answered nothing is drawn. The same
+        applies to the aggregate: a slab detailed for stone when it is poured
+        in brick is short of steel, and no model file will tell you which it is.
+      </div>
+    </div>
+  </section>
+
   <section class="section-padding" style="padding-top: 0;">
     <div class="container">
       <div class="x-grid" style="margin-bottom: 0;">
