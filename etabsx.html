@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="css/style.css">
   <!-- Content engine: hydrates this page from data/content.json -->
   <script src="js/site-content.js"></script>
+  <script src="js/etabsx-order.js" defer></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     .page-banner {
@@ -84,6 +85,86 @@
     }
     .dl-note strong { color: #fff; font-weight: 500; }
     .dl-note a { color: var(--color-gold); }
+
+    /* Licence request form. Payment details are replied privately, so this
+       collects the one thing that actually has to be exact — the machine
+       code — plus who to reply to. */
+    .ord-card {
+      margin-top: 2.5rem;
+      border: 1px solid var(--border-gold);
+      border-top: 2px solid var(--color-gold);
+      border-radius: 10px;
+      padding: 2rem;
+      background: linear-gradient(180deg, rgba(201,168,76,0.05), rgba(255,255,255,0.01));
+    }
+    .ord-head {
+      font-family: var(--font-serif);
+      font-size: 1.5rem; font-weight: 400; color: #fff;
+      margin: 0 0 0.4rem;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .ord-head i { color: var(--color-gold); font-size: 1.05rem; }
+    .ord-intro { color: var(--text-secondary); margin: 0 0 1.6rem; font-size: 0.95rem; }
+    .ord-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+      gap: 1.1rem;
+      margin-bottom: 1.5rem;
+    }
+    .ord-field { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+    .ord-wide { grid-column: 1 / -1; }
+    .ord-field label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--text-secondary);
+    }
+    .ord-req, .ord-opt {
+      font-size: 0.62rem; letter-spacing: 0.06em; padding: 0.05em 0.4em;
+      border-radius: 3px; margin-left: 0.35rem;
+    }
+    .ord-req { color: var(--color-gold); border: 1px solid rgba(201,168,76,0.35); }
+    .ord-opt { color: #6b7280; border: 1px solid rgba(255,255,255,0.09); }
+    .ord-card input, .ord-card select, .ord-card textarea {
+      width: 100%;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 6px;
+      padding: 0.7rem 0.85rem;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.95rem;
+    }
+    #ord-machine {
+      font-family: var(--font-mono);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .ord-card input:focus, .ord-card select:focus, .ord-card textarea:focus {
+      outline: 2px solid var(--color-gold);
+      outline-offset: 1px;
+      border-color: transparent;
+    }
+    .ord-card input.is-bad, .ord-card textarea.is-bad { border-color: #F0505A; }
+    .ord-hint { font-size: 0.76rem; color: #6b7280; line-height: 1.6; margin: 0; text-wrap: pretty; }
+    .ord-err { font-size: 0.76rem; color: #F0505A; margin: 0; line-height: 1.5; }
+    .ord-submit { display: inline-flex; align-items: center; gap: 0.55rem; }
+
+    .ord-done { text-align: center; padding: 1rem 0.5rem; }
+    .ord-tick { font-size: 2.6rem; color: var(--color-gold); margin-bottom: 1rem; }
+    .ord-done h3 {
+      font-family: var(--font-serif); font-weight: 400; color: #fff;
+      font-size: 1.6rem; margin: 0 0 0.9rem;
+    }
+    .ord-done p { color: var(--text-secondary); line-height: 1.8; max-width: 52ch; margin: 0 auto 0.9rem; }
+    .ord-done strong { color: #fff; }
+    .ord-mono { font-family: var(--font-mono); letter-spacing: 0.08em; }
+    .ord-sub { font-size: 0.9rem; }
+    .ord-actions {
+      display: flex; flex-wrap: wrap; gap: 0.7rem;
+      justify-content: center; margin-top: 1rem;
+    }
+    .ord-send { display: inline-flex; align-items: center; gap: 0.5rem; }
+
     /* Set the way the lockup sets its tagline, because it sits directly
        under it: uppercase, mono, widely tracked. Measured off the artwork —
        the tagline's letter gaps are 0.65x its cap height, which is about
@@ -623,24 +704,82 @@
       <h2 class="section-head">How to buy</h2>
       <p class="section-note">
         Payment by bKash, Nagad or bank transfer. No card needed.
+        Send your machine code below and we reply with the account details.
       </p>
       <div class="buy-steps">
         <div class="buy-step">
           <span class="n">1</span>
-          <p><strong>Send the machine code</strong>Open EtabsX, copy the machine
-             code it shows, and email it with the plan you want.</p>
+          <p><strong>Send your machine code</strong>Open EtabsX, copy the
+             machine code it shows, and send it with the form below.</p>
         </div>
         <div class="buy-step">
           <span class="n">2</span>
-          <p><strong>Pay and send the reference</strong>bKash, Nagad or bank
-             transfer. Reply with the transaction ID.</p>
+          <p><strong>We reply with the details</strong>bKash, Nagad or bank
+             transfer. Pay and send back the transaction ID.</p>
         </div>
         <div class="buy-step">
           <span class="n">3</span>
-          <p><strong>Paste the key</strong>You get a licence key by email. Paste
-             it into EtabsX and it keeps working — same executable, no
-             reinstall.</p>
+          <p><strong>Paste the key</strong>You get a licence key. Paste it into
+             EtabsX and it keeps working — same executable, no reinstall.</p>
         </div>
+      </div>
+
+      <!-- The order form. The page used to say "email the machine code" and
+           then print no address, no bKash number and no bank account, so a
+           customer who wanted to pay had nowhere to go. Account details are
+           replied privately rather than published: a number on a public page
+           is an invitation to anyone with a screenshot generator. -->
+      <div class="ord-card">
+        <h3 class="ord-head"><i class="fa-solid fa-key" aria-hidden="true"></i>
+          Request a licence</h3>
+        <p class="ord-intro">
+          Takes a minute. We reply with the payment details, usually the same
+          day.
+        </p>
+        <form id="etabsx-order" novalidate>
+          <div class="ord-grid">
+            <div class="ord-field ord-wide">
+              <label for="ord-machine">Machine code <span class="ord-req">required</span></label>
+              <input id="ord-machine" type="text" inputmode="text"
+                     placeholder="ABCD-1234-EF56-7890" autocomplete="off"
+                     spellcheck="false" maxlength="19">
+              <p class="ord-hint">In EtabsX, the sidebar shows it, and so does
+                the licence dialog. A key only unlocks the computer this code
+                belongs to — copy it, do not retype it.</p>
+            </div>
+            <div class="ord-field">
+              <label for="ord-plan">Plan</label>
+              <select id="ord-plan"></select>
+            </div>
+            <div class="ord-field">
+              <label for="ord-name">Your name <span class="ord-req">required</span></label>
+              <input id="ord-name" type="text" autocomplete="name">
+            </div>
+            <div class="ord-field">
+              <label for="ord-firm">Firm <span class="ord-opt">optional</span></label>
+              <input id="ord-firm" type="text" autocomplete="organization">
+            </div>
+            <div class="ord-field">
+              <label for="ord-email">Email <span class="ord-req">required</span></label>
+              <input id="ord-email" type="email" autocomplete="email"
+                     placeholder="you@firm.com">
+            </div>
+            <div class="ord-field">
+              <label for="ord-phone">Phone / WhatsApp <span class="ord-opt">optional</span></label>
+              <input id="ord-phone" type="tel" autocomplete="tel"
+                     placeholder="01XXXXXXXXX">
+            </div>
+            <div class="ord-field ord-wide">
+              <label for="ord-note">Anything else <span class="ord-opt">optional</span></label>
+              <textarea id="ord-note" rows="3"
+                        placeholder="Number of machines, invoicing details, a question…"></textarea>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-gold ord-submit">
+            <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+            Request a licence
+          </button>
+        </form>
       </div>
 
       <div class="caveat" style="margin-top:2.2rem;">
