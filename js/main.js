@@ -316,8 +316,30 @@ function initSite() {
         });
         localStorage.setItem('tools_leads', JSON.stringify(leads));
         
-        // Mirror the submission to the configured Google Apps Script endpoint
-        // so contact leads land in the same sheet as calculator leads.
+        // Store the enquiry where it can actually be read back.
+        //
+        // This used to post ONLY to the Apps Script endpoint, with no-cors.
+        // That endpoint answers GET with 200 and POST with 405 - it has no
+        // doPost - so every enquiry the site ever took was discarded, and
+        // no-cors meant the browser could not see the rejection. Visitors
+        // read "Proposal Received" and nothing arrived.
+        fetch('/api/lead', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            kind: 'contact',
+            name: nameInput.value.trim(),
+            email: emailInput.value.trim(),
+            phone: phoneInput ? phoneInput.value.trim() : '',
+            subject: scopeLabel,
+            location: locationText,
+            message: msgInput.value.trim()
+          })
+        }).catch(() => { /* the local copy below is still kept */ });
+
+        // The Apps Script post is kept as a best-effort mirror, so leads
+        // also reach the sheet if that endpoint is ever repaired. Nothing
+        // depends on it.
         const endpoint = window.TW_GOOGLE_SCRIPT_URL;
         if (endpoint) {
           fetch(endpoint, {
@@ -325,7 +347,7 @@ function initSite() {
             mode: 'no-cors',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(leads[leads.length - 1])
-          }).catch(() => { /* logging is best-effort; the local copy is authoritative */ });
+          }).catch(() => { /* best effort */ });
         }
 
         // Success feedback — copy is admin-editable via data/content.json.

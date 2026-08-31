@@ -601,13 +601,32 @@ function handleAuthSubmit(event) {
       };
 
   // 4. API Posting block
+  //
+  // Store it where it can be read back. The Apps Script endpoint below
+  // answers GET with 200 and POST with 405 - it has no doPost - so every
+  // calculator lead the site has taken was discarded, and no-cors meant
+  // nothing could see it happening.
+  fetch('/api/lead', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      kind: 'calculator',
+      name: payload.name || '',
+      email: payload.email || '',
+      phone: payload.phone || '',
+      subject: payload.calcType || '',
+      location: payload.location || ''
+    })
+  }).catch(() => { /* the unlock below must not depend on this */ });
+
   const googleScriptUrl = GOOGLE_SCRIPT_URL;
   if (!googleScriptUrl || googleScriptUrl === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL") {
-    console.warn("Google Sheets Apps Script URL not configured. Logging locally.");
     setTimeout(completeUnlock, 1000); // Simulate smooth network latency
     return;
   }
 
+  // Best-effort mirror, so leads also reach the sheet if that endpoint is
+  // ever repaired. Nothing depends on it.
   fetch(googleScriptUrl, {
     method: 'POST',
     mode: 'no-cors', // standard way to post to Apps Script redirect URLs

@@ -28,6 +28,7 @@
    ========================================================================== */
 
 const store = require('./_licence-store');
+const { notify } = require('./_notify');
 
 const MACHINE_RE = /^[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}$/;
 const PLANS = ['project', 'quarterly', 'annual', 'perpetual', 'academic',
@@ -139,5 +140,28 @@ module.exports = async (req, res) => {
     return res.status(502).json({ error: e.message, stored: false });
   }
 
-  return res.status(200).json({ ok: true, stored: true, machine });
+  /* Tell someone, now. The record is already written, so this cannot fail
+     the request - a customer must never be told their request failed
+     because a notification did not send. What it CAN do is report that it
+     was not sent, which is how a silent misconfiguration gets noticed
+     instead of quietly costing sales. */
+  const PAY_LABEL = { bkash: 'bKash', nagad: 'Nagad', bank: 'Bank transfer',
+                      unsure: 'not decided' };
+  const note = await notify(
+    `EtabsX licence request - ${record.name}`,
+    [
+      `Machine   ${record.machine}`,
+      `Plan      ${record.plan}`,
+      `Pay by    ${PAY_LABEL[record.pay] || record.pay}`,
+      `Name      ${record.name}`,
+      record.firm ? `Firm      ${record.firm}` : '',
+      `Email     ${record.email}`,
+      record.phone ? `Phone     ${record.phone}` : '',
+      record.note ? `\nNote: ${record.note}` : '',
+      '',
+      'Issue the key at https://twinanalytic.com/admin -> Licences'
+    ].filter(Boolean).join('\n'));
+
+  return res.status(200).json({ ok: true, stored: true, machine,
+                                notified: note.sent });
 };
