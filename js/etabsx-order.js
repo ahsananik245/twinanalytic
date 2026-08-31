@@ -45,15 +45,35 @@
     });
   }
 
+  /* wa.me needs the country code and nothing else — no +, no spaces, no
+     leading zero. A Bangladeshi number is written 01887952382 in every other
+     context, so that is what will eventually get typed into the admin field,
+     and wa.me silently rejects it.
+
+     Rather than depend on whoever edits it remembering, an 11-digit number
+     beginning 01 is converted. Anything already carrying a country code is
+     left alone. */
+  function waNumber(raw) {
+    var d = String(raw || '').replace(/[^\d]/g, '');
+    if (!d) return '';
+    if (d.length === 11 && d.slice(0, 2) === '01') return '880' + d.slice(1);
+    if (d.length === 10 && d[0] === '1') return '880' + d;   // leading 0 dropped
+    return d;
+  }
+
   /* Contact details come from data/content.json so they stay editable in the
-     admin panel. A WhatsApp number is offered only if one is actually set —
-     a dead button is worse than none. */
+     admin panel. The WhatsApp button is rendered only if a number is set — a
+     dead button is worse than none.
+
+     This is the ONLY place on the site that reads it, and this script loads
+     only on etabsx.html, so the number appears on the EtabsX page and
+     nowhere else. */
   function contact() {
     var c = (window.TWContent && window.TWContent.get &&
              window.TWContent.get('contact')) || {};
     return {
       email: (c.email || 'solutions@twinanalytic.com').trim(),
-      whatsapp: String(c.whatsapp || '').replace(/[^\d]/g, '')
+      whatsapp: waNumber(c.whatsapp)
     };
   }
 

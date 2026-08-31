@@ -534,8 +534,8 @@ window.ADMIN_SCHEMA = {
           fields: [
             { key: 'email', label: 'Public Email', type: 'email' },
             { key: 'phone', label: 'Public Phone', type: 'text' },
-            { key: 'whatsapp', label: 'WhatsApp Number', type: 'text',
-              hint: 'Country code, digits only — e.g. 8801XXXXXXXXX. Used by the EtabsX licence form to offer a “Send on WhatsApp” button. Leave blank to hide it.' },
+            { key: 'whatsapp', label: 'WhatsApp (EtabsX page only)', type: 'text',
+              hint: 'Shown ONLY on the EtabsX page, as a “Send on WhatsApp” button on the licence request form. Not used anywhere else on the site. Either 01887952382 or 8801887952382 works. Leave blank to hide the button.' },
             { key: 'emailLabel', label: 'Email Row Heading', type: 'text' },
             { key: 'phoneLabel', label: 'Phone Row Heading', type: 'text' },
             { key: 'address', label: 'Office Address', type: 'textarea', wide: true, hint: 'Leave blank to hide.' }
