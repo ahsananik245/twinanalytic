@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/favicon.png">
+  <link rel="shortcut icon" href="favicon.ico">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0A0A0A">
+  <title>Choosing R in BNBC 2020 &mdash; Why a Lower R Is Not Automatically Safer</title>
+  <meta name="description" content="BNBC 2020 Table 6.2.19: the R, Omega0 and Cd triplet, the height limits, and why an ordinary RC moment frame in SDC C or D is not a conservative choice but a forbidden one.">
+  <link rel="canonical" href="https://twinanalytic.com/bnbc-response-reduction-factor">
+
+  <!-- Open Graph / social sharing -->
+  <meta property="og:title" content="Choosing R in BNBC 2020 &mdash; Why a Lower R Is Not Automatically Safer" />
+  <meta property="og:description" content="BNBC 2020 Table 6.2.19: the R, Omega0 and Cd triplet, the height limits, and why an ordinary RC moment frame in SDC C or D is not a conservative choice but a forbidden one." />
+  <meta property="og:image" content="https://twinanalytic.com/assets/brand-banner.jpg" />
+  <meta property="og:url" content="https://twinanalytic.com/bnbc-response-reduction-factor" />
+  <meta property="og:type" content="article" />
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://twinanalytic.com/assets/brand-banner.jpg">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Content engine: hydrates this page from data/content.json -->
+  <script src="js/site-content.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .page-banner {
+      padding: 10rem 0 4rem 0;
+      background: radial-gradient(circle at 10% 20%, rgba(13, 17, 23, 0.95) 0%, rgba(10, 10, 10, 0.98) 90%),
+                  repeating-linear-gradient(45deg, rgba(201, 168, 76, 0.03) 0px, rgba(201, 168, 76, 0.03) 2px, transparent 2px, transparent 10px);
+      border-bottom: 1px solid var(--border-gold);
+      text-align: center;
+    }
+    .page-banner h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(2.1rem, 5vw, 3.5rem);
+      font-weight: 300; letter-spacing: -0.02em; margin-bottom: 1rem;
+    }
+    .page-banner p {
+      color: var(--color-gold); font-family: var(--font-mono);
+      font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.2em;
+    }
+    .we-section { padding: 4rem 0 6rem 0; }
+    .we-wrap { max-width: 900px; margin: 0 auto; }
+    .we-wrap h2 {
+      font-family: var(--font-serif); font-weight: 400;
+      font-size: clamp(1.5rem, 3vw, 2rem); color: #fff;
+      margin: 3.5rem 0 0.4rem; scroll-margin-top: 6rem;
+    }
+    .we-wrap h2 .we-num {
+      font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-gold);
+      display: block; letter-spacing: 0.18em; margin-bottom: 0.5rem;
+    }
+    .we-wrap h3 {
+      font-family: var(--font-sans); font-weight: 600; font-size: 1rem;
+      color: var(--color-steel); margin: 2rem 0 0.75rem; letter-spacing: 0.01em;
+    }
+    .we-wrap p, .we-wrap li { color: var(--text-secondary); line-height: 1.75; }
+    .we-wrap p { margin-bottom: 1.1rem; }
+    .we-wrap ul { margin: 0 0 1.2rem 1.3rem; list-style: disc; }
+    .we-wrap li { margin-bottom: 0.45rem; }
+    .we-lede { font-size: 1.05rem; }
+    .we-note {
+      background: rgba(255,255,255,0.025); border-left: 3px solid var(--color-gold);
+      padding: 1.2rem 1.4rem; margin: 1.6rem 0; border-radius: 0 4px 4px 0;
+    }
+    .we-note p:last-child { margin-bottom: 0; }
+    .we-note strong { color: #fff; }
+    .we-tablewrap { overflow-x: auto; margin: 1.2rem 0 1.6rem; }
+    table.we-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 460px; }
+    table.we-table th, table.we-table td {
+      text-align: left; padding: 0.6rem 0.9rem;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    table.we-table th {
+      font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--color-gold); font-weight: 500;
+    }
+    table.we-table td { color: var(--text-secondary); }
+    table.we-table td.num { font-family: var(--font-mono); text-align: right; color: #fff; }
+    table.we-table tr.total td { border-top: 1px solid var(--border-gold); font-weight: 600; color: #fff; }
+    /* Each cell carries its own border rather than the grid faking one with a
+       1px gap over a light background — with six items in a five-column row
+       that left four empty lit cells trailing the last row. */
+    .we-result {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+      gap: 0.6rem; margin: 1.6rem 0;
+    }
+    .we-result div {
+      background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 4px; padding: 1.1rem 1.2rem;
+    }
+    .we-result span {
+      display: block; font-family: var(--font-mono); font-size: 0.68rem;
+      text-transform: uppercase; letter-spacing: 0.12em; color: var(--color-steel-dim, #7E8288);
+      margin-bottom: 0.35rem;
+    }
+    .we-result strong { font-family: var(--font-mono); font-size: 1.15rem; color: var(--color-gold); font-weight: 500; }
+    .we-repro { margin: 1.1rem 0 0; font-size: 0.86rem; }
+    .we-repro a { color: var(--color-gold); }
+    .we-toc {
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07);
+      padding: 1.4rem 1.6rem; border-radius: 4px; margin: 2rem 0 1rem;
+    }
+    .we-toc ol { margin: 0 0 0 1.1rem; }
+    .we-toc li { margin-bottom: 0.35rem; }
+    .we-toc a { color: var(--text-secondary); text-decoration: none; }
+    .we-toc a:hover { color: var(--color-gold); }
+    .we-cta {
+      margin-top: 3.5rem; padding: 2rem; border: 1px solid var(--border-gold);
+      border-radius: 4px; background: rgba(201,168,76,0.03);
+    }
+    .we-cta h3 { margin-top: 0; color: #fff; font-size: 1.2rem; font-family: var(--font-serif); font-weight: 400; }
+    @media (max-width: 640px) { .we-section { padding: 2.5rem 0 4rem; } }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": 'Choosing R in BNBC 2020 &mdash; Why a Lower R Is Not Automatically Safer',
+    "description": 'BNBC 2020 Table 6.2.19: the R, Omega0 and Cd triplet, the height limits, and why an ordinary RC moment frame in SDC C or D is not a conservative choice but a forbidden one.',
+    "author": { "@type": "Organization", "name": "TwinAnalytic" },
+    "publisher": {
+      "@type": "Organization",
+      "name": "TwinAnalytic",
+      "logo": { "@type": "ImageObject",
+                "url": "https://twinanalytic.com/assets/logo.png" }
+    },
+    "dateModified": "2026-08-31",
+    "mainEntityOfPage": "https://twinanalytic.com/bnbc-response-reduction-factor"
+  }
+  </script>
+</head>
+<body>
+
+  <a href="#main-content" class="skip-link">Skip to Main Content</a>
+
+  <!-- NAVIGATION BAR -->
+  <nav class="navbar scrolled" id="navbar">
+    <div class="container">
+      <a href="index.html" class="logo" data-tw-list="brandLogo">
+        <img src="assets/logo.png" alt="TwinAnalytic logo" height="38" style="height: 38px; width: auto; margin-right: 10px; vertical-align: middle;">
+        Twin<span>Analytic</span>
+      </a>
+      <ul class="nav-links" id="nav-links" data-tw-list="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="etabsx.html">EtabsX</a></li>
+        <li><a href="bim-viewer.html">BIM Viewer</a></li>
+        <li><a href="calculators.html">Calculators</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+
+
+  <header class="page-banner">
+    <div class="container">
+      <p class="eyebrow" style="color: var(--color-gold); font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 1rem;">BNBC 2020 &middot; Structural systems</p>
+      <h1>Choosing R, and why a lower one is not automatically safer</h1>
+    </div>
+  </header>
+
+  <main class="we-wrap" id="main-content" tabindex="-1">
+    <div class="container">
+      <p class="we-lede">Table 6.2.19 does not offer a factor to choose. It offers a system, its detailing, and the three numbers that come with it &mdash; and some of the low numbers are not permitted at all.</p>
+
+      <section class="we-section">
+        <h2>R is not a dial</h2>
+        <p>BNBC 2020 <strong>Table 6.2.19</strong> does not give you a
+        response reduction factor to choose. It gives you a
+        <strong>triplet</strong> &mdash; <em>R</em>, the overstrength factor
+        <em>&Omega;<sub>0</sub></em>, and the deflection amplification factor
+        <em>C<sub>d</sub></em> &mdash; attached to a named structural system
+        with named detailing requirements.</p>
+        <p>Taking <em>R</em> from one row and detailing to another is not a
+        conservative simplification. It is a different building from the one
+        the table describes.</p>
+      </section>
+
+      <section class="we-section">
+        <h2>The concrete rows engineers actually use</h2>
+        <p>NL means no height restriction; NP means the system is
+        <strong>not permitted</strong> in that Seismic Design Category.</p>
+        <div class="we-tablewrap">
+          <table class="we-table">
+            <thead><tr>
+              <th>System</th><th class="num">R</th>
+              <th class="num">&Omega;<sub>0</sub></th><th class="num">C<sub>d</sub></th>
+              <th>SDC B</th><th>SDC C</th><th>SDC D</th>
+            </tr></thead>
+            <tbody>
+              <tr><td>Special RC moment frames</td>
+                  <td class="num">8.0</td><td class="num">3.0</td><td class="num">5.5</td>
+                  <td>NL</td><td>NL</td><td>NL</td></tr>
+              <tr><td>Intermediate RC moment frames</td>
+                  <td class="num">5.0</td><td class="num">3.0</td><td class="num">4.5</td>
+                  <td>NL</td><td>NL</td><td><strong>NP</strong></td></tr>
+              <tr><td>Ordinary RC moment frames</td>
+                  <td class="num">3.0</td><td class="num">3.0</td><td class="num">2.5</td>
+                  <td>NL</td><td><strong>NP</strong></td><td><strong>NP</strong></td></tr>
+              <tr><td>Dual, special RC shear walls</td>
+                  <td class="num">7.0</td><td class="num">2.5</td><td class="num">5.5</td>
+                  <td>NL</td><td>NL</td><td>NL</td></tr>
+              <tr><td>Dual, ordinary RC shear walls</td>
+                  <td class="num">6.0</td><td class="num">2.5</td><td class="num">5.0</td>
+                  <td>NL</td><td>NL</td><td><strong>NP</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="we-section">
+        <h2>Why a lower R can be the wrong answer</h2>
+        <p>The instinct is reasonable: a lower <em>R</em> gives a higher base
+        shear, and a higher base shear feels safer. Read the table again.</p>
+        <div class="we-note">
+          An <strong>ordinary</strong> reinforced concrete moment frame is
+          <strong>NP in SDC C and SDC D</strong>. Choosing it there is not a
+          cautious choice of a smaller <em>R</em>. It is a system the Code
+          does not permit at all, and no amount of extra base shear makes it
+          permitted.
+        </div>
+        <p>The same trap sits one row down: a dual system with
+        <em>ordinary</em> RC shear walls is NP in SDC D, while the special
+        version has no height restriction anywhere. The lower number is the
+        forbidden one.</p>
+        <p>Our calculators enforce this rather than reporting it. Picking a
+        system that is NP for the Seismic Design Category is refused, because
+        printing a base shear for a building that cannot be built that way is
+        worse than printing nothing.</p>
+      </section>
+
+      <section class="we-section">
+        <h2>The dual-system condition</h2>
+        <p><strong>Table 6.2.19 note 2</strong>: in a dual system the moment
+        frames must be capable of resisting <strong>at least 25 per cent</strong>
+        of the design forces. A frame-and-wall building is not automatically a
+        dual system; it is one only if the frames carry their share.</p>
+        <p>This is checked after analysis, not assumed before it. If the walls
+        take 85 per cent of the storey shear, the <em>R</em> you assigned from
+        group D or E was never the right one.</p>
+        <div class="we-cta">
+          <a href="seismic-analysis.html" class="btn btn-gold">
+            <i class="fa-solid fa-calculator"></i> Open the seismic calculator</a>
+          <a href="etabsx.html" class="btn">Check a whole ETABS model</a>
+        </div>
+      </section>
+
+
+      <div class="we-note" style="margin-top: 2.5rem;">
+        <strong>Where this page and the printed Code disagree, the Code is
+        right.</strong> Every figure here is the value our own calculators
+        use, and each carries the clause it came from so you can check it
+        against your copy of BNBC 2020 Part 6. This is a reference for the
+        repetitive lookups, not a substitute for the engineer sealing the
+        drawing.
+      </div>
+    </div>
+  </main>
+
+<footer class="footer">
+    <div class="footer-top-gradient"></div>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col brand">
+          <h3 data-tw-list="brandFooter">Twin<span>Analytic</span></h3>
+          <p style="color: var(--color-gold); font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; margin-top: -0.5rem;" data-tw="site.tagline">Construction &amp; Engineering</p>
+          <p data-tw="site.footerBlurb">We combine engineering expertise with digital technologies to create safe, optimized, and reliable structures.</p>
+          <p class="footer-slogan" data-tw="site.slogan">Building Tomorrow, Together</p>
+          <div class="footer-socials" data-tw-list="footerSocials">
+            <a href="https://linkedin.com/company/twinanalytic" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
+          </div>
+        </div>
+        <div data-tw-list="footerColumns" style="display: contents;">
+        <div class="footer-col">
+          <h3>Services</h3>
+          <ul class="footer-links">
+            <li><a href="services.html#structural">Structural Engineering</a></li>
+            <li><a href="services.html#bim">BIM &amp; Digital Engineering</a></li>
+            <li><a href="services.html#support">Construction Support</a></li>
+            <li><a href="services.html#consultancy">Engineering Consultancy</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Load Analysis</h3>
+          <ul class="footer-links">
+            <li><a href="seismic-analysis.html">Seismic Base Shear</a></li>
+            <li><a href="wind-load.html">Wind Load (MWFRS)</a></li>
+            <li><a href="drift-check.html">Drift &amp; Sway Check</a></li>
+            <li><a href="p-delta-check.html">P-Delta Stability</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Member Design</h3>
+          <ul class="footer-links">
+            <li><a href="beam-design.html">RC Beam Design</a></li>
+            <li><a href="column-design.html">RC Column Design</a></li>
+            <li><a href="slab-design.html">RC Slab Design</a></li>
+            <li><a href="stair-design.html">RC Stair Design</a></li>
+            <li><a href="calculators.html">All 26 Calculators</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Navigation</h3>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="projects.html">Projects</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p data-tw="site.copyright">&copy; 2026 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
+        <div class="footer-bottom-links" data-tw-list="footerBottomLinks">
+          <a href="privacy.html">Privacy Protocol</a>
+          <a href="sitemap.html">Sitemap</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
+
+</body>
+</html>

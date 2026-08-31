@@ -409,7 +409,32 @@
     }
   ],
   "testimonials": [],
-  "blog": [],
+  "blog": [
+    {
+      "title": "Seismic zone coefficient Z, and the Sa floor most calculations miss",
+      "date": "August 2026",
+      "excerpt": "Four zone values, one line of definition, and a minimum that bites hardest on exactly the buildings whose designers least expect it.",
+      "url": "bnbc-seismic-zone-coefficient.html",
+      "image": "",
+      "enabled": true
+    },
+    {
+      "title": "BNBC 2020 basic wind speed by location",
+      "date": "August 2026",
+      "excerpt": "A 3-second gust at 10 m in Exposure B for a 50-year return period — and roughly 3.7x the load between the calmest and most exposed sites in Bangladesh.",
+      "url": "bnbc-basic-wind-speed.html",
+      "image": "",
+      "enabled": true
+    },
+    {
+      "title": "Choosing R, and why a lower one is not automatically safer",
+      "date": "August 2026",
+      "excerpt": "Table 6.2.19 offers a system and its detailing, not a factor to dial. Some of the low R values are not permitted at all.",
+      "url": "bnbc-response-reduction-factor.html",
+      "image": "",
+      "enabled": true
+    }
+  ],
   "leadGate": {
     "heading": "Calculation Locked",
     "body": "Please enter your name, email, and country to unlock all calculators and download reports.",

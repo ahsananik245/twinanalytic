@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/favicon.png">
+  <link rel="shortcut icon" href="favicon.ico">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0A0A0A">
+  <title>BNBC 2020 Basic Wind Speed by Location &mdash; Table 6.2.8</title>
+  <meta name="description" content="Basic wind speed V from BNBC 2020 Table 6.2.8 for major Bangladeshi cities, what the four qualifiers on every value mean, and why you must not interpolate between towns.">
+  <link rel="canonical" href="https://twinanalytic.com/bnbc-basic-wind-speed">
+
+  <!-- Open Graph / social sharing -->
+  <meta property="og:title" content="BNBC 2020 Basic Wind Speed by Location &mdash; Table 6.2.8" />
+  <meta property="og:description" content="Basic wind speed V from BNBC 2020 Table 6.2.8 for major Bangladeshi cities, what the four qualifiers on every value mean, and why you must not interpolate between towns." />
+  <meta property="og:image" content="https://twinanalytic.com/assets/brand-banner.jpg" />
+  <meta property="og:url" content="https://twinanalytic.com/bnbc-basic-wind-speed" />
+  <meta property="og:type" content="article" />
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://twinanalytic.com/assets/brand-banner.jpg">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Content engine: hydrates this page from data/content.json -->
+  <script src="js/site-content.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .page-banner {
+      padding: 10rem 0 4rem 0;
+      background: radial-gradient(circle at 10% 20%, rgba(13, 17, 23, 0.95) 0%, rgba(10, 10, 10, 0.98) 90%),
+                  repeating-linear-gradient(45deg, rgba(201, 168, 76, 0.03) 0px, rgba(201, 168, 76, 0.03) 2px, transparent 2px, transparent 10px);
+      border-bottom: 1px solid var(--border-gold);
+      text-align: center;
+    }
+    .page-banner h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(2.1rem, 5vw, 3.5rem);
+      font-weight: 300; letter-spacing: -0.02em; margin-bottom: 1rem;
+    }
+    .page-banner p {
+      color: var(--color-gold); font-family: var(--font-mono);
+      font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.2em;
+    }
+    .we-section { padding: 4rem 0 6rem 0; }
+    .we-wrap { max-width: 900px; margin: 0 auto; }
+    .we-wrap h2 {
+      font-family: var(--font-serif); font-weight: 400;
+      font-size: clamp(1.5rem, 3vw, 2rem); color: #fff;
+      margin: 3.5rem 0 0.4rem; scroll-margin-top: 6rem;
+    }
+    .we-wrap h2 .we-num {
+      font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-gold);
+      display: block; letter-spacing: 0.18em; margin-bottom: 0.5rem;
+    }
+    .we-wrap h3 {
+      font-family: var(--font-sans); font-weight: 600; font-size: 1rem;
+      color: var(--color-steel); margin: 2rem 0 0.75rem; letter-spacing: 0.01em;
+    }
+    .we-wrap p, .we-wrap li { color: var(--text-secondary); line-height: 1.75; }
+    .we-wrap p { margin-bottom: 1.1rem; }
+    .we-wrap ul { margin: 0 0 1.2rem 1.3rem; list-style: disc; }
+    .we-wrap li { margin-bottom: 0.45rem; }
+    .we-lede { font-size: 1.05rem; }
+    .we-note {
+      background: rgba(255,255,255,0.025); border-left: 3px solid var(--color-gold);
+      padding: 1.2rem 1.4rem; margin: 1.6rem 0; border-radius: 0 4px 4px 0;
+    }
+    .we-note p:last-child { margin-bottom: 0; }
+    .we-note strong { color: #fff; }
+    .we-tablewrap { overflow-x: auto; margin: 1.2rem 0 1.6rem; }
+    table.we-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 460px; }
+    table.we-table th, table.we-table td {
+      text-align: left; padding: 0.6rem 0.9rem;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    table.we-table th {
+      font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--color-gold); font-weight: 500;
+    }
+    table.we-table td { color: var(--text-secondary); }
+    table.we-table td.num { font-family: var(--font-mono); text-align: right; color: #fff; }
+    table.we-table tr.total td { border-top: 1px solid var(--border-gold); font-weight: 600; color: #fff; }
+    /* Each cell carries its own border rather than the grid faking one with a
+       1px gap over a light background — with six items in a five-column row
+       that left four empty lit cells trailing the last row. */
+    .we-result {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+      gap: 0.6rem; margin: 1.6rem 0;
+    }
+    .we-result div {
+      background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 4px; padding: 1.1rem 1.2rem;
+    }
+    .we-result span {
+      display: block; font-family: var(--font-mono); font-size: 0.68rem;
+      text-transform: uppercase; letter-spacing: 0.12em; color: var(--color-steel-dim, #7E8288);
+      margin-bottom: 0.35rem;
+    }
+    .we-result strong { font-family: var(--font-mono); font-size: 1.15rem; color: var(--color-gold); font-weight: 500; }
+    .we-repro { margin: 1.1rem 0 0; font-size: 0.86rem; }
+    .we-repro a { color: var(--color-gold); }
+    .we-toc {
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07);
+      padding: 1.4rem 1.6rem; border-radius: 4px; margin: 2rem 0 1rem;
+    }
+    .we-toc ol { margin: 0 0 0 1.1rem; }
+    .we-toc li { margin-bottom: 0.35rem; }
+    .we-toc a { color: var(--text-secondary); text-decoration: none; }
+    .we-toc a:hover { color: var(--color-gold); }
+    .we-cta {
+      margin-top: 3.5rem; padding: 2rem; border: 1px solid var(--border-gold);
+      border-radius: 4px; background: rgba(201,168,76,0.03);
+    }
+    .we-cta h3 { margin-top: 0; color: #fff; font-size: 1.2rem; font-family: var(--font-serif); font-weight: 400; }
+    @media (max-width: 640px) { .we-section { padding: 2.5rem 0 4rem; } }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": 'BNBC 2020 Basic Wind Speed by Location &mdash; Table 6.2.8',
+    "description": 'Basic wind speed V from BNBC 2020 Table 6.2.8 for major Bangladeshi cities, what the four qualifiers on every value mean, and why you must not interpolate between towns.',
+    "author": { "@type": "Organization", "name": "TwinAnalytic" },
+    "publisher": {
+      "@type": "Organization",
+      "name": "TwinAnalytic",
+      "logo": { "@type": "ImageObject",
+                "url": "https://twinanalytic.com/assets/logo.png" }
+    },
+    "dateModified": "2026-08-31",
+    "mainEntityOfPage": "https://twinanalytic.com/bnbc-basic-wind-speed"
+  }
+  </script>
+</head>
+<body>
+
+  <a href="#main-content" class="skip-link">Skip to Main Content</a>
+
+  <!-- NAVIGATION BAR -->
+  <nav class="navbar scrolled" id="navbar">
+    <div class="container">
+      <a href="index.html" class="logo" data-tw-list="brandLogo">
+        <img src="assets/logo.png" alt="TwinAnalytic logo" height="38" style="height: 38px; width: auto; margin-right: 10px; vertical-align: middle;">
+        Twin<span>Analytic</span>
+      </a>
+      <ul class="nav-links" id="nav-links" data-tw-list="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="etabsx.html">EtabsX</a></li>
+        <li><a href="bim-viewer.html">BIM Viewer</a></li>
+        <li><a href="calculators.html">Calculators</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+
+
+  <header class="page-banner">
+    <div class="container">
+      <p class="eyebrow" style="color: var(--color-gold); font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 1rem;">BNBC 2020 &middot; Wind</p>
+      <h1>Basic wind speed by location</h1>
+    </div>
+  </header>
+
+  <main class="we-wrap" id="main-content" tabindex="-1">
+    <div class="container">
+      <p class="we-lede">A 3-second gust at 10 m in Exposure B for a 50-year return period. Drop any one of those qualifiers and the number stops meaning what the Code intends.</p>
+
+      <section class="we-section">
+        <h2>What the table actually gives</h2>
+        <p>BNBC 2020 <strong>Table 6.2.8</strong> lists the basic wind speed
+        <em>V</em> for locations across Bangladesh. Four qualifiers travel
+        with every number in it, and dropping any one of them changes the
+        answer:</p>
+        <ul>
+          <li>a <strong>3-second gust</strong>, not a sustained or hourly mean</li>
+          <li>at <strong>10 m</strong> above ground</li>
+          <li>in <strong>Exposure B</strong></li>
+          <li>for a <strong>50-year</strong> mean recurrence interval</li>
+        </ul>
+        <p>A speed quoted from a weather report, a cyclone bulletin or another
+        country's code is none of these things and cannot be substituted.</p>
+      </section>
+
+      <section class="we-section">
+        <h2>Major cities</h2>
+        <div class="we-tablewrap">
+          <table class="we-table">
+            <thead><tr><th>Location</th><th class="num">V (m/s)</th></tr></thead>
+            <tbody>
+              <tr><td>Chittagong</td><td class="num">80.0</td></tr>
+              <tr><td>Cox&rsquo;s Bazar</td><td class="num">80.0</td></tr>
+              <tr><td>Barisal</td><td class="num">78.7</td></tr>
+              <tr><td>Khulna</td><td class="num">73.3</td></tr>
+              <tr><td>Mymensingh</td><td class="num">67.4</td></tr>
+              <tr><td>Dhaka</td><td class="num">65.7</td></tr>
+              <tr><td>Rangpur</td><td class="num">65.3</td></tr>
+              <tr><td>Sylhet</td><td class="num">61.1</td></tr>
+              <tr><td>Rajshahi</td><td class="num">49.2</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Across the full table the values run from
+        <strong>41.4 m/s at Chapai Nawabganj</strong> to
+        <strong>80.0 m/s</strong> on the south-eastern coast &mdash; Barguna,
+        Chittagong, Cox&rsquo;s Bazar and Maheshkhali among them. That is a
+        factor of about 1.93 in speed, and because pressure goes with the
+        square of velocity, roughly <strong>3.7&times; in load</strong>
+        between the calmest and the most exposed sites in the country.</p>
+        <p>It is the single clearest argument against carrying a wind
+        pressure over from a previous project in a different district.</p>
+      </section>
+
+      <section class="we-section">
+        <h2>Two rules for reading it</h2>
+        <p><strong>Do not interpolate between towns.</strong> The table is a
+        list of discrete locations, not a surface to sample. For a site that
+        is not listed, use the nearest listed location or read the wind speed
+        map &mdash; that is what the Code directs, and averaging two
+        neighbouring towns is not a defensible substitute.</p>
+        <p><strong>Check the importance factor separately.</strong> The
+        occupancy importance factor for wind changes in cyclone-prone areas,
+        so the same building type does not carry the same factor everywhere
+        the speed is high.</p>
+        <div class="we-cta">
+          <a href="wind-load.html" class="btn btn-gold">
+            <i class="fa-solid fa-wind"></i> Open the wind load calculator</a>
+          <a href="calculators.html" class="btn">All 28 calculators</a>
+        </div>
+      </section>
+
+
+      <div class="we-note" style="margin-top: 2.5rem;">
+        <strong>Where this page and the printed Code disagree, the Code is
+        right.</strong> Every figure here is the value our own calculators
+        use, and each carries the clause it came from so you can check it
+        against your copy of BNBC 2020 Part 6. This is a reference for the
+        repetitive lookups, not a substitute for the engineer sealing the
+        drawing.
+      </div>
+    </div>
+  </main>
+
+<footer class="footer">
+    <div class="footer-top-gradient"></div>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col brand">
+          <h3 data-tw-list="brandFooter">Twin<span>Analytic</span></h3>
+          <p style="color: var(--color-gold); font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; margin-top: -0.5rem;" data-tw="site.tagline">Construction &amp; Engineering</p>
+          <p data-tw="site.footerBlurb">We combine engineering expertise with digital technologies to create safe, optimized, and reliable structures.</p>
+          <p class="footer-slogan" data-tw="site.slogan">Building Tomorrow, Together</p>
+          <div class="footer-socials" data-tw-list="footerSocials">
+            <a href="https://linkedin.com/company/twinanalytic" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
+          </div>
+        </div>
+        <div data-tw-list="footerColumns" style="display: contents;">
+        <div class="footer-col">
+          <h3>Services</h3>
+          <ul class="footer-links">
+            <li><a href="services.html#structural">Structural Engineering</a></li>
+            <li><a href="services.html#bim">BIM &amp; Digital Engineering</a></li>
+            <li><a href="services.html#support">Construction Support</a></li>
+            <li><a href="services.html#consultancy">Engineering Consultancy</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Load Analysis</h3>
+          <ul class="footer-links">
+            <li><a href="seismic-analysis.html">Seismic Base Shear</a></li>
+            <li><a href="wind-load.html">Wind Load (MWFRS)</a></li>
+            <li><a href="drift-check.html">Drift &amp; Sway Check</a></li>
+            <li><a href="p-delta-check.html">P-Delta Stability</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Member Design</h3>
+          <ul class="footer-links">
+            <li><a href="beam-design.html">RC Beam Design</a></li>
+            <li><a href="column-design.html">RC Column Design</a></li>
+            <li><a href="slab-design.html">RC Slab Design</a></li>
+            <li><a href="stair-design.html">RC Stair Design</a></li>
+            <li><a href="calculators.html">All 26 Calculators</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Navigation</h3>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="projects.html">Projects</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p data-tw="site.copyright">&copy; 2026 TwinAnalytic. All rights reserved. Engineering the Future. Digitally Twin.</p>
+        <div class="footer-bottom-links" data-tw-list="footerBottomLinks">
+          <a href="privacy.html">Privacy Protocol</a>
+          <a href="sitemap.html">Sitemap</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
+
+</body>
+</html>
