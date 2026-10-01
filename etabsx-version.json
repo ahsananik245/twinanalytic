@@ -1,8 +1,8 @@
 {
   "_comment": "Read by EtabsX on launch to tell the user a newer build exists. Update 'built' and 'version' when you publish a release; 'built' must match the BUILT line Release.py writes into build_info.py. Release.py prints this block ready to paste.",
-  "version": "2.4",
-  "built": "2026-10-01 23:16:58",
-  "commit": "d85858a",
-  "notes": "Every change to your model asks first and says when ETABS will delete its results; 'Connect now?' instead of an error; no double runs; verdict counts above each log; a 40% smaller download.",
+  "version": "2.5",
+  "built": "2026-10-01 23:39:23",
+  "commit": "2a68fdd",
+  "notes": "Design pass/fail now works on ETABS 22, with failing members listed by storey and a button to select them in ETABS. New: the B1-B7 storey workbook in Excel, columns scheduled by type with grid locations, what changed since the last run, and tie beams to Sec 1.8.5.2.",
   "download": "https://github.com/ahsananik245/etabsx-releases/releases/latest/download/EtabsX.exe"
 }
