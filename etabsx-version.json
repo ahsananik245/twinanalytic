@@ -1,8 +1,8 @@
 {
   "_comment": "Read by EtabsX on launch to tell the user a newer build exists. Update 'built' and 'version' when you publish a release; 'built' must match the BUILT line Release.py writes into build_info.py. Release.py prints this block ready to paste.",
-  "version": "2.2",
-  "built": "2026-10-01 21:44:51",
-  "commit": "f46401f",
-  "notes": "More accurate verdicts: every seismic case is checked, nothing passes unless it was measured, the weak-storey check counts the ties, and a new check compares the ETABS base shear with BNBC V = Sa·W. The report now says up front whether it is complete and compliant.",
+  "version": "2.3",
+  "built": "2026-10-01 22:45:16",
+  "commit": "8156ad8",
+  "notes": "A report you can submit: every verdict in one PDF, a sign-off block with IEB numbers, your inputs and per-storey tables, and your notes on items that need review. Response-spectrum scaling and the dual-system frame share are now verdicts.",
   "download": "https://github.com/ahsananik245/etabsx-releases/releases/latest/download/EtabsX.exe"
 }
