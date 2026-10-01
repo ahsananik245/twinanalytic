@@ -1,8 +1,8 @@
 {
   "_comment": "Read by EtabsX on launch to tell the user a newer build exists. Update 'built' and 'version' when you publish a release; 'built' must match the BUILT line Release.py writes into build_info.py. Release.py prints this block ready to paste.",
-  "version": "2.1.1",
-  "built": "2026-10-01 19:59:32",
-  "commit": "81bdc67",
-  "notes": "Every tab now scrolls on smaller screens, output panes are read-only with scrollbars, and new versions are announced with a banner that says what changed.",
+  "version": "2.2",
+  "built": "2026-10-01 21:44:51",
+  "commit": "f46401f",
+  "notes": "More accurate verdicts: every seismic case is checked, nothing passes unless it was measured, the weak-storey check counts the ties, and a new check compares the ETABS base shear with BNBC V = Sa·W. The report now says up front whether it is complete and compliant.",
   "download": "https://github.com/ahsananik245/etabsx-releases/releases/latest/download/EtabsX.exe"
 }
