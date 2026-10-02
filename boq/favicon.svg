@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <rect width="1024" height="1024" rx="220" fill="#c9a84c"/>
+  <!-- Q: ring + tail, kept inside the adaptive-icon safe zone (centre 66%) -->
+  <circle cx="500" cy="490" r="190" fill="none" stroke="#131313" stroke-width="78"/>
+  <path d="M590 590 L720 724" stroke="#131313" stroke-width="84" stroke-linecap="round"/>
+  <!-- three bars: quantities -->
+  <rect x="402" y="430" width="44" height="120" rx="8" fill="#131313"/>
+  <rect x="464" y="395" width="44" height="155" rx="8" fill="#131313"/>
+  <rect x="526" y="455" width="44" height="95" rx="8" fill="#131313"/>
+</svg>
