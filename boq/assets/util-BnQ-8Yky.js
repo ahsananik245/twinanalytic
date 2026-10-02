@@ -1,0 +1,1 @@
+var e=e=>e!==`__proto__`&&e!==`constructor`&&e!==`prototype`,t=e=>Math.round((e+2**-52)*100)/100,n=0,r=()=>`${Date.now().toString(36)}${(n++).toString(36)}${Math.random().toString(36).slice(2,7)}`;export{e as n,r,t};
