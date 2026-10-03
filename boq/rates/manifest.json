@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "pwdCivil": {
+    "source": "PWD Schedule of Rates 2022 (2nd Revised), Part A: Civil Works, 16th edition",
+    "effective": "2026-01-22",
+    "file": "pwd-civil-2026-01-22.json",
+    "sha256": "b34be9c81d225da4937de34d6eaf20533fbd57c428be0a7b88e361d71d2fe346",
+    "items": 1979,
+    "published": "2026-10-02"
+  }
+}
